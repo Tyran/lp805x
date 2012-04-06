@@ -66,6 +66,12 @@ int main( int argc, char ** argv)
     rom1.open(romc[1].c_str());
 	}
 	
+	else
+	{
+		cout << "Unknown type conversion!" << endl;
+		return -1;
+	}
+	
     string line;
     uint lineN=0;
     
@@ -93,12 +99,6 @@ int main( int argc, char ** argv)
 	{
 		rom0 << cini;
 		rom1 << cini;
-	}
-	
-	else
-	{
-		cout << "Unknown type conversion!" << endl;
-		return -1;
 	}
 
     if (in.is_open())
