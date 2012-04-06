@@ -56,12 +56,22 @@ int main( int argc, char ** argv)
 	
 	else if ( strcmp(argv[1],"-XMIF") == 0)
 	{
+		for ( int i=0; i<2; i++)
+		{
+			romx[i] = path + romx[i];
+		}
+	
 	rom0.open(romx[0].c_str());
     rom1.open(romx[1].c_str());
 	}
 	
 	else if ( strcmp(argv[1],"-COE") == 0)
 	{
+		for ( int i=0; i<2; i++)
+		{
+			romc[i] = path + romc[i];
+		}
+		
 	rom0.open(romc[0].c_str());
     rom1.open(romc[1].c_str());
 	}
