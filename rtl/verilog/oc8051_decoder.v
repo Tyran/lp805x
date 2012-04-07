@@ -2718,7 +2718,6 @@ begin
 	 begin
 		 casex (op_cur) /* synopsys parallel_mask */
 			`OC8051_MOVX_AI : mem_act = `OC8051_MAS_RI_W;
-			//8'b11110010 : mem_act = #1 `OC8051_MAS_RI_W;
 			`OC8051_MOVX_AP : mem_act = `OC8051_MAS_DPTR_W;
 			`OC8051_MOVX_IA : mem_act = `OC8051_MAS_RI_R;
 			`OC8051_MOVX_PA : mem_act = `OC8051_MAS_DPTR_R;

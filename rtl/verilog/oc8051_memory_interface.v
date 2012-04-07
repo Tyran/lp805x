@@ -1208,7 +1208,7 @@ always @(posedge clk or posedge rst)
     inc_pc_r  <= #1 inc_pc;
   end
 
-`ifdef OC8051_SIMULATION
+
 // synthesis translate_off
 initial
 begin
@@ -1224,7 +1224,6 @@ begin
   end
 end
 // synthesis translate_on
-`endif
   
 
 endmodule

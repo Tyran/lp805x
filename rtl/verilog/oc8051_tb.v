@@ -105,9 +105,9 @@ reg  rst;
 
 wire [15:0] iadr_o;
 wire [31:0] idat_i;
-wire 			iack_i, wbi_err_i, istb_o, icyc_o;
+//wire 			iack_i, wbi_err_i, istb_o, icyc_o;
 
-wire int0,int1;
+//wire int0,int1;
 
 //wire				ea_rom_sel;
 wire 	[7:0] 	op1,op2,op3,
@@ -124,7 +124,7 @@ wire 	[15:0]	addr;
 wire 	[31:0] 	data_o;
 wire 	[2:0] 	mem_act;
 reg				clk;
-wire 	[7:0]		acc;
+wire 	[7:0]		accr,acc;
 wire	[7:0]		data_in;
 wire				wr_acc;
 
@@ -185,6 +185,7 @@ assign data_o = oc8051_top_1.oc8051_rom1.data_o;
 //assign addr_sel1 = oc8051_top_1.oc8051_rom1.addr_sel1;
 //assign addr_sel2 = oc8051_top_1.oc8051_rom1.addr_sel2;
 //assign addr_sel3 = oc8051_top_1.oc8051_rom1.addr_sel3;
+assign accr = oc8051_top_1.oc8051_sfr1.oc8051_acc1.data_out;
 assign acc = oc8051_top_1.oc8051_sfr1.oc8051_acc1.acc;
 assign wr_acc = oc8051_top_1.oc8051_sfr1.oc8051_acc1.wr_acc;
 assign data_in = oc8051_top_1.oc8051_sfr1.oc8051_acc1.data_in;
@@ -213,16 +214,18 @@ assign wr = oc8051_top_1.oc8051_ram_top1.oc8051_idata.wr;
 // buffer
 //reg [23:0] buff [0:255];
 
-assign wbi_err_i = 1'b0;
+//assign wbi_err_i = 1'b0;
 
 //
 // oc8051 controller
 //
 oc8051_top oc8051_top_1(.wb_clk_i(clk),
-         .int0_i(int0), .int1_i(int1),
+ //        .int0_i(int0), .int1_i(int1),
 
-	 .wbi_adr_o(iadr_o), .wbi_stb_o(istb_o), .wbi_ack_i(iack_i),
-         .wbi_cyc_o(icyc_o), .wbi_dat_i(idat_i), .wbi_err_i(wbi_err_i),
+	 .wbi_adr_o(iadr_o),
+	.wbi_dat_i(idat_i),
+	//.wbi_stb_o(istb_o), .wbi_ack_i(iack_i),
+   //.wbi_cyc_o(icyc_o) , .wbi_err_i(wbi_err_i),
 
   `ifdef OC8051_PORTS
 
@@ -331,10 +334,10 @@ initial begin
 #RSTDELAY
   rst = 1'b0;
 
-#2000000
-  $display("time ",$time, "\n failure: end of time\n \n");
-  $display("");
-  $finish;
+//#2000000
+//  $display("time ",$time, "\n failure: end of time\n \n");
+//  $display("");
+//  $finish;
 end
 
 
