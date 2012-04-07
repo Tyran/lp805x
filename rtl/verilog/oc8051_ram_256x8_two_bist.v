@@ -167,6 +167,14 @@ myaltera_ram_dp_256x8	altera_ram (
       // buffer
       reg    [7:0]  buff [0:255] /* synthesis syn_preserve = 1 */;
       
+		// synthesis translate_off
+		integer i;
+		initial
+		begin
+			for ( i=0; i<256; i=i+1)
+				buff[i] <= 8'h00;
+		end
+		// synthesis translate_on
       
       //
       // writing to ram

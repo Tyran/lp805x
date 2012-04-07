@@ -207,19 +207,16 @@ reg [31:0] data_o;
 
 assign ea = 1'b0;
 
-initial
-begin
-  $readmemh("oc8051_rom.in", buff);
-end
-
+// synthesis translate_off
 integer i;
 initial
 begin
-
-	for ( i=0; i<16383; i=i+1)
+	for ( i=0; i<16384; i=i+1)
 		buff[i] <= 8'h00;
-
+#5		
+	$readmemh("oc8051_rom.in", buff);
 end
+// synthesis translate_on
 
 always @(posedge clk or posedge rst)
  if (rst)
