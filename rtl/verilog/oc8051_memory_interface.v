@@ -461,33 +461,42 @@ always @(wr_sel)
 // (instructions MOVC)
 
 //assign iadr_o = (istb_t & !iack_i) ? iadr_t : pc_out;
-assign iadr_o = (istb_t) ? iadr_t : pc_out;
 
+
+//reg [15:0] iadr_o;
 reg xwait;
+
+
+
+// faster 1 clock cycle
+assign iadr_o = (xwait) ? alu : pc_out;
 
 always @(posedge clk or posedge rst)
 begin
-  if (rst) begin
-    iadr_t <= #1 23'h0;
-    istb_t <= #1 1'b0;
-    imem_wait <= #1 1'b0;
-    idat_ir <= #1 24'h0;
-	 xwait = #1 1'b0;
-	end if ( xwait) begin
-	    iadr_t <= #1 alu;
-    istb_t <= #1 1'b1;
-    imem_wait <= #1 1'b1;
-	 xwait = 1'b0;
-  end else if (mem_act==`OC8051_MAS_CODE) begin
-	 xwait = #1 1'b1;
-  end else if (ea_rom_sel && imem_wait) begin
-    imem_wait <= #1 1'b0;
-  end else if (!imem_wait && istb_t) begin
-    istb_t <= #1 1'b0;
-  end else if (iack_i) begin
-    imem_wait <= #1 1'b0;
-    idat_ir <= #1 idat_i [23:0];
-  end
+	if (rst) begin
+		istb_t <= #1 1'b0;
+		idat_ir <= #1 24'h0;
+		imem_wait <= #1 1'b0;
+		xwait <= #1 1'b0;
+	end
+	else if ( xwait) begin
+		xwait <= #1 1'b0;
+		istb_t <= #1 1'b1;
+		imem_wait <= #1 1'b0;
+	end
+	else if (mem_act==`OC8051_MAS_CODE) begin
+		xwait <= #1 1'b1;
+	end
+	else if (ea_rom_sel && imem_wait) begin
+		imem_wait <= #1 1'b0;
+   end 
+	else if (!imem_wait && istb_t) begin
+		istb_t <= #1 1'b0;
+   end
+	else if (iack_i) begin
+		imem_wait <= #1 1'b0;
+		idat_ir <= #1 idat_i [23:0];
+	end
 end
 
 /////////////////////////////
