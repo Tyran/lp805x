@@ -463,6 +463,7 @@ always @(wr_sel)
 //assign iadr_o = (istb_t & !iack_i) ? iadr_t : pc_out;
 assign iadr_o = (istb_t) ? iadr_t : pc_out;
 
+reg xwait;
 
 always @(posedge clk or posedge rst)
 begin
@@ -471,10 +472,14 @@ begin
     istb_t <= #1 1'b0;
     imem_wait <= #1 1'b0;
     idat_ir <= #1 24'h0;
-  end else if (mem_act==`OC8051_MAS_CODE) begin
-    iadr_t <= #1 alu;
+	 xwait = #1 1'b0;
+	end if ( xwait) begin
+	    iadr_t <= #1 alu;
     istb_t <= #1 1'b1;
     imem_wait <= #1 1'b1;
+	 xwait = 1'b0;
+  end else if (mem_act==`OC8051_MAS_CODE) begin
+	 xwait = #1 1'b1;
   end else if (ea_rom_sel && imem_wait) begin
     imem_wait <= #1 1'b0;
   end else if (!imem_wait && istb_t) begin
