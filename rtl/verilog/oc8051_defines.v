@@ -472,10 +472,10 @@
 //
 //memory action select
 //
-`define OC8051_MAS_DPTR_R 3'b000 // read from external rom: acc=(dptr)
-`define OC8051_MAS_DPTR_W 3'b001 // write to external rom: (dptr)=acc
-`define OC8051_MAS_RI_R   3'b010 // read from external rom: acc=(Ri)
-`define OC8051_MAS_RI_W   3'b011 // write to external rom: (Ri)=acc
+`define OC8051_MAS_DPTR_R 3'b000 // read from external ram: acc=(dptr)
+`define OC8051_MAS_DPTR_W 3'b001 // write to external ram: (dptr)=acc
+`define OC8051_MAS_RI_R   3'b010 // read from external ram: acc=(Ri)
+`define OC8051_MAS_RI_W   3'b011 // write to external ram: (Ri)=acc
 `define OC8051_MAS_CODE   3'b100 // read from program memory
 `define OC8051_MAS_NO     3'b111 // no action
 
