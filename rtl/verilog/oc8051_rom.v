@@ -106,7 +106,7 @@ always @(posedge clk or posedge rst)
 									 (~addr[0] ? {data[2'b01],data[2'b00],data[2'b11],data[2'b10]} : 
 									  {data[2'b11],data[2'b01],data[2'b00],data[2'b10]} ) ;								
   
-oc8051rom rom0
+lp50x_xiserom0t0 rom0
 	(
 	  .clka(clk),
 	  .ena(1'b1),
@@ -118,7 +118,7 @@ oc8051rom rom0
 	  .doutb(data[1])
 	);
 	
-oc8051romb rom1
+lp50x_xiserom1t0 rom1
 	(
 	  .clka(clk),
 	  .ena(1'b1),
@@ -201,7 +201,7 @@ assign rom3_en = 1'b1;
 	end
 `else
 
-reg [7:0] buff [0:16383] /* synopsys syn_preserve */; //16kb
+reg [7:0] buff [0:4095] /* synopsys syn_preserve */; //4kb
 
 reg [31:0] data_o;
 
@@ -211,7 +211,7 @@ assign ea = 1'b0;
 integer i;
 initial
 begin
-	for ( i=0; i<16384; i=i+1)
+	for ( i=0; i<4095; i=i+1)
 		buff[i] <= 8'h00;
 #5		
 	$readmemh("oc8051_rom.in", buff);
