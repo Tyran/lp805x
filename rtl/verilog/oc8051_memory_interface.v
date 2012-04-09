@@ -572,16 +572,16 @@ begin
   end
 end
 
-always @(posedge clk or posedge rst)
+always @(*)
 begin
+	cdata = 1'b0;
+	cdone = 1'b0;
   if (rst) begin
-    cdata <= #1 8'h00;
-    cdone <= #1 1'b0;
+    cdata = 8'h00;
+    cdone = 1'b0;
   end else if (istb_t) begin
-    cdata <= #1 ea_rom_sel ? idat_onchip[7:0] : idat_i[7:0];
-    cdone <= #1 1'b1;
-  end else begin
-    cdone <= #1 1'b0;
+    cdata = ea_rom_sel ? idat_onchip[7:0] : idat_i[7:0];
+    cdone = 1'b1;
   end
 end
 
