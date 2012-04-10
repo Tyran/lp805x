@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <array>
+#include <sstream>
 
 #define uint unsigned int
 
@@ -34,16 +35,33 @@ template <typename D, size_t S=1024>
 class MemoryModel {
 public:
 	enum PUSHMODEL { STATIC, SELFGROWING };
-	
-	static const string COEini;
-	static const string COEfini;
-	
+
 private:
 //for now only static supported
 	array<D,S> _mem;
 	PUSHMODEL _model;
 	
 	bool _sticky;
+	
+	
+	void m_exchangeEndian( ostringstream & in)
+	{
+		unsigned int data[4];
+		string str = in.str();
+		
+		for ( int i=0,j=3; i<8; i+=2, j--)
+		{
+			from_string(data[j],str.substr(i,2),std::hex);
+		}
+		in.str("");
+		
+		for ( int i=0; i<4; i++)
+		{
+			if ( data[i] < 0x10)
+				in << "0";
+			in << hex << data[i];
+		}
+	}
 
 public: 
 	MemoryModel( PUSHMODEL model) : _model(model) 
@@ -87,6 +105,7 @@ public:
 	{
 	//typename array<D,S>::iterator it;
 	int cnt=3;
+	ostringstream tmp;
 	out << "memory_initialization_radix=16;\nmemory_initialization_vector=\n";
 		for ( auto it=_mem.cbegin(); it!=_mem.cend(); ++it, --cnt )
 		{
@@ -94,18 +113,22 @@ public:
 			{
 				if ( cnt == 3) 
 				{
-					out << ",";
-					out << endl;
+					out << "," << endl;
 				}
 			}
 			
 			if ( *it < 0x10)
-				out << "0";
-			out << hex << (unsigned int)*it;
+				tmp << "0";
+			tmp << hex << (unsigned int)*it;
 			
 			if ( cnt == 0)
 			{	
 				cnt = 4;
+				
+				m_exchangeEndian(tmp);
+				
+				out << tmp.str();
+				tmp.str("");
 			}
 		}
 	out << ";";
