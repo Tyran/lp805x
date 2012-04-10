@@ -70,8 +70,7 @@ module oc8051_rom (rst, clk, addr, ea_int, data_o);
 //parameter INT_ROM_WID= 15;
 
 input rst, clk;
-input [12:0] addr;
-//input [22:0] addr;
+input [15:0] addr;
 output ea_int;
 output [31:0] data_o;
 
@@ -83,51 +82,55 @@ reg ea_int;
 
 `ifdef OC8051_XILINX_ROM
 
-//reg [31:0] data_o;
+reg [31:0] data_o;
 
 assign ea = 1'b0;
 
 always @(posedge clk or posedge rst)
+begin
  if (rst)
    ea_int <= #1 1'b1;
   else ea_int <= #1 !ea;
-  
-  wire [12:0] addrR [3:0];
-  wire [7:0] data [3:0];
-  
-  assign addrR[0] = ~addr[1] ? ( ~addr[0] ? (addr>>1):((addr>>1) | 1'b1) ):((addr>>1) + 13'b1);
-  assign addrR[1] = ~addr[1] ? ( ~addr[0] ? (addr>>1) + 13'h1:((addr>>1) + 13'h2) ):((addr>>1) + 13'h2);
-  assign addrR[2] = ~addr[1] ? ( addr>>1) :  ~addr[0] ? (addr>>1) - 13'h1 : (addr>>1) ;
-  assign addrR[3] = ~addr[1] ? ( addr>>1)|1'h1: (~addr[0] ? (addr>>1) : (addr>>1) + 13'h1 );
-  
-  assign data_o = ~addr[1] ? (~addr[0] ? {data[2'b11],data[2'b10],data[2'b01],data[2'b00]} : 
-									  {data[2'b01],data[2'b11],data[2'b10],data[2'b00]} ) :
-									  
-									 (~addr[0] ? {data[2'b01],data[2'b00],data[2'b11],data[2'b10]} : 
-									  {data[2'b11],data[2'b01],data[2'b00],data[2'b10]} ) ;								
-  
-lp50x_xiserom0t0 rom0
-	(
-	  .clka(clk),
-	  .ena(1'b1),
-	  .addra(addrR[0]),
-	  .douta(data[0]),
-	  .clkb(clk),
-	  .enb(1'b1),
-	  .addrb(addrR[1]),
-	  .doutb(data[1])
-	);
+end
+
+wire [31:0] data0;
+wire [31:0] data1;
 	
-lp50x_xiserom1t0 rom1
+reg [11:0] addr_r;
+	
+always @(posedge clk or posedge rst)
+begin
+	if ( rst)
+	begin
+		addr_r <= 12'h0;
+	end
+	else
+	begin
+		addr_r <= addr[11:0];
+	end
+end
+  
+always @(*)
+begin
+	case ( addr_r[1:0])
+	2'b00: data_o = data0[31:0];
+	2'b01: data_o = { data1[7:0], data0[31:8] };
+	2'b10: data_o = { data1[15:0], data0[31:16] };
+	2'b11: data_o = { data1[23:0], data0[31:24] };
+	endcase
+end
+
+ //9:0
+lp5xRomX romX
 	(
-	  .clka(clk),
-	  .ena(1'b1),
-	  .addra(addrR[2]),
-	  .douta(data[2]),
-	  .clkb(clk),
-	  .enb(1'b1),
-	  .addrb(addrR[3]),
-	  .doutb(data[3])
+	  .clka( clk),
+	  .ena( 1'b1),
+	  .addra( addr[11:2]),
+	  .douta( data0),
+	  .clkb( clk),
+	  .enb( 1'b1),
+	  .addrb( addr[11:2]+10'b1),
+	  .doutb( data1)
 	);
 
 `else
