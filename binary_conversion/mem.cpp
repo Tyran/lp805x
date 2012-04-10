@@ -3,12 +3,21 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <array>
 
 #define uint unsigned int
 
 #define ROM4x1ADDR(a) (((a)&0xFFFC)>>2)
 
 using namespace std;
+
+template<class T>
+string toString(const T& t)
+{
+     ostringstream stream;
+     stream << t;
+return stream.str();
+}
 
 template <class T>
 bool from_string(T& t, 
@@ -19,14 +28,121 @@ bool from_string(T& t,
   return !(iss >> f >> t).fail();
 }
 
+//simulate rom memory static or self-growing;
+//static is non-muttable but faster!
+template <typename D, size_t S=1024>
+class MemoryModel {
+public:
+	enum PUSHMODEL { STATIC, SELFGROWING };
+	
+	static const string COEini;
+	static const string COEfini;
+	
+private:
+//for now only static supported
+	array<D,S> _mem;
+	PUSHMODEL _model;
+	
+	bool _sticky;
+
+public: 
+	MemoryModel( PUSHMODEL model) : _model(model) 
+	{
+		_mem.fill(0);
+		_sticky=false;
+	}
+	~MemoryModel() { }
+	
+	void insertValue( size_t location, D value)
+	{ 
+		if ( location > S)
+		{
+			if ( _sticky == false) 
+			{
+				_sticky=true;
+				cout << "You need a wider ROM..." << endl; 
+			}
+		}
+		else
+		{
+			_mem[location] = value;
+		}
+	}
+	
+	void printCOE8( ofstream & out) 
+	{
+	typename array<D,S>::iterator it;
+	out << "memory_initialization_radix=16;\nmemory_initialization_vector=\n";
+		for ( it=_mem.begin(); it<_mem.end(); ++it )
+		{
+			unsigned int nn=*it;
+			if ( nn < 0x10)
+				out << "0";
+			out << hex << nn << "," << endl;
+		}
+	out << ";";
+	}
+	
+	void printCOE( ofstream & out) 
+	{
+	//typename array<D,S>::iterator it;
+	int cnt=3;
+	out << "memory_initialization_radix=16;\nmemory_initialization_vector=\n";
+		for ( auto it=_mem.cbegin(); it!=_mem.cend(); ++it, --cnt )
+		{
+			if ( it != _mem.begin())
+			{
+				if ( cnt == 3) 
+				{
+					out << ",";
+					out << endl;
+				}
+			}
+			
+			if ( *it < 0x10)
+				out << "0";
+			out << hex << (unsigned int)*it;
+			
+			if ( cnt == 0)
+			{	
+				cnt = 4;
+			}
+		}
+	out << ";";
+	}
+	
+	void printOUT( void) 
+	{
+	typename array<D,S>::iterator it;
+		for ( it=_mem.begin(); it<_mem.end(); ++it )
+		{
+			cout << *it << endl;
+		}
+	}
+};
+
+int main_( void)
+{
+	MemoryModel<char> COE( MemoryModel<char>::STATIC);
+	
+	COE.insertValue( 0, 'A');
+	COE.insertValue( 1, 'C');
+	
+	COE.printOUT();
+
+return 0;
+}
+
 int main( int argc, char ** argv)
 {
     ofstream rom0,rom1,rom2,rom3,ea;
     ifstream in;
+	MemoryModel<unsigned char,4096> MEM( MemoryModel<unsigned char,4096>::STATIC);
+	
     
-    if ( argc != 4)
+    if ( argc != 4 && argc != 5)
     {
-        cout << "Run as mem.exe [TypeOutput] [inputFile] [outputPath]" << endl;
+        cout << "Run as memc.exe TypeOutput inputFile outputPath/File [ROMSIZE] " << endl;
         return -2;
     }
     in.open( argv[2]);
@@ -65,7 +181,7 @@ int main( int argc, char ** argv)
     rom1.open(romx[1].c_str());
 	}
 	
-	else if ( strcmp(argv[1],"-COE") == 0)
+	else if ( strcmp(argv[1],"-COE2") == 0)
 	{
 		for ( int i=0; i<2; i++)
 		{
@@ -74,6 +190,12 @@ int main( int argc, char ** argv)
 		
 	rom0.open(romc[0].c_str());
     rom1.open(romc[1].c_str());
+	}
+	
+		
+	else if ( strcmp(argv[1],"-COE") == 0)
+	{	
+	rom0.open(argv[3]);
 	}
 	
 	else
@@ -105,10 +227,14 @@ int main( int argc, char ** argv)
 		//rom1 << ini;
 	}
 	
-	else if ( strcmp(argv[1],"-COE") == 0)
+	else if ( strcmp(argv[1],"-COE2") == 0)
 	{
 		rom0 << cini;
 		rom1 << cini;
+	}
+	
+	else if ( strcmp(argv[1],"-COE") == 0)
+	{
 	}
 
     if (in.is_open())
@@ -197,7 +323,7 @@ int main( int argc, char ** argv)
 								}
 							}
 							
-							else if ( strcmp(argv[1],"-COE") == 0)
+							else if ( strcmp(argv[1],"-COE2") == 0)
 							{
 								switch ( bcount)
 								{
@@ -236,7 +362,16 @@ int main( int argc, char ** argv)
 									default:
 									break;
 								}
-
+							}
+							
+							else if ( strcmp(argv[1],"-COE") == 0)
+							{
+								int nn=0;
+								
+								unsigned char data=0;
+								from_string(nn,line.substr(9+i,2),hex);
+								data=static_cast<unsigned char>(nn);
+								MEM.insertValue( address, data);
 							}
                             
                             i+=2;
@@ -288,30 +423,34 @@ int main( int argc, char ** argv)
         rom2 << fini;
         rom3 << fini;
 		
-	rom0.close();
-    rom1.close();
-    rom2.close();
-    rom3.close();
+		rom0.close();
+		rom1.close();
+		rom2.close();
+		rom3.close();
     }
 	
 	else if ( strcmp(argv[1],"-IN") == 0)
 	{
-	ea.close();
+		ea.close();
     }
 	
 	else if ( strcmp(argv[1],"-XMIF") == 0)
 	{
-	 //       rom0 << fini;
-     //   rom1 << fini;
-	rom0.close();
-    rom1.close();
+		rom0.close();
+		rom1.close();
     }
+	else if ( strcmp(argv[1],"-COE2") == 0)
+	{
+		rom0 << cfini;
+		rom1 << cfini;
+		rom0.close();
+		rom1.close();
+    }
+	
 	else if ( strcmp(argv[1],"-COE") == 0)
 	{
-	rom0 << cfini;
-    rom1 << cfini;
-	rom0.close();
-    rom1.close();
+		MEM.printCOE( rom0);
+		rom0.close();
     }
 	
     in.close();
