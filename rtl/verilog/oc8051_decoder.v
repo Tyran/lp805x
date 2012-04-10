@@ -2656,7 +2656,7 @@ begin
             `OC8051_DJNZ_D  : state <= #1 2'b10;
             `OC8051_LCALL   : state <= #1 2'b10;
             `OC8051_MOVC_DP : state <= #1 2'b10;
-            `OC8051_MOVC_PC : state <= #1 2'b11;
+            `OC8051_MOVC_PC : state <= #1 2'b10;
             `OC8051_MOVX_IA : state <= #1 2'b10;
             `OC8051_MOVX_AI : state <= #1 2'b01;
             `OC8051_MOVX_PA : state <= #1 2'b10;
