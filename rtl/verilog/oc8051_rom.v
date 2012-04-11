@@ -268,7 +268,7 @@ reg [31:0] buff [0:1023] /* synopsys syn_preserve */; //4kb
 integer i;
 initial
 begin
-	for ( i=0; i<1023; i=i+1)
+	for ( i=0; i<1024; i=i+1)
 		buff[i] <= 32'h00000000;
 #5
 	$readmemh("oc8051_rom.in", buff);
