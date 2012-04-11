@@ -121,7 +121,12 @@ begin
 end
 
  //9:0
-lp5xRomX romX
+`ifdef _XILINX_ROM_INFER_
+lp5xRomXI 
+`else
+lp5xRomX
+`endif
+romX
 	(
 	  .clka( clk),
 	  .ena( 1'b1),
@@ -234,5 +239,46 @@ end
 
 	`endif /* XILINX ROM */
 `endif /* ALTERA ROM */
+
+endmodule
+
+module lp5xRomXI(
+  clka,
+  ena,
+  addra,
+  douta,
+  clkb,
+  enb,
+  addrb,
+  doutb
+);
+
+input clka;
+input ena;
+input [9 : 0] addra;
+output reg [31 : 0] douta;
+input clkb;
+input enb;
+input [9 : 0] addrb;
+output reg [31 : 0] doutb;
+
+reg [31:0] buff [0:1023] /* synopsys syn_preserve */; //4kb
+
+// synthesis translate_off
+integer i;
+initial
+begin
+	for ( i=0; i<1023; i=i+1)
+		buff[i] <= 32'h00000000;
+#5
+	$readmemh("oc8051_rom.in", buff);
+end
+// synthesis translate_on
+
+always @(posedge clka)
+begin
+	douta <= buff[addra];
+	doutb <= buff[addrb];
+end
 
 endmodule
