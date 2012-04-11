@@ -43,7 +43,6 @@ private:
 	
 	bool _sticky;
 	
-	
 	void m_exchangeEndian( ostringstream & in)
 	{
 		unsigned int data[4];
@@ -99,6 +98,28 @@ public:
 			out << hex << nn << "," << endl;
 		}
 	out << ";";
+	}
+	
+	void printIN( ofstream & out) 
+	{
+	ostringstream tmp;
+	int cnt=3;
+		for ( auto it=_mem.cbegin(); it!=_mem.cend(); ++it, --cnt )
+		{
+			if ( *it < 0x10)
+				tmp << "0";
+			tmp << hex << (unsigned int)*it;
+			
+			if ( cnt == 0)
+			{	
+				cnt = 4;
+				
+				m_exchangeEndian(tmp);
+				
+				out << tmp.str() << endl;
+				tmp.str("");
+			}
+		}
 	}
 	
 	void printCOE( ofstream & out) 
@@ -158,39 +179,43 @@ return 0;
 
 int main( int argc, char ** argv)
 {
-    ofstream rom0,rom1,rom2,rom3,ea;
+    ofstream rom[4];
     ifstream in;
 	MemoryModel<unsigned char,4096> MEM( MemoryModel<unsigned char,4096>::STATIC);
 	
     
     if ( argc != 4 && argc != 5)
     {
-        cout << "Run as memc.exe TypeOutput inputFile outputPath/File [ROMSIZE] " << endl;
+        cout << "Run as memc.exe TypeOutput inputFile outputPath/File" << endl;
         return -2;
     }
     in.open( argv[2]);
     
     string path(argv[3]);
-    string rom[] = { "rom0.mif", "rom1.mif", "rom2.mif", "rom3.mif" };
+    string romn[] = { "rom0.mif", "rom1.mif", "rom2.mif", "rom3.mif" };
 	string romx[] = { "oc8051rom.mif", "oc8051romb.mif" };
-	string romc[] = { "oc8051rom0.coe", "oc8051rom1.coe" };
+	string romc[] = { "oc8051rom[0].COE32", "oc8051rom[1].COE32" };
     
 	if ( strcmp(argv[1],"-MIF") == 0)
 	{
 		for ( int i=0; i<4; i++)
 		{
-			rom[i] = path + rom[i];
+			romn[i] = path + romn[i];
 		}
     
-    rom0.open(rom[0].c_str());
-    rom1.open(rom[1].c_str());
-    rom2.open(rom[2].c_str());
-    rom3.open(rom[3].c_str());
+    rom[0].open(romn[0].c_str());
+    rom[1].open(romn[1].c_str());
+    rom[2].open(romn[2].c_str());
+    rom[3].open(romn[3].c_str());
 	}
-	else if ( strcmp(argv[1],"-IN") == 0)
+	else if ( strcmp(argv[1],"-IN8") == 0)
 	{
-		string file=path+"oc8051_rom.in";
-		ea.open(file.c_str());
+		rom[0].open(argv[3]);
+	}
+	
+	else if ( strcmp(argv[1],"-IN32") == 0)
+	{
+		rom[0].open( argv[3]);
 	}
 	
 	else if ( strcmp(argv[1],"-XMIF") == 0)
@@ -200,25 +225,25 @@ int main( int argc, char ** argv)
 			romx[i] = path + romx[i];
 		}
 	
-	rom0.open(romx[0].c_str());
-    rom1.open(romx[1].c_str());
+	rom[0].open(romx[0].c_str());
+    rom[1].open(romx[1].c_str());
 	}
 	
-	else if ( strcmp(argv[1],"-COE2") == 0)
+	else if ( strcmp(argv[1],"-COE8") == 0)
 	{
 		for ( int i=0; i<2; i++)
 		{
 			romc[i] = path + romc[i];
 		}
 		
-	rom0.open(romc[0].c_str());
-    rom1.open(romc[1].c_str());
+	rom[0].open(romc[0].c_str());
+    rom[1].open(romc[1].c_str());
 	}
 	
 		
-	else if ( strcmp(argv[1],"-COE") == 0)
+	else if ( strcmp(argv[1],"-COE32") == 0)
 	{	
-	rom0.open(argv[3]);
+	rom[0].open(argv[3]);
 	}
 	
 	else
@@ -238,25 +263,25 @@ int main( int argc, char ** argv)
 
 	if ( strcmp(argv[1],"-MIF") == 0)
 	{
-		rom0 << ini;
-		rom1 << ini;
-		rom2 << ini;
-		rom3 << ini;
+		rom[0] << ini;
+		rom[1] << ini;
+		rom[2] << ini;
+		rom[3] << ini;
 	}
 	
 	else if ( strcmp(argv[1],"-XMIF") == 0)
 	{
-		//rom0 << ini;
-		//rom1 << ini;
+		//rom[0] << ini;
+		//rom[1] << ini;
 	}
 	
-	else if ( strcmp(argv[1],"-COE2") == 0)
+	else if ( strcmp(argv[1],"-COE8") == 0)
 	{
-		rom0 << cini;
-		rom1 << cini;
+		rom[0] << cini;
+		rom[1] << cini;
 	}
 	
-	else if ( strcmp(argv[1],"-COE") == 0)
+	else if ( strcmp(argv[1],"-COE32") == 0)
 	{
 	}
 
@@ -305,24 +330,34 @@ int main( int argc, char ** argv)
 								switch ( bcount)
 								{
 									case 0:
-										rom0 << hex << ROM4x1ADDR(address) << " : " << line.substr(9+i,2) << ";" << endl;
+										rom[0] << hex << ROM4x1ADDR(address) << " : " << line.substr(9+i,2) << ";" << endl;
 									break;
 									case 1:
-										rom1 << hex << ROM4x1ADDR(address) << " : " << line.substr(9+i,2) << ";" << endl;               
+										rom[1] << hex << ROM4x1ADDR(address) << " : " << line.substr(9+i,2) << ";" << endl;               
 									break;
 									case 2:
-										rom2 << hex << ROM4x1ADDR(address) << " : " << line.substr(9+i,2) << ";" << endl;               
+										rom[2] << hex << ROM4x1ADDR(address) << " : " << line.substr(9+i,2) << ";" << endl;               
 									break;
 									case 3:
-										rom3 << hex << ROM4x1ADDR(address) << " : " << line.substr(9+i,2) << ";" << endl;               
+										rom[3] << hex << ROM4x1ADDR(address) << " : " << line.substr(9+i,2) << ";" << endl;               
 									break;
 									default:
 									break;
 								}
 							}
-							else if ( strcmp(argv[1],"-IN") == 0)
+							else if ( strcmp(argv[1],"-IN8") == 0)
 							{
-								ea << line.substr(9+i,2) << endl;
+								rom[0] << line.substr(9+i,2) << endl;
+							}
+							
+							else if ( strcmp(argv[1],"-IN32") == 0)
+							{
+								int nn=0;
+								
+								unsigned char data=0;
+								from_string(nn,line.substr(9+i,2),hex);
+								data=static_cast<unsigned char>(nn);
+								MEM.insertValue( address, data);
 							}
 							
 							else if ( strcmp(argv[1],"-XMIF") == 0)
@@ -330,56 +365,56 @@ int main( int argc, char ** argv)
 								switch ( bcount)
 								{
 									case 0:
-										rom0 << hex << line.substr(9+i,2) << endl;
+										rom[0] << hex << line.substr(9+i,2) << endl;
 									break;
 									case 1:
-										rom0 << hex << line.substr(9+i,2) << endl;
+										rom[0] << hex << line.substr(9+i,2) << endl;
 									break;
 									case 2:
-										rom1 << hex << line.substr(9+i,2) << endl;
+										rom[1] << hex << line.substr(9+i,2) << endl;
 									break;
 									case 3:
-										rom1 << hex << line.substr(9+i,2) << endl;
+										rom[1] << hex << line.substr(9+i,2) << endl;
 									break;
 									default:
 									break;
 								}
 							}
 							
-							else if ( strcmp(argv[1],"-COE2") == 0)
+							else if ( strcmp(argv[1],"-COE8") == 0)
 							{
 								switch ( bcount)
 								{
 									case 0:
 									if ( xcoei==false)
 									{
-										rom0 << "," << endl;
+										rom[0] << "," << endl;
 									}
-										rom0 << hex << line.substr(9+i,2);
+										rom[0] << hex << line.substr(9+i,2);
 										xcoei=false;
 									break;
 									case 1:
 									if ( xcoei==false)
 									{
-										rom0 << "," << endl;
+										rom[0] << "," << endl;
 									}
-										rom0 << hex << line.substr(9+i,2);
+										rom[0] << hex << line.substr(9+i,2);
 									xcoei=false;
 									break;
 									case 2:
 									if ( xcoeii==false)
 									{
-										rom1 << "," << endl;
+										rom[1] << "," << endl;
 									}
-										rom1 << hex << line.substr(9+i,2);
+										rom[1] << hex << line.substr(9+i,2);
 									xcoeii=false;
 									break;
 									case 3:
 									if ( xcoeii==false)
 									{
-										rom1 << "," << endl;
+										rom[1] << "," << endl;
 									}
-										rom1 << hex << line.substr(9+i,2);
+										rom[1] << hex << line.substr(9+i,2);
 									xcoeii=false;
 									break;
 									default:
@@ -387,7 +422,7 @@ int main( int argc, char ** argv)
 								}
 							}
 							
-							else if ( strcmp(argv[1],"-COE") == 0)
+							else if ( strcmp(argv[1],"-COE32") == 0)
 							{
 								int nn=0;
 								
@@ -441,39 +476,45 @@ int main( int argc, char ** argv)
         
 	if ( strcmp(argv[1],"-MIF") == 0)
 	{
-        rom0 << fini;
-        rom1 << fini;
-        rom2 << fini;
-        rom3 << fini;
+        rom[0] << fini;
+        rom[1] << fini;
+        rom[2] << fini;
+        rom[3] << fini;
 		
-		rom0.close();
-		rom1.close();
-		rom2.close();
-		rom3.close();
+		rom[0].close();
+		rom[1].close();
+		rom[2].close();
+		rom[3].close();
     }
 	
-	else if ( strcmp(argv[1],"-IN") == 0)
+	else if ( strcmp(argv[1],"-IN8") == 0)
 	{
-		ea.close();
+		rom[0].close();
+    }
+	
+	else if ( strcmp(argv[1],"-IN32") == 0)
+	{
+		MEM.printIN( rom[0]);
+		rom[0].close();
     }
 	
 	else if ( strcmp(argv[1],"-XMIF") == 0)
 	{
-		rom0.close();
-		rom1.close();
+		rom[0].close();
+		rom[1].close();
     }
-	else if ( strcmp(argv[1],"-COE2") == 0)
+	else if ( strcmp(argv[1],"-COE8") == 0)
 	{
-		rom0 << cfini;
-		rom1 << cfini;
-		rom0.close();
-		rom1.close();
+		rom[0] << cfini;
+		rom[1] << cfini;
+		rom[0].close();
+		rom[1].close();
     }
 	
-	else if ( strcmp(argv[1],"-COE") == 0)
+	else if ( strcmp(argv[1],"-COE32") == 0)
 	{
-		MEM.printCOE( rom0);
-		rom0.close();
+		MEM.printCOE( rom[0]);
+		rom[0].close();
     }
 	
     in.close();
