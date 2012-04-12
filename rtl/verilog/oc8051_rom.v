@@ -262,14 +262,14 @@ input enb;
 input [9 : 0] addrb;
 output reg [31 : 0] doutb;
 
-reg [31:0] buff [0:1023] /* synopsys syn_preserve */; //4kb
+(* equivalent_register_removal = "NO" *) reg [31:0] buff [0:1023]; //4kb
 
 // synthesis translate_off
 integer i;
 initial
 begin
 	for ( i=0; i<1024; i=i+1)
-		buff[i] <= 32'h00000000;
+		buff[i] = 32'h00000000;
 #5
 	$readmemh("oc8051_rom.in", buff);
 end
