@@ -650,66 +650,88 @@ oc8051_xdatai oc8051_xdatai1(
 				.wr(wbd_we_o), 
 				.stb(wbd_stb_o), 
 				.ack(wbd_ack_i)
-				);				 
+				);		
+
 
 //
-//
-
-oc8051_sfr oc8051_sfr1(.rst(wb_rst_i), 
-                       .clk(wb_clk_i), 
-		       .adr0(rd_addr[7:0]), 
-		       .adr1(wr_addr[7:0]),
-		       .dat0(sfr_out),
-		       .dat1(wr_dat),
-		       .dat2(des2),
-		       .des_acc(des_acc),
-		       .we(wr_o && !wr_ind),
-		       .bit_in(desCy),
-		       .bit_out(sfr_bit), 
-		       .wr_bit(bit_addr_o),
-		       .ram_rd_sel(ram_rd_sel),
-		       .ram_wr_sel(ram_wr_sel),
-		       .wr_sfr(wr_sfr),
-		       .comp_sel(comp_sel),
-		       .comp_wait(comp_wait),
-// acc
-		       .acc(acc),
-				 .acc_bypass(acc_bypass),
-// sp
-		       .sp(sp), 
-		       .sp_w(sp_w),
-// psw
-		       .bank_sel(bank_sel), 
-		       .desAc(desAc), 
-		       .desOv(desOv), 
-		       .psw_set(psw_set),
-		       .srcAc(srcAc), 
-		       .cy(cy),
 // ports
-		       .rmw(rmw),
+// P0, P1, P2, P3
+`ifdef OC8051_PORTS
+  oc8051_ports oc8051_ports1(
+				.clk(clk),
+            .rst(rst),
+			   .bit_in(bit_in),
+				.bit_out(bit_out),
+			   .data_in(dat1),
+				.data_out(dat0),
+			   .wr(we),
+				.rd(!we),
+			   .wr_bit(wr_bit_r),
+				.rd_bit(wr_bit_r),
+			   .wr_addr(adr1),
+				.rd_addr(adr0),
 
-  `ifdef OC8051_PORTS
-	`ifdef OC8051_PORT0
-		       .p0_out(p0_o),
-		       .p0_in(p0_i),
-	`endif
+		`ifdef OC8051_PORT0
+			   .p0_out(p0_out),
+			   .p0_in(p0_in),
+			   .p0_data(p0_data),
+		`endif
 
-	`ifdef OC8051_PORT1
-		       .p1_out(p1_o),
-		       .p1_in(p1_i),
-	`endif
+		`ifdef OC8051_PORT1
+			   .p1_out(p1_out),
+			   .p1_in(p1_in),
+			   .p1_data(p1_data),
+		`endif
 
-	`ifdef OC8051_PORT2
-		       .p2_out(p2_o),
-		       .p2_in(p2_i),
-	`endif
+		`ifdef OC8051_PORT2
+			   .p2_out(p2_out),
+			   .p2_in(p2_in),
+			   .p2_data(p2_data),
+		`endif
 
-	`ifdef OC8051_PORT3
-		       .p3_out(p3_o),
-		       .p3_in(p3_i),
-	`endif
-  `endif
+		`ifdef OC8051_PORT3
+			   .p3_out(p3_out),
+			   .p3_in(p3_in),
+			   .p3_data(p3_data),
+		`endif
 
+			   .rmw(rmw));
+`endif				
+
+//
+//
+
+oc8051_sfr oc8051_sfr1(
+				.rst(wb_rst_i), 
+				.clk(wb_clk_i), 
+		      .adr0(rd_addr[7:0]), 
+		      .adr1(wr_addr[7:0]),
+		      .dat0(sfr_out),
+		      .dat1(wr_dat),
+		      .dat2(des2),
+		      .des_acc(des_acc),
+		      .we(wr_o && !wr_ind),
+		      .bit_in(desCy),
+		      .bit_out(sfr_bit), 
+		      .wr_bit(bit_addr_o),
+		      .ram_rd_sel(ram_rd_sel),
+		      .ram_wr_sel(ram_wr_sel),
+		      .wr_sfr(wr_sfr),
+		      .comp_sel(comp_sel),
+		      .comp_wait(comp_wait),
+// acc
+		      .acc(acc),
+				.acc_bypass(acc_bypass),
+// sp
+		      .sp(sp), 
+		      .sp_w(sp_w),
+// psw
+		      .bank_sel(bank_sel), 
+		      .desAc(desAc), 
+		      .desOv(desOv), 
+		      .psw_set(psw_set),
+		      .srcAc(srcAc), 
+		      .cy(cy),
 // uart
 	`ifdef OC8051_UART
 		       .rxd(rxd_i), .txd(txd_o),
