@@ -367,8 +367,9 @@ oc8051_dptr oc8051_dptr1(.clk(clk),
 //
 //program status word
 // PSW
-oc8051_psw oc8051_psw1 (.clk(clk), 
-                        .rst(rst), 
+oc8051_psw oc8051_psw1 (
+			.clk(clk), 
+         .rst(rst), 
 			.wr_addr(adr1), 
 			.data_in(dat1),
 			.wr(we), 
@@ -381,44 +382,6 @@ oc8051_psw oc8051_psw1 (.clk(clk),
 			.set(psw_set), 
 			.bank_sel(bank_sel));
 
-//
-// ports
-// P0, P1, P2, P3
-`ifdef OC8051_PORTS
-  oc8051_ports oc8051_ports1(.clk(clk),
-                           .rst(rst),
-			   .bit_in(bit_in),
-			   .data_in(dat1),
-			   .wr(we),
-			   .wr_bit(wr_bit_r),
-			   .wr_addr(adr1),
-
-		`ifdef OC8051_PORT0
-			   .p0_out(p0_out),
-			   .p0_in(p0_in),
-			   .p0_data(p0_data),
-		`endif
-
-		`ifdef OC8051_PORT1
-			   .p1_out(p1_out),
-			   .p1_in(p1_in),
-			   .p1_data(p1_data),
-		`endif
-
-		`ifdef OC8051_PORT2
-			   .p2_out(p2_out),
-			   .p2_in(p2_in),
-			   .p2_data(p2_data),
-		`endif
-
-		`ifdef OC8051_PORT3
-			   .p3_out(p3_out),
-			   .p3_in(p3_in),
-			   .p3_data(p3_data),
-		`endif
-
-			   .rmw(rmw));
-`endif
 
 //
 // serial interface
