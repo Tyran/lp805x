@@ -333,10 +333,12 @@ wire [2:0]  ram_rd_sel,	// ram read
 
 wire [7:0]  ram_data,
             ram_out,	//data from ram
-	    sfr_out,
 	    wr_dat,
             wr_addr,	//ram write addres
             rd_addr;	//data ram read addres
+
+tri [7:0] sfr_out;				
+				
 wire        sfr_bit;
 
 wire [1:0]  cy_sel,	//carry select; from decoder to cy_selct1
@@ -391,6 +393,14 @@ wire        bit_addr,	//bit addresable instruction
 	    bit_out,	//bit data from ram_select to alu and cy_select
 	    bit_addr_o,
 	    wait_data;
+reg wr_bit_r;
+
+always @(posedge wb_clk_i or posedge wb_rst_i)
+  if (wb_rst_i) begin
+    wr_bit_r <= 1'b0;
+  end else begin
+    wr_bit_r <= #1 bit_addr_o;
+  end
 
 //
 // cpu to cache/wb_interface
@@ -652,47 +662,43 @@ oc8051_xdatai oc8051_xdatai1(
 				.ack(wbd_ack_i)
 				);		
 
-
+wire ss;
 //
 // ports
 // P0, P1, P2, P3
 `ifdef OC8051_PORTS
   oc8051_ports oc8051_ports1(
-				.clk(clk),
-            .rst(rst),
-			   .bit_in(bit_in),
-				.bit_out(bit_out),
-			   .data_in(dat1),
-				.data_out(dat0),
-			   .wr(we),
-				.rd(!we),
+				.clk(wb_clk_i),
+            .rst(wb_rst_i),
+			   .bit_in(desCy),
+				.bit_out(ss),//sfr_bit),
+			   .data_in(wr_dat),
+				.data_out(sfr_out),
+			   .wr(wr_o && !wr_ind),
+				.rd(!(wr_o && !wr_ind)),
 			   .wr_bit(wr_bit_r),
-				.rd_bit(wr_bit_r),
-			   .wr_addr(adr1),
-				.rd_addr(adr0),
+				.rd_bit(1'b1),
+			   .wr_addr(wr_addr[7:0]),
+				.rd_addr(rd_addr[7:0]),
 
 		`ifdef OC8051_PORT0
-			   .p0_out(p0_out),
-			   .p0_in(p0_in),
-			   .p0_data(p0_data),
+			   .p0_out(p0_o),
+			   .p0_in(p0_i),
 		`endif
 
 		`ifdef OC8051_PORT1
-			   .p1_out(p1_out),
-			   .p1_in(p1_in),
-			   .p1_data(p1_data),
+			   .p1_out(p1_o),
+			   .p1_in(p1_i),
 		`endif
 
 		`ifdef OC8051_PORT2
-			   .p2_out(p2_out),
-			   .p2_in(p2_in),
-			   .p2_data(p2_data),
+			   .p2_out(p2_o),
+			   .p2_in(p2_i),
 		`endif
 
 		`ifdef OC8051_PORT3
-			   .p3_out(p3_out),
-			   .p3_in(p3_in),
-			   .p3_data(p3_data),
+			   .p3_out(p3_o),
+			   .p3_in(p3_i),
 		`endif
 
 			   .rmw(rmw));
