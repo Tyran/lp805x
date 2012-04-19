@@ -111,31 +111,6 @@ module oc8051_sfr (rst, clk,
        comp_sel,
        comp_wait,
 
-`ifdef OC8051_PORTS
-
-  `ifdef OC8051_PORT0
-       p0_out,
-       p0_in,
-  `endif
-
-  `ifdef OC8051_PORT1
-       p1_out,
-       p1_in,
-  `endif
-
-  `ifdef OC8051_PORT2
-       p2_out,
-       p2_in,
-  `endif
-
-  `ifdef OC8051_PORT3
-       p3_out,
-       p3_in,
-  `endif
-
-`endif
-
-
   `ifdef OC8051_UART
        rxd, txd,
   `endif
@@ -187,45 +162,19 @@ output       bit_out,
 	     wait_data,
 	     comp_wait;
 output [1:0] bank_sel;
-output [7:0] dat0,	//data output
-	     int_src,
+output [7:0] int_src,
 	     dptr_hi,
 	     dptr_lo,
 	     acc,
 		  acc_bypass;
+
+inout [7:0] dat0;	//data output				  
+		  
 output [7:0] sp,
              sp_w;
-
-// ports
-`ifdef OC8051_PORTS
-
-`ifdef OC8051_PORT0
-input  [7:0] p0_in;
-output [7:0] p0_out;
-wire   [7:0] p0_data;
-`endif
-
-`ifdef OC8051_PORT1
-input  [7:0] p1_in;
-output [7:0] p1_out;
-wire   [7:0] p1_data;
-`endif
-
-`ifdef OC8051_PORT2
-input  [7:0] p2_in;
-output [7:0] p2_out;
-wire   [7:0] p2_data;
-`endif
-
-`ifdef OC8051_PORT3
-input  [7:0] p3_in;
-output [7:0] p3_out;
-wire   [7:0] p3_data;
-`endif
-
-`endif
-
-
+				 
+				 
+				 
 // serial interface
 `ifdef OC8051_UART
 input        rxd;
@@ -244,8 +193,7 @@ input	     t2, t2ex;
 
 reg        bit_out, 
            wait_data;
-reg [7:0]  dat0,
-           adr0_r;
+reg [7:0]  adr0_r;
 
 reg        wr_bit_r;
 reg [2:0]  ram_wr_sel_r;
@@ -526,17 +474,19 @@ assign comp_wait = !(
 		       ((adr1[7:3]==adr0[7:3]) & (~&adr1[2:0]) &  we & !wr_bit_r) |
 		       ((adr1==adr0) & adr1[7] & we & !wr_bit_r)));
 
+assign dat0 = 8'hzz;
 
+reg [7:0] data_rout;
 
 //
 //set output in case of address (byte)
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
-    dat0 <= #1 8'h00;
+    data_rout <= #1 8'h00;
     wait_data <= #1 1'b0;
   end else if ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_LO)) begin				//write and read same address
-    dat0 <= #1 des_acc;
+    data_rout <= #1 des_acc;
     wait_data <= #1 1'b0;
   end else if (
       (
@@ -556,59 +506,41 @@ begin
 
   end else begin
     case (adr0) /* synopsys full_mask parallel_mask */
-      `OC8051_SFR_ACC: 		dat0 <= #1 acc;
-      `OC8051_SFR_PSW: 		dat0 <= #1 psw;
+      `OC8051_SFR_ACC: 		data_rout <= #1 acc;
+      `OC8051_SFR_PSW: 		data_rout <= #1 psw;
 
-`ifdef OC8051_PORTS
-  `ifdef OC8051_PORT0
-      `OC8051_SFR_P0: 		dat0 <= #1 p0_data;
-  `endif
-
-  `ifdef OC8051_PORT1
-      `OC8051_SFR_P1: 		dat0 <= #1 p1_data;
-  `endif
-
-  `ifdef OC8051_PORT2
-      `OC8051_SFR_P2: 		dat0 <= #1 p2_data;
-  `endif
-
-  `ifdef OC8051_PORT3
-      `OC8051_SFR_P3: 		dat0 <= #1 p3_data;
-  `endif
-`endif
-
-      `OC8051_SFR_SP: 		dat0 <= #1 sp;
-      `OC8051_SFR_B: 		dat0 <= #1 b_reg;
-      `OC8051_SFR_DPTR_HI: 	dat0 <= #1 dptr_hi;
-      `OC8051_SFR_DPTR_LO: 	dat0 <= #1 dptr_lo;
+      `OC8051_SFR_SP: 		data_rout <= #1 sp;
+      `OC8051_SFR_B: 		data_rout <= #1 b_reg;
+      `OC8051_SFR_DPTR_HI: 	data_rout <= #1 dptr_hi;
+      `OC8051_SFR_DPTR_LO: 	data_rout <= #1 dptr_lo;
 
 `ifdef OC8051_UART
-      `OC8051_SFR_SCON: 	dat0 <= #1 scon;
-      `OC8051_SFR_SBUF: 	dat0 <= #1 sbuf;
-      `OC8051_SFR_PCON: 	dat0 <= #1 pcon;
+      `OC8051_SFR_SCON: 	data_rout <= #1 scon;
+      `OC8051_SFR_SBUF: 	data_rout <= #1 sbuf;
+      `OC8051_SFR_PCON: 	data_rout <= #1 pcon;
 `endif
 
 `ifdef OC8051_TC01
-      `OC8051_SFR_TH0: 		dat0 <= #1 th0;
-      `OC8051_SFR_TH1: 		dat0 <= #1 th1;
-      `OC8051_SFR_TL0: 		dat0 <= #1 tl0;
-      `OC8051_SFR_TL1: 		dat0 <= #1 tl1;
-      `OC8051_SFR_TMOD: 	dat0 <= #1 tmod;
+      `OC8051_SFR_TH0: 		data_rout <= #1 th0;
+      `OC8051_SFR_TH1: 		data_rout <= #1 th1;
+      `OC8051_SFR_TL0: 		data_rout <= #1 tl0;
+      `OC8051_SFR_TL1: 		data_rout <= #1 tl1;
+      `OC8051_SFR_TMOD: 	data_rout <= #1 tmod;
 `endif
 
-      `OC8051_SFR_IP: 		dat0 <= #1 ip;
-      `OC8051_SFR_IE: 		dat0 <= #1 ie;
-      `OC8051_SFR_TCON: 	dat0 <= #1 tcon;
+      `OC8051_SFR_IP: 		data_rout <= #1 ip;
+      `OC8051_SFR_IE: 		data_rout <= #1 ie;
+      `OC8051_SFR_TCON: 	data_rout <= #1 tcon;
 
 `ifdef OC8051_TC2
-      `OC8051_SFR_RCAP2H: 	dat0 <= #1 rcap2h;
-      `OC8051_SFR_RCAP2L: 	dat0 <= #1 rcap2l;
-      `OC8051_SFR_TH2:    	dat0 <= #1 th2;
-      `OC8051_SFR_TL2:    	dat0 <= #1 tl2;
-      `OC8051_SFR_T2CON:  	dat0 <= #1 t2con;
+      `OC8051_SFR_RCAP2H: 	data_rout <= #1 rcap2h;
+      `OC8051_SFR_RCAP2L: 	data_rout <= #1 rcap2l;
+      `OC8051_SFR_TH2:    	data_rout <= #1 th2;
+      `OC8051_SFR_TL2:    	data_rout <= #1 tl2;
+      `OC8051_SFR_T2CON:  	data_rout <= #1 t2con;
 `endif
 
-//      default: 			dat0 <= #1 8'h00;
+//      default: 			data_rout <= #1 8'h00;
     endcase
     wait_data <= #1 1'b0;
   end
@@ -634,24 +566,6 @@ begin
     case (adr0[7:3]) /* synopsys full_mask parallel_mask */
       `OC8051_SFR_B_ACC:   bit_out <= #1 acc[adr0[2:0]];
       `OC8051_SFR_B_PSW:   bit_out <= #1 psw[adr0[2:0]];
-
-`ifdef OC8051_PORTS
-  `ifdef OC8051_PORT0
-      `OC8051_SFR_B_P0:    bit_out <= #1 p0_data[adr0[2:0]];
-  `endif
-
-  `ifdef OC8051_PORT1
-      `OC8051_SFR_B_P1:    bit_out <= #1 p1_data[adr0[2:0]];
-  `endif
-
-  `ifdef OC8051_PORT2
-      `OC8051_SFR_B_P2:    bit_out <= #1 p2_data[adr0[2:0]];
-  `endif
-
-  `ifdef OC8051_PORT3
-      `OC8051_SFR_B_P3:    bit_out <= #1 p3_data[adr0[2:0]];
-  `endif
-`endif
 
       `OC8051_SFR_B_B:     bit_out <= #1 b_reg[adr0[2:0]];
       `OC8051_SFR_B_IP:    bit_out <= #1 ip[adr0[2:0]];

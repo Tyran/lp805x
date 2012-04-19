@@ -85,26 +85,21 @@ module oc8051_ports(
 	`ifdef OC8051_PORT0
 		    p0_out,
           p0_in,
-		    p0_data,
 	`endif
 
 	`ifdef OC8051_PORT1
 		    p1_out,
 		    p1_in,
-		    p1_data,
-
 	`endif
 
 	`ifdef OC8051_PORT2
 		    p2_out,
 		    p2_in,
-		    p2_data,
 	`endif
 
 	`ifdef OC8051_PORT3
 		    p3_out,
 		    p3_in,
-		    p3_data,
 	`endif
 	
 		   rmw);
@@ -116,17 +111,23 @@ input   clk,	//clock
 	     wr_bit,	//write bit addresable [oc8051_decoder.bit_addr -r]
 		  rd_bit,
 	     bit_in,	//bit input [oc8051_alu.desCy]
-		  bit_out,
 	     rmw;	//read modify write feature [oc8051_decoder.rmw]
+		  
+output reg bit_out;
 		  
 input [7:0]  wr_addr,	//write address [oc8051_ram_wr_sel.out]
 				 rd_addr,
              data_in; 	//data input (from alu destiantion 1) [oc8051_alu.des1]
+				 
+inout [7:0] data_out;
+
+reg [7:0] data_read;
+
 
 `ifdef OC8051_PORT0
   input  [7:0] p0_in;
-  output [7:0] p0_out,
-               p0_data;
+  output [7:0] p0_out;
+  wire    [7:0] p0_data;
   reg    [7:0] p0_out;
 
   assign p0_data = rmw ? p0_out : p0_in;
@@ -135,8 +136,8 @@ input [7:0]  wr_addr,	//write address [oc8051_ram_wr_sel.out]
 
 `ifdef OC8051_PORT1
   input  [7:0] p1_in;
-  output [7:0] p1_out,
-               p1_data;
+  output [7:0] p1_out;
+  wire    [7:0] p1_data;
   reg    [7:0] p1_out;
 
   assign p1_data = rmw ? p1_out : p1_in;
@@ -145,8 +146,8 @@ input [7:0]  wr_addr,	//write address [oc8051_ram_wr_sel.out]
 
 `ifdef OC8051_PORT2
   input  [7:0] p2_in;
-  output [7:0] p2_out,
-	       p2_data;
+  output [7:0] p2_out;
+  wire    [7:0] p2_data;
   reg    [7:0] p2_out;
 
   assign p2_data = rmw ? p2_out : p2_in;
@@ -155,8 +156,8 @@ input [7:0]  wr_addr,	//write address [oc8051_ram_wr_sel.out]
 
 `ifdef OC8051_PORT3
   input  [7:0] p3_in;
-  output [7:0] p3_out,
-	       p3_data;
+  output [7:0] p3_out;
+  wire    [7:0] p3_data;
   reg    [7:0] p3_out;
 
   assign p3_data = rmw ? p3_out : p3_in;
@@ -239,19 +240,19 @@ begin
     case (rd_addr[7:3]) /* synopsys full_mask parallel_mask */
 `ifdef OC8051_PORTS
   `ifdef OC8051_PORT0
-      `OC8051_SFR_B_P0:    bit_out <= #1 p0_data[adr0[2:0]];
+      `OC8051_SFR_B_P0:    bit_out <= #1 p0_data[rd_addr[2:0]];
   `endif
 
   `ifdef OC8051_PORT1
-      `OC8051_SFR_B_P1:    bit_out <= #1 p1_data[adr0[2:0]];
+      `OC8051_SFR_B_P1:    bit_out <= #1 p1_data[rd_addr[2:0]];
   `endif
 
   `ifdef OC8051_PORT2
-      `OC8051_SFR_B_P2:    bit_out <= #1 p2_data[adr0[2:0]];
+      `OC8051_SFR_B_P2:    bit_out <= #1 p2_data[rd_addr[2:0]];
   `endif
 
   `ifdef OC8051_PORT3
-      `OC8051_SFR_B_P3:    bit_out <= #1 p3_data[adr0[2:0]];
+      `OC8051_SFR_B_P3:    bit_out <= #1 p3_data[rd_addr[2:0]];
   `endif
 `endif
     endcase
@@ -261,31 +262,35 @@ end
 // case of reading byte from port
 always @(posedge clk or posedge rst)
 begin
-  if (rst)
-    data_out <= #1 8'hz;
+  if (rst) begin
+    data_read <= #1 8'h0;
+	end
   else
 	if ( !rd_bit)
     case (rd_addr[7:3]) /* synopsys full_mask parallel_mask */
 `ifdef OC8051_PORTS
   `ifdef OC8051_PORT0
-      `OC8051_SFR_P0: 		data_out <= #1 p0_data;
+      `OC8051_SFR_P0: 		data_read <= #1 p0_data;
   `endif
 
   `ifdef OC8051_PORT1
-      `OC8051_SFR_P1: 		data_out <= #1 p1_data;
+      `OC8051_SFR_P1: 		data_read <= #1 p1_data;
   `endif
 
   `ifdef OC8051_PORT2
-      `OC8051_SFR_P2: 		data_out <= #1 p2_data;
+      `OC8051_SFR_P2: 		data_read <= #1 p2_data;
   `endif
 
   `ifdef OC8051_PORT3
-      `OC8051_SFR_P3: 		data_out <= #1 p3_data;
+      `OC8051_SFR_P3: 		data_read <= #1 p3_data;
   `endif
 `endif
-      default:             data_out <= #1 8'bz;
+      default:             data_read <= #1 8'b0;
     endcase
 end
+
+assign data_out = ((|rd_addr[3:0]) | rd_addr[6] | !rd_addr[7]) ? 8'hzz : data_read;
+
 
 endmodule
 
