@@ -289,7 +289,7 @@ begin
     endcase
 end
 
-assign data_out = ((|rd_addr[3:0]) | rd_addr[6] | !rd_addr[7]) ? 8'hzz : data_read;
+assign data_out = data_read;//((|rd_addr[3:0]) | rd_addr[6] | !rd_addr[7]) ? 8'hzz : data_read;
 
 
 endmodule
