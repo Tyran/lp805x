@@ -87,10 +87,10 @@
 
 
 //NONE-INFERED
-//`define _XILINX_ROM_INFER_
-//`define OC8051_XILINX_ROM
-`define _ALTERA_ROM_INFER_
-`define OC8051_ALTERA_ROM
+`define _XILINX_ROM_INFER_
+`define OC8051_XILINX_ROM
+//`define _ALTERA_ROM_INFER_
+//`define OC8051_ALTERA_ROM
 
 //
 // oc8051 simulation defines
