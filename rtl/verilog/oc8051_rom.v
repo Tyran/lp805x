@@ -81,10 +81,10 @@ reg ea_int;
 
 
 `ifdef OC8051_XILINX_ROM
-
+parameter INT_ROM_WIDTH = 10;
 reg [31:0] data_o;
 
-assign ea = 1'b0;
+assign ea = | addr[15:INT_ROM_WIDTH-1];
 
 always @(posedge clk or posedge rst)
 begin
@@ -122,7 +122,7 @@ end
 
  //9:0
 `ifdef _XILINX_ROM_INFER_
-lp5xRomXI 
+lp5xRomI 
 `else
 lp5xRomX
 `endif
@@ -141,64 +141,65 @@ romX
 `else
 
 `ifdef OC8051_ALTERA_ROM
-wire [31:0] data_o;
-parameter INT_ROM_WIDTH = 16;
+
+reg [31:0] data_o;
+parameter INT_ROM_WIDTH = 10;
 assign ea = | addr[15:INT_ROM_WIDTH-1];
 
-wire [7:0] data_0,data_1,data_2,data_3;
-wire rom0_en,rom1_en,rom2_en,rom3_en;
+wire [31:0] data0;
+wire [31:0] data1;
+	
+reg [11:0] addr_r;
+	
+always @(posedge clk or posedge rst)
+begin
+	if ( rst)
+	begin
+		addr_r <= 12'h0;
+	end
+	else
+	begin
+		addr_r <= addr[11:0];
+	end
+end
+  
+always @(*)
+begin
+	case ( addr_r[1:0])
+	2'b00: data_o = data0[31:0];
+	2'b01: data_o = { data1[7:0], data0[31:8] };
+	2'b10: data_o = { data1[15:0], data0[31:16] };
+	2'b11: data_o = { data1[23:0], data0[31:24] };
+	endcase
+end
 
-/*
-assign rom0_en = addr_sel[1:0] == 2'b00 ? 1'b1:1'b0;
-assign rom1_en = addr_sel[1:0] == 2'b01 ? 1'b1:1'b0;
-assign rom2_en = addr_sel[1:0] == 2'b20 ? 1'b1:1'b0;
-assign rom3_en = addr_sel[1:0] == 2'b11 ? 1'b1:1'b0;
-*/
-
-wire [13:0] addr_sel0,addr_sel1,addr_sel2,addr_sel3;
-
-assign addr_sel0 = addr[15:2] + (addr[1:0] > 2'b00 ? 13'b1 : 13'b0);
-assign addr_sel1 = addr[15:2] + (addr[1:0] > 2'b01 ? 13'b1 : 13'b0);
-assign addr_sel2 = addr[15:2] + (addr[1:0] > 2'b10 ? 13'b1 : 13'b0);
-assign addr_sel3 = addr[15:2];
-
-assign data_o =	addr[1:0] == 2'b00 ? {data_3,data_2,data_1,data_0} :
-						addr[1:0] == 2'b01 ? {data_0,data_3,data_2,data_1} :
-						addr[1:0] == 2'b10 ? {data_1,data_0,data_3,data_2} :
-						addr[1:0] == 2'b11 ? {data_2,data_1,data_0,data_3} : {data_3,data_2,data_1,data_0} ;
-
-assign rom0_en = 1'b1;
-assign rom1_en = 1'b1;
-assign rom2_en = 1'b1;
-assign rom3_en = 1'b1;
-
-	rom14kx8 #(.init_file("rom0.mif")) rom0(
-	.address(addr_sel0),
-	.clock(clk),
-	.rden(rom0_en),
-	.q(data_0)
+	 //9:0
+`ifdef _ALTERA_ROM_INFER_
+lp5xRomI 
+`else
+lp5xRomA
+`endif
+romA
+	(
+	  .clka( clk),
+	  .ena( 1'b1),
+	  .addra( addr[11:2]),
+	  .douta( data0),
+	  .clkb( clk),
+	  .enb( 1'b1),
+	  .addrb( addr[11:2]+10'b1),
+	  .doutb( data1)
 	);
 	
-	rom14kx8 #(.init_file("rom1.mif")) rom1(
-	.address(addr_sel1),
-	.clock(clk),
-	.rden(rom1_en),
-	.q(data_1)
-	);
-	
-	rom14kx8 #(.init_file("rom2.mif")) rom2(
-	.address(addr_sel2),
-	.clock(clk),
-	.rden(rom2_en),
-	.q(data_2)
-	);	
+always @(posedge clk or posedge rst)
+begin
+ if (rst)
+   ea_int <= #1 1'b1;
+  else ea_int <= #1 !ea;
+end
 
-	rom14kx8 #(.init_file("rom3.mif")) rom3(
-	.address(addr_sel3),
-	.clock(clk),
-	.rden(rom3_en),
-	.q(data_3)
-	);
+
+`else
 
 	always @(posedge clk or posedge rst)
 	begin
@@ -242,7 +243,7 @@ end
 
 endmodule
 
-module lp5xRomXI(
+module lp5xRomI(
   clka,
   ena,
   addra,
@@ -262,7 +263,7 @@ input enb;
 input [9 : 0] addrb;
 output reg [31 : 0] doutb;
 
-(* equivalent_register_removal = "NO" *) reg [31:0] buff [0:1023]; //4kb
+(* equivalent_register_removal = "NO" *) reg [31:0] buff [0:1023] /* synthesis syn_preserve=1 */; //4kb
 
 // synthesis translate_off
 integer i;
@@ -271,7 +272,7 @@ begin
 	for ( i=0; i<1024; i=i+1)
 		buff[i] = 32'h00000000;
 #5
-	$readmemh("oc8051_rom.in", buff);
+	$readmemh("lp805x_rom.in", buff);
 end
 // synthesis translate_on
 

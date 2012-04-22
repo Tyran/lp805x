@@ -976,6 +976,7 @@ assign pcs_source = pc_wr_sel[0] ? op3_out : op2_out;
 
 always @(pcs_source or pc or pcs_cy)
 begin
+	pcs_cy = 1'b0;
   if (pcs_source[7]) begin
     {pcs_cy, pcs_result[7:0]} = {1'b0, pc[7:0]} + {1'b0, pcs_source};
     pcs_result[15:8] = pc[15:8] - {7'h0, !pcs_cy};

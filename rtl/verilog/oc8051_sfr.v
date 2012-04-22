@@ -96,7 +96,7 @@
 
 
 module oc8051_sfr (rst, clk,
-       adr0, adr1, dat0, 
+       adr0, adr1, data_out, 
        dat1, dat2, bit_in,
        des_acc,
        we, wr_bit,
@@ -107,7 +107,7 @@ module oc8051_sfr (rst, clk,
        bank_sel, 
        desAc, desOv,
        srcAc, cy,
-       psw_set, rmw,
+       psw_set,
        comp_sel,
        comp_wait,
 
@@ -137,8 +137,7 @@ input       rst,	// reset - pin
             we,		// write enable
 	    bit_in,
 	    desAc,
-	    desOv,
-	    rmw;
+	    desOv;
 input       int_ack,
             int0,
 	    int1,
@@ -167,8 +166,8 @@ output [7:0] int_src,
 	     dptr_lo,
 	     acc,
 		  acc_bypass;
-
-inout [7:0] dat0;	//data output				  
+		  
+output tri [7:0] data_out;	//data output				  
 		  
 output [7:0] sp,
              sp_w;
@@ -191,7 +190,8 @@ input	     t0, t1;
 input	     t2, t2ex;
 `endif
 
-reg        bit_out, 
+tri		bit_out;
+reg        bit_outd, 
            wait_data;
 reg [7:0]  adr0_r;
 
@@ -474,19 +474,18 @@ assign comp_wait = !(
 		       ((adr1[7:3]==adr0[7:3]) & (~&adr1[2:0]) &  we & !wr_bit_r) |
 		       ((adr1==adr0) & adr1[7] & we & !wr_bit_r)));
 
-assign dat0 = 8'hzz;
-
-reg [7:0] data_rout;
-
+reg [7:0] data_outd;
+reg 		data_outc;
+assign data_out = data_outc ? data_outd : 8'hzz;
 //
 //set output in case of address (byte)
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
-    data_rout <= #1 8'h00;
+    {data_outc,data_outd} <= #1 {1'b0,8'h00};
     wait_data <= #1 1'b0;
   end else if ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_LO)) begin				//write and read same address
-    data_rout <= #1 des_acc;
+    {data_outc,data_outd} <= #1 {1'b1,des_acc};
     wait_data <= #1 1'b0;
   end else if (
       (
@@ -495,6 +494,7 @@ begin
         (adr1[7] & (adr1==adr0) & we & !wr_bit_r) |			//write and read same address
         (adr1[7] & (adr1[7:3]==adr0[7:3]) & (~&adr0[2:0]) &  we & wr_bit_r) //write bit addressable to read address
       ) & !wait_data) begin
+	 //{data_outc,data_outd} <= #1 {1'b1, ????
     wait_data <= #1 1'b1;
 
   end else if ((
@@ -503,84 +503,85 @@ begin
       ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_HI))	//write to dph
       ) & !wait_data) begin
     wait_data <= #1 1'b1;
-
+	// ?????
   end else begin
-    case (adr0) /* synopsys full_mask parallel_mask */
-      `OC8051_SFR_ACC: 		data_rout <= #1 acc;
-      `OC8051_SFR_PSW: 		data_rout <= #1 psw;
+    case (adr0)
+      `OC8051_SFR_ACC: 		{data_outc,data_outd} <= #1 {1'b0,acc};
+      `OC8051_SFR_PSW: 		{data_outc,data_outd} <= #1 {1'b0,psw};
 
-      `OC8051_SFR_SP: 		data_rout <= #1 sp;
-      `OC8051_SFR_B: 		data_rout <= #1 b_reg;
-      `OC8051_SFR_DPTR_HI: 	data_rout <= #1 dptr_hi;
-      `OC8051_SFR_DPTR_LO: 	data_rout <= #1 dptr_lo;
+      `OC8051_SFR_SP: 		{data_outc,data_outd} <= #1 {1'b0,sp};
+      `OC8051_SFR_B: 		{data_outc,data_outd} <= #1 {1'b0,b_reg};
+      `OC8051_SFR_DPTR_HI: 	{data_outc,data_outd} <= #1 {1'b0,dptr_hi};
+      `OC8051_SFR_DPTR_LO: 	{data_outc,data_outd} <= #1 {1'b0,dptr_lo};
 
 `ifdef OC8051_UART
-      `OC8051_SFR_SCON: 	data_rout <= #1 scon;
-      `OC8051_SFR_SBUF: 	data_rout <= #1 sbuf;
-      `OC8051_SFR_PCON: 	data_rout <= #1 pcon;
+      `OC8051_SFR_SCON: 	{data_outc,data_outd} <= #1 {1'b0,scon};
+      `OC8051_SFR_SBUF: 	{data_outc,data_outd} <= #1 {1'b0,sbuf};
+      `OC8051_SFR_PCON: 	{data_outc,data_outd} <= #1 {1'b0,pcon};
 `endif
 
 `ifdef OC8051_TC01
-      `OC8051_SFR_TH0: 		data_rout <= #1 th0;
-      `OC8051_SFR_TH1: 		data_rout <= #1 th1;
-      `OC8051_SFR_TL0: 		data_rout <= #1 tl0;
-      `OC8051_SFR_TL1: 		data_rout <= #1 tl1;
-      `OC8051_SFR_TMOD: 	data_rout <= #1 tmod;
+      `OC8051_SFR_TH0: 		{data_outc,data_outd} <= #1 {1'b0,th0};
+      `OC8051_SFR_TH1: 		{data_outc,data_outd} <= #1 {1'b0,th1};
+      `OC8051_SFR_TL0: 		{data_outc,data_outd} <= #1 {1'b0,tl0};
+      `OC8051_SFR_TL1: 		{data_outc,data_outd} <= #1 {1'b0,tl1};
+      `OC8051_SFR_TMOD: 	{data_outc,data_outd} <= #1 {1'b0,tmod};
 `endif
 
-      `OC8051_SFR_IP: 		data_rout <= #1 ip;
-      `OC8051_SFR_IE: 		data_rout <= #1 ie;
-      `OC8051_SFR_TCON: 	data_rout <= #1 tcon;
+      `OC8051_SFR_IP: 		{data_outc,data_outd} <= #1 {1'b0,ip};
+      `OC8051_SFR_IE: 		{data_outc,data_outd} <= #1 {1'b0,ie};
+      `OC8051_SFR_TCON: 	{data_outc,data_outd} <= #1 {1'b0,tcon};
 
 `ifdef OC8051_TC2
-      `OC8051_SFR_RCAP2H: 	data_rout <= #1 rcap2h;
-      `OC8051_SFR_RCAP2L: 	data_rout <= #1 rcap2l;
-      `OC8051_SFR_TH2:    	data_rout <= #1 th2;
-      `OC8051_SFR_TL2:    	data_rout <= #1 tl2;
-      `OC8051_SFR_T2CON:  	data_rout <= #1 t2con;
+      `OC8051_SFR_RCAP2H: 	{data_outc,data_outd} <= #1 {1'b0,rcap2h};
+      `OC8051_SFR_RCAP2L: 	{data_outc,data_outd} <= #1 {1'b0,rcap2l};
+      `OC8051_SFR_TH2:    	{data_outc,data_outd} <= #1 {1'b0,th2};
+      `OC8051_SFR_TL2:    	{data_outc,data_outd} <= #1 {1'b0,tl2};
+      `OC8051_SFR_T2CON:  	{data_outc,data_outd} <= #1 {1'b0,t2con};
 `endif
 
-//      default: 			data_rout <= #1 8'h00;
+      default: 			{data_outc,data_outd} <= #1 {1'b0,8'h00};
     endcase
     wait_data <= #1 1'b0;
   end
 end
 
+reg bit_outc;
 
+assign bit_out = bit_outc ? bit_outd : 1'bz;
 //
 //set output in case of address (bit)
 
 always @(posedge clk or posedge rst)
 begin
   if (rst)
-    bit_out <= #1 1'h0;
+    {bit_outc,bit_outd} <= #1 {1'b0,1'b0};
   else if (
           ((adr1[7:3]==adr0[7:3]) & (~&adr1[2:0]) &  we & !wr_bit_r) |
           ((wr_sfr==`OC8051_WRS_ACC1) & (adr0[7:3]==`OC8051_SFR_B_ACC)) 	//write to acc
 	  )
-
-    bit_out <= #1 dat1[adr0[2:0]];
+    {bit_outc,bit_outd} <= #1 {1'b1,dat1[adr0[2:0]]};
   else if ((adr1==adr0) & we & wr_bit_r)
-    bit_out <= #1 bit_in;
+    {bit_outc,bit_outd} <= #1 {1'b1,bit_in};
   else
     case (adr0[7:3]) /* synopsys full_mask parallel_mask */
-      `OC8051_SFR_B_ACC:   bit_out <= #1 acc[adr0[2:0]];
-      `OC8051_SFR_B_PSW:   bit_out <= #1 psw[adr0[2:0]];
+      `OC8051_SFR_B_ACC:   {bit_outc,bit_outd} <= #1 {1'b1,acc[adr0[2:0]]};
+      `OC8051_SFR_B_PSW:   {bit_outc,bit_outd} <= #1 {1'b1,psw[adr0[2:0]]};
 
-      `OC8051_SFR_B_B:     bit_out <= #1 b_reg[adr0[2:0]];
-      `OC8051_SFR_B_IP:    bit_out <= #1 ip[adr0[2:0]];
-      `OC8051_SFR_B_IE:    bit_out <= #1 ie[adr0[2:0]];
-      `OC8051_SFR_B_TCON:  bit_out <= #1 tcon[adr0[2:0]];
+      `OC8051_SFR_B_B:     {bit_outc,bit_outd} <= #1 {1'b1,b_reg[adr0[2:0]]};
+      `OC8051_SFR_B_IP:    {bit_outc,bit_outd} <= #1 {1'b1,ip[adr0[2:0]]};
+      `OC8051_SFR_B_IE:    {bit_outc,bit_outd} <= #1 {1'b1,ie[adr0[2:0]]};
+      `OC8051_SFR_B_TCON:  {bit_outc,bit_outd} <= #1 {1'b1,tcon[adr0[2:0]]};
 
 `ifdef OC8051_UART
-      `OC8051_SFR_B_SCON:  bit_out <= #1 scon[adr0[2:0]];
+      `OC8051_SFR_B_SCON:  {bit_outc,bit_outd} <= #1 {1'b1,scon[adr0[2:0]]};
 `endif
 
 `ifdef OC8051_TC2
-      `OC8051_SFR_B_T2CON: bit_out <= #1 t2con[adr0[2:0]];
+      `OC8051_SFR_B_T2CON: {bit_outc,bit_outd} <= #1 {1'b1,t2con[adr0[2:0]]};
 `endif
 
-//      default:             bit_out <= #1 1'b0;
+      default:             {bit_outc,bit_outd} <= #1 {1'b0,1'b0};
     endcase
 end
 
