@@ -205,7 +205,7 @@ begin
 `endif
       endcase
     end else begin
-      case (wr_addr)
+      case (wr_addr[7:3])
 //
 // bit addressable
 `ifdef OC8051_PORT0
