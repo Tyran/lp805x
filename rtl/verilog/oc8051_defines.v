@@ -63,7 +63,7 @@
 // oc8051 ITERNAL ROM
 //
 `define OC8051_ROM
-//`define OC8051_ROM_ONCHIP
+`define OC8051_ROM_ONCHIP
 
 
 //
@@ -82,14 +82,15 @@
 
 
 //`define OC8051_XRAM_ALTERA
-`define OC8051_XRAM_XILINX
+//`define OC8051_XRAM_XILINX
 
 
 
 //NONE-INFERED
-`define _XILINX_ROM_INFER_
-`define OC8051_XILINX_ROM
-//`define OC8051_ALTERA_ROM
+//`define _XILINX_ROM_INFER_
+//`define OC8051_XILINX_ROM
+`define _ALTERA_ROM_INFER_
+`define OC8051_ALTERA_ROM
 
 //
 // oc8051 simulation defines
