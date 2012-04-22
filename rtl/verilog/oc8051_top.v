@@ -135,8 +135,8 @@ module oc8051_top (wb_clk_i,
 `endif
 
 // interrupt interface
-		int0_i, 
-		int1_i,
+	//	int0_i, 
+	//	int1_i,
 
 // port interface
   `ifdef OC8051_PORTS
@@ -184,12 +184,16 @@ module oc8051_top (wb_clk_i,
          scanb_en,
 `endif
 // external access (active low)
-		wb_rst_i
+		wb_rst_f
 		);
 
-input         wb_rst_i,		// reset input
-              wb_clk_i,		// clock input
-              int0_i,		// interrupt 0
+input         wb_rst_f,		// reset input
+              wb_clk_i;		// clock input
+
+wire wb_rst_i;
+assign wb_rst_i = ~wb_rst_f;				  
+				  
+wire              int0_i,		// interrupt 0
               int1_i;		// interrupt 1
 wire              ea_in;		// external access			  
 `ifndef OC8051_ROM_ONCHIP		  
@@ -662,7 +666,6 @@ oc8051_xdatai oc8051_xdatai1(
 				.ack(wbd_ack_i)
 				);		
 
-wire ss;
 //
 // ports
 // P0, P1, P2, P3
@@ -671,7 +674,7 @@ wire ss;
 				.clk(wb_clk_i),
             .rst(wb_rst_i),
 			   .bit_in(desCy),
-				.bit_out(ss),//sfr_bit),
+				.bit_out(sfr_bit),
 			   .data_in(wr_dat),
 				.data_out(sfr_out),
 			   .wr(wr_o && !wr_ind),
@@ -712,7 +715,7 @@ oc8051_sfr oc8051_sfr1(
 				.clk(wb_clk_i), 
 		      .adr0(rd_addr[7:0]), 
 		      .adr1(wr_addr[7:0]),
-		      .dat0(sfr_out),
+		      .data_out(sfr_out),
 		      .dat1(wr_dat),
 		      .dat2(des2),
 		      .des_acc(des_acc),

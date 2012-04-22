@@ -14,7 +14,7 @@ input					stb;
 //output	reg		ack;
 output				ack;
 
-input		[14:0]	addr;
+input		[15:0]	addr;
 input		[7:0]		data_i;
 
 output	[7:0]		data_o;
@@ -59,12 +59,21 @@ myaltera_xram oc8051_xrami1(
 	.address(addr),
 	.clock(clk),
 	.data(data_i),
-	.rden(1'b1),
 	.wren(wr),
 	.q(data_o)
 	);
 `else
 `ifdef OC8051_XRAM_XILINX
+generic_xram oc8051_xrami1(
+	.aclr(rst),
+	.address(addr),
+	.clock(clk),
+	.data(data_i),
+	.rden(1'b1),
+	.wren(wr),
+	.q(data_o)
+	);
+`else
 generic_xram oc8051_xrami1(
 	.aclr(rst),
 	.address(addr),
@@ -90,11 +99,11 @@ module generic_xram(
 );
 
 	input aclr,rden,wren,clock;
-	input [14:0] address;
+	input [15:0] address;
 	input [7:0] data;
 	output reg [7:0] q;
 	
-	reg [7:0] buff [0:4095] /* synopsys syn_preserve */; //4kb
+	reg [7:0] buff [0:4095] /* synthesis syn_preserve */; //4kb
 
 	always@(posedge clock)
 	begin
