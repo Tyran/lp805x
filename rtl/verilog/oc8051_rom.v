@@ -175,13 +175,20 @@ end
 
 	 //9:0
 `ifdef _ALTERA_ROM_INFER_
-lp5xRomI 
-`else
-lp805x_rom
-`endif
-romA
+lp5xRomI romA
 	(
-	  .aclr( rst),
+	  .clka( clk),
+	  .ena( 1'b1),
+	  .addra( addr[11:2]),
+	  .douta( data0),
+	  .clkb( clk),
+	  .enb( 1'b1),
+	  .addrb( addr[11:2]+10'b1),
+	  .doutb( data1)
+	);
+`else
+lp805x_rom romA
+	(
 	  .clock( clk),
 	  .enable( 1'b1),
 	  .address_a( addr[11:2]),
@@ -189,6 +196,8 @@ romA
 	  .address_b( addr[11:2]+10'b1),
 	  .q_b( data1)
 	);
+`endif
+
 	
 always @(posedge clk or posedge rst)
 begin
