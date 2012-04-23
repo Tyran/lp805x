@@ -506,38 +506,38 @@ begin
 	// ?????
   end else begin
     case (adr0)
-      `OC8051_SFR_ACC: 		{data_outc,data_outd} <= #1 {1'b0,acc};
-      `OC8051_SFR_PSW: 		{data_outc,data_outd} <= #1 {1'b0,psw};
+      `OC8051_SFR_ACC: 		{data_outc,data_outd} <= #1 {1'b1,acc};
+      `OC8051_SFR_PSW: 		{data_outc,data_outd} <= #1 {1'b1,psw};
 
-      `OC8051_SFR_SP: 		{data_outc,data_outd} <= #1 {1'b0,sp};
-      `OC8051_SFR_B: 		{data_outc,data_outd} <= #1 {1'b0,b_reg};
-      `OC8051_SFR_DPTR_HI: 	{data_outc,data_outd} <= #1 {1'b0,dptr_hi};
-      `OC8051_SFR_DPTR_LO: 	{data_outc,data_outd} <= #1 {1'b0,dptr_lo};
+      `OC8051_SFR_SP: 		{data_outc,data_outd} <= #1 {1'b1,sp};
+      `OC8051_SFR_B: 		{data_outc,data_outd} <= #1 {1'b1,b_reg};
+      `OC8051_SFR_DPTR_HI: 	{data_outc,data_outd} <= #1 {1'b1,dptr_hi};
+      `OC8051_SFR_DPTR_LO: 	{data_outc,data_outd} <= #1 {1'b1,dptr_lo};
 
 `ifdef OC8051_UART
-      `OC8051_SFR_SCON: 	{data_outc,data_outd} <= #1 {1'b0,scon};
-      `OC8051_SFR_SBUF: 	{data_outc,data_outd} <= #1 {1'b0,sbuf};
-      `OC8051_SFR_PCON: 	{data_outc,data_outd} <= #1 {1'b0,pcon};
+      `OC8051_SFR_SCON: 	{data_outc,data_outd} <= #1 {1'b1,scon};
+      `OC8051_SFR_SBUF: 	{data_outc,data_outd} <= #1 {1'b1,sbuf};
+      `OC8051_SFR_PCON: 	{data_outc,data_outd} <= #1 {1'b1,pcon};
 `endif
 
 `ifdef OC8051_TC01
-      `OC8051_SFR_TH0: 		{data_outc,data_outd} <= #1 {1'b0,th0};
-      `OC8051_SFR_TH1: 		{data_outc,data_outd} <= #1 {1'b0,th1};
-      `OC8051_SFR_TL0: 		{data_outc,data_outd} <= #1 {1'b0,tl0};
-      `OC8051_SFR_TL1: 		{data_outc,data_outd} <= #1 {1'b0,tl1};
-      `OC8051_SFR_TMOD: 	{data_outc,data_outd} <= #1 {1'b0,tmod};
+      `OC8051_SFR_TH0: 		{data_outc,data_outd} <= #1 {1'b1,th0};
+      `OC8051_SFR_TH1: 		{data_outc,data_outd} <= #1 {1'b1,th1};
+      `OC8051_SFR_TL0: 		{data_outc,data_outd} <= #1 {1'b1,tl0};
+      `OC8051_SFR_TL1: 		{data_outc,data_outd} <= #1 {1'b1,tl1};
+      `OC8051_SFR_TMOD: 	{data_outc,data_outd} <= #1 {1'b1,tmod};
 `endif
 
-      `OC8051_SFR_IP: 		{data_outc,data_outd} <= #1 {1'b0,ip};
-      `OC8051_SFR_IE: 		{data_outc,data_outd} <= #1 {1'b0,ie};
-      `OC8051_SFR_TCON: 	{data_outc,data_outd} <= #1 {1'b0,tcon};
+      `OC8051_SFR_IP: 		{data_outc,data_outd} <= #1 {1'b1,ip};
+      `OC8051_SFR_IE: 		{data_outc,data_outd} <= #1 {1'b1,ie};
+      `OC8051_SFR_TCON: 	{data_outc,data_outd} <= #1 {1'b1,tcon};
 
 `ifdef OC8051_TC2
-      `OC8051_SFR_RCAP2H: 	{data_outc,data_outd} <= #1 {1'b0,rcap2h};
-      `OC8051_SFR_RCAP2L: 	{data_outc,data_outd} <= #1 {1'b0,rcap2l};
-      `OC8051_SFR_TH2:    	{data_outc,data_outd} <= #1 {1'b0,th2};
-      `OC8051_SFR_TL2:    	{data_outc,data_outd} <= #1 {1'b0,tl2};
-      `OC8051_SFR_T2CON:  	{data_outc,data_outd} <= #1 {1'b0,t2con};
+      `OC8051_SFR_RCAP2H: 	{data_outc,data_outd} <= #1 {1'b1,rcap2h};
+      `OC8051_SFR_RCAP2L: 	{data_outc,data_outd} <= #1 {1'b1,rcap2l};
+      `OC8051_SFR_TH2:    	{data_outc,data_outd} <= #1 {1'b1,th2};
+      `OC8051_SFR_TL2:    	{data_outc,data_outd} <= #1 {1'b1,tl2};
+      `OC8051_SFR_T2CON:  	{data_outc,data_outd} <= #1 {1'b1,t2con};
 `endif
 
       default: 			{data_outc,data_outd} <= #1 {1'b0,8'h00};
