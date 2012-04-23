@@ -89,7 +89,7 @@
 `include "oc8051_defines.v"
 
 
-//`define POST_ROUTE
+`define POST_ROUTE
 
 module oc8051_tb();
 
@@ -222,8 +222,8 @@ assign wr = oc8051_top_1.oc8051_ram_top1.oc8051_idata.wr;
 oc8051_top oc8051_top_1(.wb_clk_i(clk),
  //        .int0_i(int0), .int1_i(int1),
 
-//	 .wbi_adr_o(iadr_o),
-//	.wbi_dat_i(idat_i),
+	 .wbi_adr_o(iadr_o),
+	.wbi_dat_i(idat_i),
 	//.wbi_stb_o(istb_o), .wbi_ack_i(iack_i),
    //.wbi_cyc_o(icyc_o) , .wbi_err_i(wbi_err_i),
 
