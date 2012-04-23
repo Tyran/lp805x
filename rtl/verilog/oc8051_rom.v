@@ -81,10 +81,10 @@ reg ea_int;
 
 
 `ifdef OC8051_XILINX_ROM
-parameter INT_ROM_WIDTH = 10;
+parameter INT_ROM_WIDTH = 12;
 reg [31:0] data_o;
 
-assign ea = | addr[15:INT_ROM_WIDTH-1];
+assign ea = | addr[15:INT_ROM_WIDTH];
 
 always @(posedge clk or posedge rst)
 begin
@@ -143,8 +143,8 @@ romX
 `ifdef OC8051_ALTERA_ROM
 
 reg [31:0] data_o;
-parameter INT_ROM_WIDTH = 10;
-assign ea = | addr[15:INT_ROM_WIDTH-1];
+parameter INT_ROM_WIDTH = 12;
+assign ea = | addr[15:INT_ROM_WIDTH];
 
 wire [31:0] data0;
 wire [31:0] data1;
