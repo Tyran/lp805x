@@ -155,6 +155,31 @@ public:
 	out << ";";
 	}
 	
+	void printMIF( ofstream & out)
+	{
+	ostringstream tmp;
+	int cnt=3;
+	out << "WIDTH=32;\nDEPTH=" << (S/4) << ";\n\nADDRESS_RADIX=HEX;\nDATA_RADIX=HEX;\n\nCONTENT BEGIN\n" << endl;
+		for ( int i=0; i<static_cast<int>(S); ++i, --cnt )
+		{
+			if ( _mem[i] < 0x10)
+				tmp << "0";
+			tmp << hex << (unsigned int)_mem[i];
+			
+			if ( cnt == 0)
+			{	
+				cnt = 4;
+				
+				m_exchangeEndian(tmp);
+				
+				out << hex << (i-3)/4 << "\t:\t";
+				out << tmp.str() << ";" << endl;
+				tmp.str("");
+			}
+		}
+	out << "END;" << endl;
+	}
+	
 	void printOUT( void) 
 	{
 	typename array<D,S>::iterator it;
@@ -164,18 +189,6 @@ public:
 		}
 	}
 };
-
-int main_( void)
-{
-	MemoryModel<char> COE( MemoryModel<char>::STATIC);
-	
-	COE.insertValue( 0, 'A');
-	COE.insertValue( 1, 'C');
-	
-	COE.printOUT();
-
-return 0;
-}
 
 int main( int argc, char ** argv)
 {
@@ -208,15 +221,6 @@ int main( int argc, char ** argv)
     rom[2].open(romn[2].c_str());
     rom[3].open(romn[3].c_str());
 	}
-	else if ( strcmp(argv[1],"-IN8") == 0)
-	{
-		rom[0].open(argv[3]);
-	}
-	
-	else if ( strcmp(argv[1],"-IN32") == 0)
-	{
-		rom[0].open( argv[3]);
-	}
 	
 	else if ( strcmp(argv[1],"-XMIF") == 0)
 	{
@@ -239,9 +243,8 @@ int main( int argc, char ** argv)
 	rom[0].open(romc[0].c_str());
     rom[1].open(romc[1].c_str());
 	}
-	
 		
-	else if ( strcmp(argv[1],"-COE32") == 0)
+	else if ( (strcmp(argv[1],"-IN8") == 0) || (strcmp(argv[1],"-IN32") == 0) || (strcmp(argv[1],"-COE32") == 0) || (strcmp(argv[1],"-MIF32") == 0))
 	{	
 	rom[0].open(argv[3]);
 	}
@@ -282,6 +285,10 @@ int main( int argc, char ** argv)
 	}
 	
 	else if ( strcmp(argv[1],"-COE32") == 0)
+	{
+	}
+
+	else if ( strcmp(argv[1],"-MIF32") == 0)
 	{
 	}
 
@@ -350,16 +357,6 @@ int main( int argc, char ** argv)
 								rom[0] << line.substr(9+i,2) << endl;
 							}
 							
-							else if ( strcmp(argv[1],"-IN32") == 0)
-							{
-								int nn=0;
-								
-								unsigned char data=0;
-								from_string(nn,line.substr(9+i,2),hex);
-								data=static_cast<unsigned char>(nn);
-								MEM.insertValue( address, data);
-							}
-							
 							else if ( strcmp(argv[1],"-XMIF") == 0)
 							{
 								switch ( bcount)
@@ -421,8 +418,8 @@ int main( int argc, char ** argv)
 									break;
 								}
 							}
-							
-							else if ( strcmp(argv[1],"-COE32") == 0)
+
+							else if ( (strcmp(argv[1],"-IN32") == 0) || (strcmp(argv[1],"-COE32") == 0) || (strcmp(argv[1],"-MIF32") == 0))
 							{
 								int nn=0;
 								
@@ -503,6 +500,13 @@ int main( int argc, char ** argv)
 		rom[0].close();
 		rom[1].close();
     }
+
+	else if ( strcmp(argv[1],"-MIF32") == 0)
+	{
+		MEM.printMIF( rom[0]);
+		rom[0].close();
+    }
+
 	else if ( strcmp(argv[1],"-COE8") == 0)
 	{
 		rom[0] << cfini;
