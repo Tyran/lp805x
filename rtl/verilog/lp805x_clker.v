@@ -45,10 +45,13 @@ output [7:0] 	data_out;
 
 reg [7:0] clock_select; //SFR register
 
+wire [1:0] select;
+
 
 // [SPECIAL FEATURE] = clock control!
 output wire clk;
 output wire rst;
+input wire clkii;
 
 
 //
@@ -88,7 +91,7 @@ end
 
 
 reg output_data;
-reg data_read;
+reg [7:0] data_read;
 //
 // case of reading byte from port
 always @(posedge clk or posedge rst)
@@ -115,7 +118,7 @@ assign data_out = output_data ? data_read : 8'hzz;
 
 lp805x_pll clker
 	(
-		.areset( rsti),	//because of hw logic
+		.areset( rsti),
 		.inclk0( clki),
 		.pllena( pllena),
 		.c0( c0),
@@ -125,14 +128,10 @@ lp805x_pll clker
 	);
 	
 	//wait until sync! @[StartUp]
-	assign rst = rsti | ~locked;
-	
-	wire [1:0] select;
+	assign
+			rst = rsti | ~locked,
+			select = clock_select[1:0] != 2'b00 ? clock_select[1:0] : 2'b01;
 
-	assign select = clock_select[1:0] != 2'b00 ? clock_select[1:0] : 2'b01;
-	
-	input clkii;
-	
 lp805x_clkctrl clkctrl
 	(
 		.clkselect( select),
