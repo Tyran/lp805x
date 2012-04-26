@@ -89,13 +89,13 @@
 `include "oc8051_defines.v"
 
 
-`define POST_ROUTE
+//`define POST_ROUTE
 
 module oc8051_tb();
 
 
 //parameter FREQ  = 12000; // frequency in kHz
-parameter FREQ  = 1000; // frequency in kHz
+parameter FREQ  = 50000; // frequency in kHz
 
 parameter DELAY = 500000/FREQ;
 parameter RSTDELAY = DELAY*2;
@@ -222,8 +222,8 @@ assign wr = oc8051_top_1.oc8051_ram_top1.oc8051_idata.wr;
 oc8051_top oc8051_top_1(.wb_clk_i(clk),
  //        .int0_i(int0), .int1_i(int1),
 
-	 .wbi_adr_o(iadr_o),
-	.wbi_dat_i(idat_i),
+//	 .wbi_adr_o(iadr_o),
+//	.wbi_dat_i(idat_i),
 	//.wbi_stb_o(istb_o), .wbi_ack_i(iack_i),
    //.wbi_cyc_o(icyc_o) , .wbi_err_i(wbi_err_i),
 
@@ -263,7 +263,7 @@ oc8051_top oc8051_top_1(.wb_clk_i(clk),
 	 .t2_i(t2), .t2ex_i(t2ex),
    `endif
 	 
-	 .wb_rst_f(~rst)
+	 .wb_rst_i(~rst)
 	 );
 
 

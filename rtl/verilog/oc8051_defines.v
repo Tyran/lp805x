@@ -54,7 +54,7 @@
 //`define OC8051_TC2
 `define OC8051_PORTS  //ports global enable
 `define OC8051_PORT0
-//`define OC8051_PORT1
+`define OC8051_PORT1
 //`define OC8051_PORT2
 //`define OC8051_PORT3
 
@@ -87,10 +87,13 @@
 
 
 //NONE-INFERED
-`define _XILINX_ROM_INFER_
-`define OC8051_XILINX_ROM
+//`define _XILINX_ROM_INFER_
+//`define OC8051_XILINX_ROM
 //`define _ALTERA_ROM_INFER_
-//`define OC8051_ALTERA_ROM
+`define OC8051_ALTERA_ROM
+
+//clock management
+`define LP805x_CLKER
 
 //
 // oc8051 simulation defines
@@ -129,6 +132,9 @@
 //
 // sfr addresses
 //
+
+`define LP805X_RST_CLKSR 8'h00
+`define LP805X_SFR_CLKSR 8'hc0
 
 `define OC8051_SFR_ACC 8'he0 //accumulator
 `define OC8051_SFR_B 8'hf0 //b register
