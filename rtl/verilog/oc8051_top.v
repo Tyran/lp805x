@@ -112,7 +112,7 @@
 
 `include "oc8051_defines.v"
 
-module oc8051_top (wb_clk_i,
+module oc8051_top (wb_clk_i, clkii,
 //interface to instruction rom
 `ifndef OC8051_ROM_ONCHIP
 		wbi_adr_o, 
@@ -184,14 +184,14 @@ module oc8051_top (wb_clk_i,
          scanb_en,
 `endif
 // external access (active low)
-		wb_rst_f
+		wb_rst_i
 		);
 
-input         wb_rst_f,		// reset input
-              wb_clk_i;		// clock input
-
-wire wb_rst_i;
-assign wb_rst_i = ~wb_rst_f;				  
+input         wb_rst_i,		// reset input
+              wb_clk_i;		// clock input		
+				  
+wire wb_rst_s;
+	wire wb_clk_s;				  
 				  
 wire              int0_i,		// interrupt 0
               int1_i;		// interrupt 1
@@ -399,8 +399,8 @@ wire        bit_addr,	//bit addresable instruction
 	    wait_data;
 reg wr_bit_r;
 
-always @(posedge wb_clk_i or posedge wb_rst_i)
-  if (wb_rst_i) begin
+always @(posedge wb_clk_s or posedge wb_rst_s)
+  if (wb_rst_s) begin
     wr_bit_r <= 1'b0;
   end else begin
     wr_bit_r <= #1 bit_addr_o;
@@ -415,10 +415,45 @@ wire [31:0] idat_i;
 wire [15:0] iadr_o;
 
 
+
+	
+	
+	input clkii;
+	
+`ifdef LP805x_CLKER
+
+	lp805x_clker clkctrl( 
+							.rsti( ~wb_rst_i),
+							.clki( wb_clk_i),
+							.bit_in(desCy),
+							.bit_out(sfr_bit),
+							.data_in(wr_dat),
+							.data_out(sfr_out),
+							.wr(wr_o && !wr_ind),
+							.rd(!(wr_o && !wr_ind)),
+							.wr_bit(wr_bit_r),
+							.rd_bit(1'b1),
+							.wr_addr(wr_addr[7:0]),
+							.rd_addr(rd_addr[7:0]),
+
+							.rst( wb_rst_s), .clk( wb_clk_s) //[SPECIAL FEATURE]
+							,.clkii(clkii) //xtra clock
+							);
+
+`else
+
+	assign 
+		wb_rst_s = ~wb_rst_i,
+		wb_clk_s = wb_clk_i;
+		
+`endif	
+
+	
+
 //
 // decoder
-oc8051_decoder oc8051_decoder1(.clk(wb_clk_i), 
-                               .rst(wb_rst_i), 
+oc8051_decoder oc8051_decoder1(.clk(wb_clk_s), 
+                               .rst(wb_rst_s), 
 			       .op_in(op1_n), 
 			       .op1_c(op1_cur),
 			       .ram_rd_sel_o(ram_rd_sel), 
@@ -449,8 +484,8 @@ oc8051_decoder oc8051_decoder1(.clk(wb_clk_i),
 wire [7:0] sub_result;
 //
 //alu
-oc8051_alu oc8051_alu1(.rst(wb_rst_i),
-                       .clk(wb_clk_i),
+oc8051_alu oc8051_alu1(.rst(wb_rst_s),
+                       .clk(wb_clk_s),
 		       .op_code(alu_op),
 		       .src1(src1),
 		       .src2(src2),
@@ -468,8 +503,8 @@ oc8051_alu oc8051_alu1(.rst(wb_rst_i),
 
 //
 //data ram
-oc8051_ram_top oc8051_ram_top1(.clk(wb_clk_i),
-                               .rst(wb_rst_i),
+oc8051_ram_top oc8051_ram_top1(.clk(wb_clk_s),
+                               .rst(wb_rst_s),
 			       .rd_addr(rd_addr),
 			       .rd_data(ram_data),
 			       .wr_addr(wr_addr),
@@ -490,8 +525,8 @@ oc8051_ram_top oc8051_ram_top1(.clk(wb_clk_i),
 
 //
 
-oc8051_alu_src_sel oc8051_alu_src_sel1(.clk(wb_clk_i),
-                                       .rst(wb_rst_i),
+oc8051_alu_src_sel oc8051_alu_src_sel1(.clk(wb_clk_s),
+                                       .rst(wb_rst_s),
 				       .rd(rd),
 
 				       .sel1(src_sel1),
@@ -526,8 +561,8 @@ oc8051_comp oc8051_comp1(.sel(comp_sel),
 //program rom
 `ifdef OC8051_ROM
 assign ea_in = 1'b1;
-  oc8051_rom oc8051_rom1(.rst(wb_rst_i),
-                       .clk(wb_clk_i),
+  oc8051_rom oc8051_rom1(.rst(wb_rst_s),
+                       .clk(wb_clk_s),
 		       .ea_int(ea_int),
 		       .addr(iadr_o),
 		       .data_o(idat_onchip)
@@ -558,8 +593,8 @@ oc8051_cy_select oc8051_cy_select1(.cy_sel(cy_sel),
 				   .data_out(alu_cy));
 //
 //
-oc8051_indi_addr oc8051_indi_addr1 (.clk(wb_clk_i), 
-                                    .rst(wb_rst_i), 
+oc8051_indi_addr oc8051_indi_addr1 (.clk(wb_clk_s), 
+                                    .rst(wb_rst_s), 
 				    .wr_addr(wr_addr),
 				    .data_in(wr_dat),
 				    .wr(wr_o),
@@ -573,8 +608,8 @@ oc8051_indi_addr oc8051_indi_addr1 (.clk(wb_clk_i),
 assign icyc_o = istb_o;
 //
 //
-oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_i), 
-                       .rst(wb_rst_i),
+oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_s), 
+                       .rst(wb_rst_s),
 // internal ram
                        .wr_i(wr), 
 		       .wr_o(wr_o), 
@@ -656,8 +691,8 @@ oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_i),
 				 
 				 
 oc8051_xdatai oc8051_xdatai1( 
-				.clk(wb_clk_i), 
-				.rst(wb_rst_i), 
+				.clk(wb_clk_s), 
+				.rst(wb_rst_s), 
 				.addr(wbd_adr_o), 
 				.data_i(wbd_dat_o), 
 				.data_o(wbd_dat_i), 
@@ -671,8 +706,8 @@ oc8051_xdatai oc8051_xdatai1(
 // P0, P1, P2, P3
 `ifdef OC8051_PORTS
   oc8051_ports oc8051_ports1(
-				.clk(wb_clk_i),
-            .rst(wb_rst_i),
+				.clk(wb_clk_s),
+            .rst(wb_rst_s),
 			   .bit_in(desCy),
 				.bit_out(sfr_bit),
 			   .data_in(wr_dat),
@@ -711,8 +746,8 @@ oc8051_xdatai oc8051_xdatai1(
 //
 
 oc8051_sfr oc8051_sfr1(
-				.rst(wb_rst_i), 
-				.clk(wb_clk_i), 
+				.rst(wb_rst_s), 
+				.clk(wb_clk_s), 
 		      .adr0(rd_addr[7:0]), 
 		      .adr1(wr_addr[7:0]),
 		      .data_out(sfr_out),
@@ -778,7 +813,7 @@ oc8051_sfr oc8051_sfr1(
 `ifdef OC8051_CACHE
 
 
-  oc8051_icache oc8051_icache1(.rst(wb_rst_i), .clk(wb_clk_i),
+  oc8051_icache oc8051_icache1(.rst(wb_rst_s), .clk(wb_clk_s),
   // cpu
         .adr_i(iadr_o),
 	.dat_o(idat_i),
@@ -833,7 +868,7 @@ oc8051_sfr oc8051_sfr1(
 
   `ifdef OC8051_WB
 
-    oc8051_wb_iinterface oc8051_wb_iinterface(.rst(wb_rst_i), .clk(wb_clk_i),
+    oc8051_wb_iinterface oc8051_wb_iinterface(.rst(wb_rst_s), .clk(wb_clk_s),
     // cpu
         .adr_i(iadr_o),
 	.dat_o(idat_i),
