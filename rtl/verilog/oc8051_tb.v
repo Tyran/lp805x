@@ -146,7 +146,7 @@ wire 				rd;
 
 wire [7:0] p0_in, p0_out;
 
-assign p0_in=8'h55;
+assign p0_in=8'h53;
 
 `ifndef POST_ROUTE
 
