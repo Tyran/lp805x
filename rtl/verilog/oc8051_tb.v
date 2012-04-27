@@ -95,7 +95,7 @@ module oc8051_tb();
 
 
 //parameter FREQ  = 12000; // frequency in kHz
-parameter FREQ  = 50000; // frequency in kHz
+parameter FREQ  = 10000; // frequency in kHz
 
 parameter DELAY = 500000/FREQ;
 parameter RSTDELAY = DELAY*2;
@@ -336,9 +336,9 @@ initial begin
 #RSTDELAY
   rst = 1'b0;
 
-#20000
-  $display("time ",$time, "\n end of time\n \n");
-  $finish;
+//#20000
+//  $display("time ",$time, "\n end of time\n \n");
+//  $finish;
 end
 
 
