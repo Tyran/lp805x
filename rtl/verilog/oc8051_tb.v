@@ -89,7 +89,7 @@
 `include "oc8051_defines.v"
 
 
-//`define POST_ROUTE
+`define POST_ROUTE
 
 module oc8051_tb();
 
@@ -145,8 +145,10 @@ wire 	[1:0]		state;
 wire 				rd;
 
 wire [7:0] p0_in, p0_out;
+wire [7:0] p1_in, p1_out;
 
 assign p0_in=8'h53;
+assign p1_in=8'hAA;
 
 `ifndef POST_ROUTE
 
