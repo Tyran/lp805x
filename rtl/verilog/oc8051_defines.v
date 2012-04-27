@@ -87,13 +87,12 @@
 
 
 //NONE-INFERED
-//`define _XILINX_ROM_INFER_
-//`define OC8051_XILINX_ROM
-//`define _ALTERA_ROM_INFER_
-`define OC8051_ALTERA_ROM
+//`define LP805X_ROM_INFER
+//`define LP805X_XILINX
+`define LP805X_ALTERA
 
 //clock management
-`define LP805x_CLKER
+`define LP805X_CLKER
 
 //
 // oc8051 simulation defines
