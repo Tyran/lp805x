@@ -80,7 +80,7 @@ wire ea;
 reg ea_int;
 
 
-`ifdef OC8051_XILINX_ROM
+`ifdef LP805X_XILINX
 parameter INT_ROM_WIDTH = 12;
 reg [31:0] data_o;
 
@@ -121,7 +121,7 @@ begin
 end
 
  //9:0
-`ifdef _XILINX_ROM_INFER_
+`ifdef LP805X_ROM_INFER
 lp5xRomI 
 `else
 lp805x_romX
@@ -140,7 +140,7 @@ romX
 
 `else
 
-`ifdef OC8051_ALTERA_ROM
+`ifdef LP805X_ALTERA
 
 reg [31:0] data_o;
 parameter INT_ROM_WIDTH = 12;
@@ -174,7 +174,7 @@ begin
 end
 
 	 //9:0
-`ifdef _ALTERA_ROM_INFER_
+`ifdef LP805X_ROM_INFER
 lp5xRomI romA
 	(
 	  .clka( clk),
@@ -271,7 +271,7 @@ input enb;
 input [9 : 0] addrb;
 output reg [31 : 0] doutb;
 
-(* equivalent_register_removal = "NO" *) reg [31:0] buff [0:1023] /* synthesis syn_preserve=1 */; //4kb
+reg [31:0] buff [0:1023] /* synthesis syn_preserve=1 */; //4kb
 
 // synthesis translate_off
 integer i;

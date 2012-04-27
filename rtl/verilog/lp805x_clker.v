@@ -109,6 +109,7 @@ end
 
 assign data_out = output_data ? data_read : 8'hzz;
 
+`ifdef LP805X_ALTERA
 
 	wire	  pllena=1'b1; //for now
 	wire 	  c0;
@@ -142,5 +143,11 @@ lp805x_clkctrl clkctrl
 		.inclk3x( c2),
 		.outclk( clk)
 	);
+`else 
+	`ifdef LP805X_XILINX
+
+	`endif
+`endif	
+
 
 endmodule
