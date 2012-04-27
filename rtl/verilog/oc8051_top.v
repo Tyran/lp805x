@@ -420,7 +420,7 @@ wire [15:0] iadr_o;
 	
 	input clkii;
 	
-`ifdef LP805x_CLKER
+`ifdef LP805X_CLKER
 
 	lp805x_clker clkctrl( 
 							.rsti( ~wb_rst_i),
