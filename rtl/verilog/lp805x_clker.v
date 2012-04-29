@@ -45,9 +45,6 @@ output [7:0] 	data_out;
 
 reg [7:0] clock_select; //SFR register
 
-wire [1:0] select;
-
-
 // [SPECIAL FEATURE] = clock control!
 output wire clk;
 output wire rst;
@@ -116,6 +113,7 @@ assign data_out = output_data ? data_read : 8'hzz;
 	wire	  c1;
 	wire	  c2;
 	wire	  locked;
+	wire [1:0] select;
 
 lp805x_pll clker
 	(
@@ -145,6 +143,40 @@ lp805x_clkctrl clkctrl
 	);
 `else 
 	`ifdef LP805X_XILINX
+	
+	wire 	  c0;
+	wire	  c1;
+	wire	  c2;
+	wire	  locked;
+	wire	  select;
+	
+lp805x_xpllcg clker
+	(// Clock in ports
+		.CLK_IN1( clki),
+		// Clock out ports
+		.CLK_OUT1( c0),
+		.CLK_OUT2( c1),
+		.CLK_OUT3( c2),
+		// Status and control signals
+		.RESET( rsti),
+		.LOCKED( locked)
+	);
+	
+	//wait until sync! @[StartUp]
+	assign
+			rst = rsti | ~locked,
+			select = clock_select[0];
+	
+	BUFGMUX #(
+      .CLK_SEL_TYPE("SYNC")  // Glitchles ("SYNC") or fast ("ASYNC") clock switch-over
+   )
+	clkctrl
+	(
+		.I0( c0),
+		.I1( c1),
+		.S( select),
+		.O( clk)	
+	);	
 
 	`endif
 `endif	
