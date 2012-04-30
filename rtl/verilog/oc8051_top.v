@@ -114,7 +114,7 @@
 
 module oc8051_top (wb_clk_i, clkii,
 //interface to instruction rom
-`ifndef OC8051_ROM_ONCHIP
+`ifndef LP805X_ROM_ONCHIP
 		wbi_adr_o, 
 		wbi_dat_i, 
 		wbi_stb_o, 
@@ -196,7 +196,7 @@ wire wb_rst_s;
 wire              int0_i,		// interrupt 0
               int1_i;		// interrupt 1
 wire              ea_in;		// external access			  
-`ifndef OC8051_ROM_ONCHIP		  
+`ifndef LP805X_ROM_ONCHIP		  
 		input   wbi_ack_i,	// instruction acknowlage
 				  wbi_err_i;	// instruction error
 `endif
@@ -216,8 +216,8 @@ wire
 					wbd_ack_i,	// data acknowalge
 					wbd_err_i;	// data error
 
-`ifndef OC8051_ROM_ONCHIP
-output [31:0]  wbi_dat_i;	// rom data input
+`ifndef LP805X_ROM_ONCHIP
+input [31:0]  wbi_dat_i;	// rom data input
 `endif
 
 `ifndef OC8051_XRAM_ONCHIP
@@ -229,7 +229,7 @@ wire
          wbd_we_o,		// data write enable
 	      wbd_stb_o,	// data strobe
 	      wbd_cyc_o;	// data cycle
-`ifndef OC8051_ROM_ONCHIP	
+`ifndef LP805X_ROM_ONCHIP	
 	output
 	      wbi_stb_o,	// instruction strobe
 	      wbi_cyc_o;	// instruction cycle
@@ -249,7 +249,7 @@ wire
 `endif
 		 
 		[15:0] wbd_adr_o;	// data address
-`ifndef OC8051_ROM_ONCHIP		
+`ifndef LP805X_ROM_ONCHIP		
       output [15:0]      wbi_adr_o;	// instruction address
 `endif
 
@@ -559,18 +559,20 @@ oc8051_comp oc8051_comp1(.sel(comp_sel),
 
 //
 //program rom
-`ifdef OC8051_ROM
+`ifdef LP805X_ROM_ONCHIP
 assign ea_in = 1'b1;
-  oc8051_rom oc8051_rom1(.rst(wb_rst_s),
-                       .clk(wb_clk_s),
-		       .ea_int(ea_int),
-		       .addr(iadr_o),
-		       .data_o(idat_onchip)
-		       );				 
+  oc8051_rom oc8051_rom1
+			(
+				.rst(wb_rst_s),
+				.clk(wb_clk_s),
+				.ea_int(ea_int),
+				.addr(iadr_o),
+				.data_o(idat_onchip)
+			);
 `else
 assign ea_in = 1'b0;
-  assign ea_int = 1'b0;
-  assign idat_onchip = 32'h0;
+assign ea_int = 1'b1;
+assign idat_onchip = 32'h0;
   
   `ifdef OC8051_SIMULATION
 
@@ -630,16 +632,16 @@ oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_s),
 		       .iram_out(ram_out),
 
 // external instrauction rom
-                       .iack_i(iack_i),
-                       .iadr_o(iadr_o),
-                       .idat_i(idat_i),
-                       .istb_o(istb_o),
+				.iack_i(iack_i),
+				.iadr_o(iadr_o),
+				.idat_i(idat_i),
+				.istb_o(istb_o),
 
 // internal instruction rom
 		       .idat_onchip(idat_onchip),
 
 // data memory
-                       .dadr_o(wbd_adr_o),
+             .dadr_o(wbd_adr_o),
 		       .ddat_o(wbd_dat_o),
 		       .dwe_o(wbd_we_o),
 		       .dstb_o(wbd_stb_o),
@@ -647,7 +649,7 @@ oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_s),
 		       .dack_i(wbd_ack_i),
 
 // from decoder
-                       .rd_sel(ram_rd_sel),
+             .rd_sel(ram_rd_sel),
 		       .wr_sel(ram_wr_sel),
 		       .rn({bank_sel, op1_cur}),
 		       .rd_ind(rd_ind),
@@ -665,19 +667,19 @@ oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_s),
 		       .op3_out(op3_n),
 
 // interrupt interface
-                       .intr(intr), 
+             .intr(intr), 
 		       .int_v(int_src), 
 		       .int_ack(int_ack), 
 		       .istb(istb),
 		       .reti(reti),
 
 //pc
-                       .pc_wr_sel(pc_wr_sel), 
+             .pc_wr_sel(pc_wr_sel), 
 		       .pc_wr(pc_wr & comp_wait),
 		       .pc(pc),
 
 // sfr's
-                       .sp_w(sp_w), 
+             .sp_w(sp_w), 
 		       .dptr({dptr_hi, dptr_lo}),
 		       .ri(ri), 
 		       .acc(acc),
@@ -895,9 +897,9 @@ oc8051_sfr oc8051_sfr1(
   `endif
 
   `else
-`ifndef OC8051_ROM_ONCHIP
+`ifndef LP805X_ROM_ONCHIP
     assign wbi_adr_o = iadr_o    ;
-	 assign wbi_dat_i = idat_onchip;
+	 //assign wbi_dat_i = idat_onchip;
     assign idat_i    = wbi_dat_i ;
     assign wbi_stb_o = 1'b1      ;
     assign iack_i    = wbi_ack_i ;

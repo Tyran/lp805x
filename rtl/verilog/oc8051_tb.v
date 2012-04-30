@@ -89,13 +89,13 @@
 `include "oc8051_defines.v"
 
 
-`define POST_ROUTE
+//`define POST_ROUTE
 
 module oc8051_tb();
 
 
 //parameter FREQ  = 12000; // frequency in kHz
-parameter FREQ  = 10000; // frequency in kHz
+parameter FREQ  = 1000; // frequency in kHz
 
 parameter DELAY = 500000/FREQ;
 parameter RSTDELAY = DELAY*2;
@@ -105,7 +105,7 @@ reg  rst;
 
 wire [15:0] iadr_o;
 wire [31:0] idat_i;
-//wire 			iack_i, wbi_err_i, istb_o, icyc_o;
+wire 			iack_i, wbi_err_i, istb_o, icyc_o;
 
 //wire int0,int1;
 
@@ -181,8 +181,10 @@ assign cdata = oc8051_top_1.oc8051_memory_interface1.cdata;
 assign cdone = oc8051_top_1.oc8051_memory_interface1.cdone;
 assign idat_cur = oc8051_top_1.oc8051_memory_interface1.idat_cur;
 assign idat_old = oc8051_top_1.oc8051_memory_interface1.idat_old;
+`ifdef LP805X_ROM_ONCHIP
 assign addr = oc8051_top_1.oc8051_rom1.addr;
 assign data_o = oc8051_top_1.oc8051_rom1.data_o;
+`endif
 //assign addr_sel0 = oc8051_top_1.oc8051_rom1.addr_sel0;
 //assign addr_sel1 = oc8051_top_1.oc8051_rom1.addr_sel1;
 //assign addr_sel2 = oc8051_top_1.oc8051_rom1.addr_sel2;
@@ -203,12 +205,6 @@ assign wr = oc8051_top_1.oc8051_ram_top1.oc8051_idata.wr;
 `endif
 
 
-`ifdef OC8051_XILINX_RAMB
-  reg  [31:0] idat_i;
-`else
-  //wire [31:0] idat_i;
-`endif
-
 ///
 /// buffer for test vectors
 ///
@@ -216,18 +212,36 @@ assign wr = oc8051_top_1.oc8051_ram_top1.oc8051_idata.wr;
 // buffer
 //reg [23:0] buff [0:255];
 
-//assign wbi_err_i = 1'b0;
+`ifndef LP805X_ROM_ONCHIP
+
+assign wbi_err_i = 1'b0;
+wire ea;
+oc8051_rom romx
+			(
+				.rst( rst),
+				.clk( clk),
+				.addr( iadr_o),
+				.ea_int( ea),
+				.data_o( idat_i)
+			);
+			
+assign iack_i = 1'b1;	
+
+`endif		
 
 //
 // oc8051 controller
 //
 oc8051_top oc8051_top_1(.wb_clk_i(clk),
  //        .int0_i(int0), .int1_i(int1),
-
-//	 .wbi_adr_o(iadr_o),
-//	.wbi_dat_i(idat_i),
-	//.wbi_stb_o(istb_o), .wbi_ack_i(iack_i),
-   //.wbi_cyc_o(icyc_o) , .wbi_err_i(wbi_err_i),
+`ifndef LP805X_ROM_ONCHIP
+		.wbi_adr_o( iadr_o),
+		.wbi_dat_i( idat_i),
+	   .wbi_stb_o( istb_o), 
+		.wbi_ack_i( iack_i),
+		.wbi_cyc_o( icyc_o), 
+		.wbi_err_i( wbi_err_i),
+`endif		
 
   `ifdef OC8051_PORTS
 

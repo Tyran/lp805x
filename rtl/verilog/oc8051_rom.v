@@ -124,7 +124,7 @@ end
 `ifdef LP805X_ROM_INFER
 lp5xRomI 
 `else
-lp805x_romX
+lp805x_romTX
 `endif
 romX
 	(
