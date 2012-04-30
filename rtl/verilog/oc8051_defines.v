@@ -63,7 +63,7 @@
 // oc8051 ITERNAL ROM
 //
 `define OC8051_ROM
-`define OC8051_ROM_ONCHIP
+//`define LP805X_ROM_ONCHIP
 
 
 //
@@ -87,7 +87,7 @@
 
 
 //NONE-INFERED
-//`define LP805X_ROM_INFER
+`define LP805X_ROM_INFER
 `define LP805X_XILINX
 //`define LP805X_ALTERA
 
