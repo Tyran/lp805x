@@ -229,7 +229,9 @@ oc8051_rom romx
 //
 // oc8051 controller
 //
-oc8051_top oc8051_top_1(.wb_clk_i(clk),
+oc8051_top oc8051_top_1(
+		.wb_rst_i(~rst),
+		.wb_clk_i(clk),
  //        .int0_i(int0), .int1_i(int1),
 `ifndef LP805X_ROM_ONCHIP
 		.wbi_adr_o( iadr_o),
@@ -275,8 +277,12 @@ oc8051_top oc8051_top_1(.wb_clk_i(clk),
    `ifdef OC8051_TC2
 	 .t2_i(t2), .t2ex_i(t2ex),
    `endif
-	 
-	 .wb_rst_i(~rst)
+
+	 `ifdef LP805X_ROM_ONCHIP
+	 .ea_in( 1'b1) 
+	 `else
+	 .ea_in( 1'b0) 
+	 `endif
 	 );
 
 

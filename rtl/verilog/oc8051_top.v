@@ -31,7 +31,13 @@
 
 `include "oc8051_defines.v"
 
-module oc8051_top (wb_clk_i, clkii,
+module oc8051_top (
+		wb_rst_i, 
+		wb_clk_i,
+ 
+`ifdef LP805X_CLKER
+		clkii,
+`endif
 //interface to instruction rom
 `ifndef LP805X_ROM_ONCHIP
 		wbi_adr_o, 
@@ -95,21 +101,26 @@ module oc8051_top (wb_clk_i, clkii,
 	`endif
 
 // external access (active low)
-		wb_rst_i
+		ea_in
 		);
 
 input         wb_rst_i,		// reset input
               wb_clk_i;		// clock input		
 				  
 wire wb_rst_s;
-	wire wb_clk_s;				  
+wire wb_clk_s;				  
 				  
 wire              int0_i,		// interrupt 0
               int1_i;		// interrupt 1
-wire              ea_in;		// external access			  
+input wire    ea_in;		// external access
+			  
 `ifndef LP805X_ROM_ONCHIP		  
-		input   wbi_ack_i,	// instruction acknowlage
-				  wbi_err_i;	// instruction error
+		input   			wbi_ack_i,	// instruction acknowlage
+							wbi_err_i;	// instruction error
+		input [31:0]	wbi_dat_i;	// rom data input
+		output	      wbi_stb_o,	// instruction strobe
+							wbi_cyc_o;	// instruction cycle
+		output [15:0]	wbi_adr_o;	// instruction address
 `endif
 
 `ifndef OC8051_XRAM_ONCHIP
@@ -127,24 +138,14 @@ wire
 					wbd_ack_i,	// data acknowalge
 					wbd_err_i;	// data error
 
-`ifndef LP805X_ROM_ONCHIP
-input [31:0]  wbi_dat_i;	// rom data input
-`endif
-
 `ifndef OC8051_XRAM_ONCHIP
 output
 `else
 wire
 `endif
-
          wbd_we_o,		// data write enable
 	      wbd_stb_o,	// data strobe
 	      wbd_cyc_o;	// data cycle
-`ifndef LP805X_ROM_ONCHIP	
-	output
-	      wbi_stb_o,	// instruction strobe
-	      wbi_cyc_o;	// instruction cycle
-`endif
 
 `ifndef OC8051_XRAM_ONCHIP
 output
@@ -157,12 +158,8 @@ wire
 output
 `else
 wire
-`endif
-		 
+`endif		 
 		[15:0] wbd_adr_o;	// data address
-`ifndef LP805X_ROM_ONCHIP		
-      output [15:0]      wbi_adr_o;	// instruction address
-`endif
 
 `ifdef OC8051_PORTS
 
@@ -316,13 +313,10 @@ wire        iack_i,
 wire [31:0] idat_i;
 wire [15:0] iadr_o;
 
-
-
-	
-	
-	input clkii;
 	
 `ifdef LP805X_CLKER
+
+	input clkii;
 
 	lp805x_clker clkctrl( 
 							.rsti( ~wb_rst_i),
@@ -454,7 +448,6 @@ oc8051_comp oc8051_comp1(.sel(comp_sel),
 //
 //program rom
 `ifdef LP805X_ROM_ONCHIP
-assign ea_in = 1'b1;
   oc8051_rom oc8051_rom1
 			(
 				.rst(wb_rst_s),
@@ -464,7 +457,6 @@ assign ea_in = 1'b1;
 				.data_o(idat_onchip)
 			);
 `else
-assign ea_in = 1'b0;
 assign ea_int = 1'b1;
 assign idat_onchip = 32'h0;
   
