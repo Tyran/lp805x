@@ -124,7 +124,7 @@ end
 `ifdef LP805X_ROM_INFER
 lp5xRomI 
 `else
-lp805x_romTX
+lp805x_romX
 `endif
 romX
 	(
@@ -207,15 +207,6 @@ begin
 end
 
 
-`else
-
-	always @(posedge clk or posedge rst)
-	begin
-	 if (rst)
-		ea_int <= #1 1'b1;
-	 else 
-		ea_int <= #1 !ea;
-	end
 `else
 
 reg [7:0] buff [0:4095] /* synopsys syn_preserve */; //4kb

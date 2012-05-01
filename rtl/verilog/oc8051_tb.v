@@ -89,7 +89,7 @@
 `include "oc8051_defines.v"
 
 
-//`define POST_ROUTE
+`define POST_ROUTE
 
 module oc8051_tb();
 
@@ -101,11 +101,6 @@ parameter DELAY = 500000/FREQ;
 parameter RSTDELAY = DELAY*2;
 
 reg  rst;
-
-
-wire [15:0] iadr_o;
-wire [31:0] idat_i;
-wire 			iack_i, wbi_err_i, istb_o, icyc_o;
 
 //wire int0,int1;
 
@@ -214,20 +209,22 @@ assign wr = oc8051_top_1.oc8051_ram_top1.oc8051_idata.wr;
 
 `ifndef LP805X_ROM_ONCHIP
 
-assign wbi_err_i = 1'b0;
-wire ea;
+wire [15:0] iadr_o;
+wire [31:0] idat_i;
+wire 			iack_i, wbi_err_i, istb_o, icyc_o;
+
+assign 
+	wbi_err_i = 1'b0,
+	iack_i = 1'b1;
+
 oc8051_rom romx
 			(
 				.rst( rst),
 				.clk( clk),
 				.addr( iadr_o),
-				.ea_int( ea),
 				.data_o( idat_i)
 			);
-			
-assign iack_i = 1'b1;	
-
-`endif		
+`endif
 
 //
 // oc8051 controller
