@@ -1,21 +1,5 @@
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-////  8051 cores top level module                                 ////
-////                                                              ////
-////  This file is part of the 8051 cores project                 ////
-////  http://www.opencores.org/cores/8051/                        ////
-////                                                              ////
-////  Description                                                 ////
-////  8051 definitions.                                           ////
-////                                                              ////
-////  To Do:                                                      ////
-////    nothing                                                   ////
-////                                                              ////
-////  Author(s):                                                  ////
-////      - Simon Teran, simont@opencores.org                     ////
-////                                                              ////
-//////////////////////////////////////////////////////////////////////
-////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
 ////                                                              ////
 //// This source file may be used and distributed without         ////
@@ -40,71 +24,6 @@
 //// from http://www.opencores.org/lgpl.shtml                     ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
-//
-// CVS Revision History
-//
-// $Log: not supported by cvs2svn $
-// Revision 1.32  2003/06/20 13:36:37  simont
-// ram modules added.
-//
-// Revision 1.31  2003/06/17 14:17:22  simont
-// BIST signals added.
-//
-// Revision 1.30  2003/06/03 16:51:24  simont
-// include "8051_defines" added.
-//
-// Revision 1.29  2003/05/07 12:36:03  simont
-// chsnge comp.des to des1
-//
-// Revision 1.28  2003/05/06 09:41:35  simont
-// remove define OC8051_AS2_PCL, chane signal src_sel2 to 2 bit wide.
-//
-// Revision 1.27  2003/05/05 15:46:37  simont
-// add aditional alu destination to solve critical path.
-//
-// Revision 1.26  2003/04/29 11:24:31  simont
-// fix bug in case execution of two data dependent instructions.
-//
-// Revision 1.25  2003/04/25 17:15:51  simont
-// change branch instruction execution (reduse needed clock periods).
-//
-// Revision 1.24  2003/04/11 10:05:59  simont
-// deifne OC8051_ROM added
-//
-// Revision 1.23  2003/04/10 12:43:19  simont
-// defines for pherypherals added
-//
-// Revision 1.22  2003/04/09 16:24:04  simont
-// change wr_sft to 2 bit wire.
-//
-// Revision 1.21  2003/04/09 15:49:42  simont
-// Register oc8051_sfr dato output, add signal wait_data.
-//
-// Revision 1.20  2003/04/03 19:13:28  simont
-// Include instruction cache.
-//
-// Revision 1.19  2003/04/02 15:08:30  simont
-// raname signals.
-//
-// Revision 1.18  2003/01/13 14:14:41  simont
-// replace some modules
-//
-// Revision 1.17  2002/11/05 17:23:54  simont
-// add module oc8051_sfr, 256 bytes internal ram
-//
-// Revision 1.16  2002/10/28 14:55:00  simont
-// fix bug in interface to external data ram
-//
-// Revision 1.15  2002/10/23 16:53:39  simont
-// fix bugs in instruction interface
-//
-// Revision 1.14  2002/10/17 18:50:00  simont
-// cahnge interface to instruction rom
-//
-// Revision 1.13  2002/09/30 17:33:59  simont
-// prepared header
-//
-//
 
 // synopsys translate_off
 `include "oc8051_timescale.v"
@@ -175,14 +94,6 @@ module oc8051_top (wb_clk_i, clkii,
 		t2_i, t2ex_i,
 	`endif
 
-// BIST
-`ifdef OC8051_BIST
-         scanb_rst,
-         scanb_clk,
-         scanb_si,
-         scanb_so,
-         scanb_en,
-`endif
 // external access (active low)
 		wb_rst_i
 		);
@@ -295,15 +206,6 @@ input         t0_i,		// counter 0 input
 `ifdef OC8051_TC2
 input         t2_i,		// counter 2 input
               t2ex_i;		//
-`endif
-
-`ifdef OC8051_BIST
-input   scanb_rst;
-input   scanb_clk;
-input   scanb_si;
-output  scanb_so;
-input   scanb_en;
-wire    scanb_soi;
 `endif
 
 wire [7:0]  dptr_hi,
@@ -513,14 +415,6 @@ oc8051_ram_top oc8051_ram_top1(.clk(wb_clk_s),
 			       .wr(wr_o && (!wr_addr[7] || wr_ind)),
 			       .bit_data_in(desCy),
 			       .bit_data_out(bit_data)
-`ifdef OC8051_BIST
-         ,
-         .scanb_rst(scanb_rst),
-         .scanb_clk(scanb_clk),
-         .scanb_si(scanb_soi),
-         .scanb_so(scanb_so),
-         .scanb_en(scanb_en)
-`endif
 			       );
 
 //
@@ -809,65 +703,6 @@ oc8051_sfr oc8051_sfr1(
 		       .wait_data(wait_data)
 		       );
 
-
-
-
-`ifdef OC8051_CACHE
-
-
-  oc8051_icache oc8051_icache1(.rst(wb_rst_s), .clk(wb_clk_s),
-  // cpu
-        .adr_i(iadr_o),
-	.dat_o(idat_i),
-	.stb_i(istb_o),
-	.ack_o(iack_i),
-        .cyc_i(icyc_o),
-  // pins
-        .dat_i(wbi_dat_i),
-	.stb_o(wbi_stb_o),
-	.adr_o(wbi_adr_o),
-	.ack_i(wbi_ack_i),
-        .cyc_o(wbi_cyc_o)
-`ifdef OC8051_BIST
-         ,
-         .scanb_rst(scanb_rst),
-         .scanb_clk(scanb_clk),
-         .scanb_si(scanb_si),
-         .scanb_so(scanb_soi),
-         .scanb_en(scanb_en)
-`endif
-	);
-
-  defparam oc8051_icache1.ADR_WIDTH = 6;  // cache address wihth
-  defparam oc8051_icache1.LINE_WIDTH = 2; // line address width (2 => 4x32)
-  defparam oc8051_icache1.BL_NUM = 15; // number of blocks (2^BL_WIDTH-1); BL_WIDTH = ADR_WIDTH - LINE_WIDTH
-  defparam oc8051_icache1.CACHE_RAM = 64; // cache ram x 32 (2^ADR_WIDTH)
-
-  
-
-  `ifdef OC8051_SIMULATION
-
-    initial
-    begin
-      #1
-      $display("\t * ");
-      $display("\t * External rom interface: cache");
-      $display("\t * ");
-    end
-
-  `endif
-
-
-
-//
-//    no cache
-//
-`else
-
-  `ifdef OC8051_BIST
-       assign scanb_soi=scanb_si;
-  `endif
-
   `ifdef OC8051_WB
 
     oc8051_wb_iinterface oc8051_wb_iinterface(.rst(wb_rst_s), .clk(wb_clk_s),
@@ -917,8 +752,6 @@ oc8051_sfr oc8051_sfr1(
 
   `endif
 
-
-  `endif
 
 `endif
 
