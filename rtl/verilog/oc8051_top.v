@@ -104,15 +104,15 @@ module oc8051_top (
 		ea_in
 		);
 
-input         wb_rst_i,		// reset input
-              wb_clk_i;		// clock input		
+input				wb_rst_i,		// reset input
+					wb_clk_i;		// clock input		
 				  
-wire wb_rst_s;
-wire wb_clk_s;				  
+wire				wb_rst_s;
+wire				wb_clk_s;				  
 				  
-wire              int0_i,		// interrupt 0
-              int1_i;		// interrupt 1
-input wire    ea_in;		// external access
+wire           int0_i,		// interrupt 0
+					int1_i;		// interrupt 1
+input				ea_in;		// external access
 			  
 `ifndef LP805X_ROM_ONCHIP		  
 		input   			wbi_ack_i,	// instruction acknowlage
@@ -121,103 +121,86 @@ input wire    ea_in;		// external access
 		output	      wbi_stb_o,	// instruction strobe
 							wbi_cyc_o;	// instruction cycle
 		output [15:0]	wbi_adr_o;	// instruction address
+		output 			wbd_we_o,		// data write enable
+							wbd_stb_o,	// data strobe
+							wbd_cyc_o;	// data cycle
 `endif
 
-`ifndef OC8051_XRAM_ONCHIP
-input
-`else
-wire	
-`endif
-		[7:0]		wbd_dat_i;	// ram data input
-		
-`ifndef OC8051_XRAM_ONCHIP
-input
-`else
-wire	
-`endif
-					wbd_ack_i,	// data acknowalge
-					wbd_err_i;	// data error
+//
+// cpu to cache/wb_interface
+wire        iack_i,
+				istb_o,
+				icyc_o;
+wire [31:0]	idat_i;
+wire [15:0] iadr_o;
 
 `ifndef OC8051_XRAM_ONCHIP
-output
+	input [7:0]		wbd_dat_i;	// ram data input
+	input				wbd_ack_i,	// data acknowledge
+						wbd_err_i;	// data error
+	output [7:0]	wbd_dat_o;	// data output
+	output [15:0]	wbd_adr_o;	// data address
 `else
-wire
+	wire [7:0]		wbd_dat_i;	// ram data input
+	wire				wbd_ack_i,	// data acknowledge
+						wbd_err_i;	// data error
+	wire [7:0]		wbd_dat_o;	// data output
+	wire [15:0]		wbd_adr_o;	// data address
 `endif
-         wbd_we_o,		// data write enable
-	      wbd_stb_o,	// data strobe
-	      wbd_cyc_o;	// data cycle
-
-`ifndef OC8051_XRAM_ONCHIP
-output
-`else
-wire
-`endif
-		 [7:0]  wbd_dat_o;	// data output
-
-`ifndef OC8051_XRAM_ONCHIP
-output
-`else
-wire
-`endif		 
-		[15:0] wbd_adr_o;	// data address
 
 `ifdef OC8051_PORTS
 
-`ifdef OC8051_PORT0
-input  [7:0]  p0_i;		// port 0 input
-output [7:0]  p0_o;		// port 0 output
+	`ifdef OC8051_PORT0
+	input  [7:0]  p0_i;		// port 0 input
+	output [7:0]  p0_o;		// port 0 output
+	`endif
+
+	`ifdef OC8051_PORT1
+	input  [7:0]  p1_i;		// port 1 input
+	output [7:0]  p1_o;		// port 1 output
+	`endif
+
+	`ifdef OC8051_PORT2
+	input  [7:0]  p2_i;		// port 2 input
+	output [7:0]  p2_o;		// port 2 output
+	`endif
+
+	`ifdef OC8051_PORT3
+	input  [7:0]  p3_i;		// port 3 input
+	output [7:0]  p3_o;		// port 3 output
+	`endif
+
 `endif
-
-`ifdef OC8051_PORT1
-input  [7:0]  p1_i;		// port 1 input
-output [7:0]  p1_o;		// port 1 output
-`endif
-
-`ifdef OC8051_PORT2
-input  [7:0]  p2_i;		// port 2 input
-output [7:0]  p2_o;		// port 2 output
-`endif
-
-`ifdef OC8051_PORT3
-input  [7:0]  p3_i;		// port 3 input
-output [7:0]  p3_o;		// port 3 output
-`endif
-
-`endif
-
-
-
-
 
 
 `ifdef OC8051_UART
-input         rxd_i;		// receive
-output        txd_o;		// transnmit
+	input         rxd_i;		// receive
+	output        txd_o;		// transnmit
 `endif
 
 `ifdef OC8051_TC01
-input         t0_i,		// counter 0 input
-              t1_i;		// counter 1 input
+	input         t0_i,		// counter 0 input
+					  t1_i;		// counter 1 input
 `endif
 
 `ifdef OC8051_TC2
-input         t2_i,		// counter 2 input
-              t2ex_i;		//
+	input         t2_i,		// counter 2 input
+					  t2ex_i;		//
 `endif
 
-wire [7:0]  dptr_hi,
-	    dptr_lo, 
-	    ri, 
-	    data_out,
+wire [7:0]	dptr_hi,
+				dptr_lo, 
+				ri, 
+				data_out,
             op1,
             op2,
-	    op3,
+				op3,
             acc,
 				acc_bypass,
             p0_out,
-	    p1_out,
-	    p2_out,
-	    p3_out,
+				p1_out,
+				p2_out,
+				p3_out,
             sp,
             sp_w;
 
@@ -236,11 +219,11 @@ wire [2:0]  ram_rd_sel,	// ram read
 
 wire [7:0]  ram_data,
             ram_out,	//data from ram
-	    wr_dat,
+				wr_dat,
             wr_addr,	//ram write addres
             rd_addr;	//data ram read addres
 
-tri [7:0] sfr_out;				
+tri [7:0] 	sfr_out;				
 				
 wire        sfr_bit;
 
@@ -248,12 +231,12 @@ wire [1:0]  cy_sel,	//carry select; from decoder to cy_selct1
             bank_sel;
 wire        rom_addr_sel,	//rom addres select; alu or pc
             rmw,
-	    ea_int;
+				ea_int;
 
 wire        reti,
             intr,
-	    int_ack,
-	    istb;
+				int_ack,
+				istb;
 wire [7:0]  int_src;
 
 wire        mem_wait;
@@ -264,15 +247,15 @@ wire [1:0]  psw_set;    //write to psw or not; from decoder to psw (through regi
 wire [7:0]  src1,	//alu sources 1
             src2,	//alu sources 2
             src3,	//alu sources 3
-	    des_acc,
-	    des1,	//alu destination 1
-	    des2;	//alu destinations 2
+				des_acc,
+				des1,	//alu destination 1
+				des2;	//alu destinations 2
 wire        desCy,	//carry out
             desAc,
-	    desOv,	//overflow
-	    alu_cy,
-	    wr,		//write to data ram
-	    wr_o;
+				desOv,	//overflow
+				alu_cy,
+				wr,		//write to data ram
+				wr_o;
 
 wire        rd,		//read program rom
             pc_wr;
@@ -280,61 +263,56 @@ wire [2:0]  pc_wr_sel;	//program counter write select (from decoder to pc)
 
 wire [7:0]  op1_n, //from memory_interface to decoder
             op2_n,
-	    op3_n;
+				op3_n;
 
 wire [1:0]  comp_sel;	//select source1 and source2 to compare
 wire        eq,		//result (from comp1 to decoder)
             srcAc,
-	    cy,
-	    rd_ind,
-	    wr_ind,
-	    comp_wait;
+				cy,
+				rd_ind,
+				wr_ind,
+				comp_wait;
 wire [2:0]  op1_cur;
 
 wire        bit_addr,	//bit addresable instruction
             bit_data,	//bit data from ram to ram_select
-	    bit_out,	//bit data from ram_select to alu and cy_select
-	    bit_addr_o,
-	    wait_data;
-reg wr_bit_r;
+				bit_out,	//bit data from ram_select to alu and cy_select
+				bit_addr_o,
+				wait_data;
+reg 			wr_bit_r;
 
 always @(posedge wb_clk_s or posedge wb_rst_s)
+begin
   if (wb_rst_s) begin
     wr_bit_r <= 1'b0;
   end else begin
     wr_bit_r <= #1 bit_addr_o;
   end
-
-//
-// cpu to cache/wb_interface
-wire        iack_i,
-            istb_o,
-	    icyc_o;
-wire [31:0] idat_i;
-wire [15:0] iadr_o;
+end
 
 	
 `ifdef LP805X_CLKER
 
 	input clkii;
 
-	lp805x_clker clkctrl( 
-							.rsti( ~wb_rst_i),
-							.clki( wb_clk_i),
-							.bit_in(desCy),
-							.bit_out(sfr_bit),
-							.data_in(wr_dat),
-							.data_out(sfr_out),
-							.wr(wr_o && !wr_ind),
-							.rd(!(wr_o && !wr_ind)),
-							.wr_bit(wr_bit_r),
-							.rd_bit(1'b1),
-							.wr_addr(wr_addr[7:0]),
-							.rd_addr(rd_addr[7:0]),
+	lp805x_clker clkctrl
+		( 
+			.rsti( ~wb_rst_i),
+			.clki( wb_clk_i),
+			.bit_in(desCy),
+			.bit_out(sfr_bit),
+			.data_in(wr_dat),
+			.data_out(sfr_out),
+			.wr(wr_o && !wr_ind),
+			.rd(!(wr_o && !wr_ind)),
+			.wr_bit(wr_bit_r),
+			.rd_bit(1'b1),
+			.wr_addr(wr_addr[7:0]),
+			.rd_addr(rd_addr[7:0]),
 
-							.rst( wb_rst_s), .clk( wb_clk_s) //[SPECIAL FEATURE]
-							,.clkii(clkii) //xtra clock
-							);
+			.rst( wb_rst_s), .clk( wb_clk_s) //[SPECIAL FEATURE]
+			,.clkii(clkii) //xtra clock
+		);
 
 `else
 
@@ -457,8 +435,8 @@ oc8051_comp oc8051_comp1(.sel(comp_sel),
 				.data_o(idat_onchip)
 			);
 `else
-assign ea_int = 1'b1;
-assign idat_onchip = 32'h0;
+	assign ea_int = 1'b1;
+	assign idat_onchip = 32'h0;
   
   `ifdef OC8051_SIMULATION
 
@@ -496,82 +474,84 @@ oc8051_indi_addr oc8051_indi_addr1 (.clk(wb_clk_s),
 assign icyc_o = istb_o;
 //
 //
-oc8051_memory_interface oc8051_memory_interface1(.clk(wb_clk_s), 
-                       .rst(wb_rst_s),
+oc8051_memory_interface oc8051_memory_interface1
+		(
+			.clk(wb_clk_s), 
+         .rst(wb_rst_s),
 // internal ram
-                       .wr_i(wr), 
-		       .wr_o(wr_o), 
-		       .wr_bit_i(bit_addr), 
-		       .wr_bit_o(bit_addr_o), 
-		       .wr_dat(wr_dat),
-		       .des_acc(des_acc),
-		       .des1(des1),
-		       .des2(des2),
-		       .rd_addr(rd_addr),
-		       .wr_addr(wr_addr),
-		       .wr_ind(wr_ind),
-		       .bit_in(bit_data),
-		       .in_ram(ram_data),
-		       .sfr(sfr_out),
-		       .sfr_bit(sfr_bit),
-		       .bit_out(bit_out),
-		       .iram_out(ram_out),
+			.wr_i(wr), 
+			.wr_o(wr_o), 
+			.wr_bit_i(bit_addr), 
+			.wr_bit_o(bit_addr_o), 
+			.wr_dat(wr_dat),
+			.des_acc(des_acc),
+			.des1(des1),
+			.des2(des2),
+			.rd_addr(rd_addr),
+			.wr_addr(wr_addr),
+			.wr_ind(wr_ind),
+			.bit_in(bit_data),
+			.in_ram(ram_data),
+			.sfr(sfr_out),
+			.sfr_bit(sfr_bit),
+			.bit_out(bit_out),
+			.iram_out(ram_out),
 
-// external instrauction rom
-				.iack_i(iack_i),
-				.iadr_o(iadr_o),
-				.idat_i(idat_i),
-				.istb_o(istb_o),
+// external instruction rom
+			.iack_i(iack_i),
+			.iadr_o(iadr_o),
+			.idat_i(idat_i),
+			.istb_o(istb_o),
 
 // internal instruction rom
-		       .idat_onchip(idat_onchip),
+			.idat_onchip(idat_onchip),
 
 // data memory
-             .dadr_o(wbd_adr_o),
-		       .ddat_o(wbd_dat_o),
-		       .dwe_o(wbd_we_o),
-		       .dstb_o(wbd_stb_o),
-		       .ddat_i(wbd_dat_i),
-		       .dack_i(wbd_ack_i),
+			.dadr_o(wbd_adr_o),
+			.ddat_o(wbd_dat_o),
+			.dwe_o(wbd_we_o),
+			.dstb_o(wbd_stb_o),
+			.ddat_i(wbd_dat_i),
+			.dack_i(wbd_ack_i),
 
 // from decoder
-             .rd_sel(ram_rd_sel),
-		       .wr_sel(ram_wr_sel),
-		       .rn({bank_sel, op1_cur}),
-		       .rd_ind(rd_ind),
-		       .rd(rd),
-		       .mem_act(mem_act),
-		       .mem_wait(mem_wait),
+			.rd_sel(ram_rd_sel),
+			.wr_sel(ram_wr_sel),
+			.rn({bank_sel, op1_cur}),
+			.rd_ind(rd_ind),
+			.rd(rd),
+			.mem_act(mem_act),
+			.mem_wait(mem_wait),
 
 // external access
-             .ea(ea_in),
-		       .ea_int(ea_int),
+			.ea(ea_in),
+			.ea_int(ea_int),
 
 // instructions outputs to cpu
-             .op1_out(op1_n),
-		       .op2_out(op2_n),
-		       .op3_out(op3_n),
+			.op1_out(op1_n),
+			.op2_out(op2_n),
+			.op3_out(op3_n),
 
 // interrupt interface
-             .intr(intr), 
-		       .int_v(int_src), 
-		       .int_ack(int_ack), 
-		       .istb(istb),
-		       .reti(reti),
+			.intr(intr), 
+			.int_v(int_src), 
+			.int_ack(int_ack), 
+			.istb(istb),
+			.reti(reti),
 
 //pc
-             .pc_wr_sel(pc_wr_sel), 
-		       .pc_wr(pc_wr & comp_wait),
-		       .pc(pc),
+			.pc_wr_sel(pc_wr_sel), 
+			.pc_wr(pc_wr & comp_wait),
+			.pc(pc),
 
 // sfr's
-             .sp_w(sp_w), 
-		       .dptr({dptr_hi, dptr_lo}),
-		       .ri(ri), 
-		       .acc(acc),
-				 .acc_bypass(acc_bypass),
-		       .sp(sp)
-		       );
+			.sp_w(sp_w), 
+			.dptr({dptr_hi, dptr_lo}),
+			.ri(ri), 
+			.acc(acc),
+			.acc_bypass(acc_bypass),
+			.sp(sp)
+		);
 
 				 
 //
