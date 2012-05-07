@@ -87,7 +87,7 @@
 
 
 //NONE-INFERED
-//`define LP805X_ROM_INFER
+`define LP805X_ROM_INFER
 `define LP805X_XILINX
 //`define LP805X_ALTERA
 
@@ -363,32 +363,31 @@
 //
 // alu source 1 select
 //
-`define OC8051_AS1_RAM  3'b000 // RAM
-`define OC8051_AS1_OP1  3'b111 //
-`define OC8051_AS1_OP2  3'b001 //
-`define OC8051_AS1_OP3  3'b010 //
-`define OC8051_AS1_ACC  3'b011 // accumulator
-`define OC8051_AS1_PCH  3'b100 //
-`define OC8051_AS1_PCL  3'b101 //
-`define OC8051_AS1_DC   3'b000 //
+`define OC8051_AS1_RAM  4'b0000 // RAM
+`define OC8051_AS1_OP1  4'b0111 //
+`define OC8051_AS1_OP2  4'b0001 //
+`define OC8051_AS1_OP3  4'b0010 //
+`define OC8051_AS1_ACC  4'b0011 // accumulator
+`define OC8051_AS1_PCH  4'b0100 //
+`define OC8051_AS1_PCL  4'b0101 //
+`define OC8051_AS1_DC   4'b1000 //
 
 //
 // alu source 2 select
 //
-`define OC8051_AS2_RAM   3'b00 // RAM
-`define OC8051_AS2_ACC   3'b01 // accumulator
-`define OC8051_AS2_ZERO  3'b10 // 8'h00
-`define OC8051_AS2_OP2   3'b11 //
-
-`define OC8051_AS2_DC    3'b00 //
+`define OC8051_AS2_RAM   3'b000 // RAM
+`define OC8051_AS2_ACC   3'b001 // accumulator
+`define OC8051_AS2_ZERO  3'b010 // 8'h00
+`define OC8051_AS2_OP2   3'b011 //
+`define OC8051_AS2_DC    3'b100 //
 
 //
 // alu source 3 select
 //
-`define OC8051_AS3_DP   1'b0 // data pointer
-`define OC8051_AS3_PC   1'b1 // program clunter
+`define OC8051_AS3_DP   2'b00 // data pointer
+`define OC8051_AS3_PC   2'b01 // program clunter
 //`define OC8051_AS3_PCU  3'b101 // program clunter not registered
-`define OC8051_AS3_DC   1'b0  //
+`define OC8051_AS3_DC   2'b10  //
 
 
 //

@@ -210,12 +210,12 @@ wire [15:0] pc;
 
 //assign wbd_cyc_o = wbd_stb_o;
 
-wire        src_sel3;
-wire [1:0]  wr_sfr,
-            src_sel2;
+wire [1:0]  src_sel3;
+wire [1:0]  wr_sfr;
+wire [2:0]  src_sel2;
 wire [2:0]  ram_rd_sel,	// ram read
-            ram_wr_sel,	// ram write
-            src_sel1;
+            ram_wr_sel;	// ram write
+wire [3:0]  src_sel1;
 
 wire [7:0]  ram_data,
             ram_out,	//data from ram
