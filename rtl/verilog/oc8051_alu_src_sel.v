@@ -71,9 +71,10 @@ module oc8051_alu_src_sel (clk, rst, rd, sel1, sel2, sel3,
                      src1, src2, src3);
 
 
-input clk, rst, rd, sel3;
-input [1:0] sel2;
-input [2:0] sel1;
+input clk, rst, rd;
+input [1:0] sel3;
+input [2:0] sel2;
+input [3:0] sel1;
 input [7:0] acc, ram;
 input [15:0] dptr;
 input [15:0] pc;
@@ -102,6 +103,7 @@ begin
     `OC8051_AS1_OP3: src1 = op3_r;
     `OC8051_AS1_PCH: src1 = pc[15:8];
     `OC8051_AS1_PCL: src1 = pc[7:0];
+	 `OC8051_AS1_DC: src1 = 8'h00;
     default: src1 = 8'h00;
   endcase
 end
@@ -118,6 +120,7 @@ begin
     `OC8051_AS2_ZERO: src2= 8'h00;
     `OC8051_AS2_RAM: src2= ram;
     `OC8051_AS2_OP2: src2= op2_r;
+	 `OC8051_AS2_DC: src2= 8'h00;
     default: src2= 8'h00;
   endcase
 end
@@ -133,6 +136,7 @@ begin
   case (sel3) /* synopsys full_mask parallel_mask */
     `OC8051_AS3_DP:   src3= dptr[15:8];
     `OC8051_AS3_PC:   src3= pc[15:8];
+	 `OC8051_AS3_DC: src3=16'h0;
     default: src3= 16'h0;
   endcase
 end
