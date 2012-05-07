@@ -129,10 +129,13 @@ output [3:0] alu_op_o;
 output rd;
 
 reg rmw;
-reg src_sel3, wr,  bit_addr, pc_wr;
+reg wr,  bit_addr, pc_wr;
+reg [1:0] src_sel3;
 reg [3:0] alu_op;
-reg [1:0] src_sel2, comp_sel, psw_set, cy_sel, wr_sfr;
-reg [2:0] src_sel1, ram_wr_sel, ram_rd_sel, pc_sel;
+reg [1:0] comp_sel, psw_set, cy_sel, wr_sfr;
+reg [2:0] src_sel2;
+reg [2:0] ram_wr_sel, ram_rd_sel, pc_sel;
+reg [3:0] src_sel1;
 //reg mem_act, 
 //
 // state        if 2'b00 then normal execution, sle instructin that need more than one clock
