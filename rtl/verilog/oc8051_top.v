@@ -610,6 +610,26 @@ oc8051_xdatai oc8051_xdatai1(
 			   .rmw(rmw));
 `endif				
 
+// new timer
+wire ntf0,ntr0;
+lp805x_newtimer ntimer
+	(
+		.clk(wb_clk_s),
+		.rst(wb_rst_s),
+		.bit_in(desCy),
+		.bit_out(sfr_bit),
+		.data_in(wr_dat),
+		.data_out(sfr_out),
+		.wr(wr_o && !wr_ind),
+		.rd(!(wr_o && !wr_ind)),
+		.wr_bit(wr_bit_r),
+		.rd_bit(1'b1),
+		.wr_addr(wr_addr[7:0]),
+		.rd_addr(rd_addr[7:0]),
+		.ntf(ntf0),
+		.ntr(ntr0)
+    );
+
 //
 //
 
@@ -656,6 +676,9 @@ oc8051_sfr oc8051_sfr1(
 		       .int1(int1_i),
 		       .reti(reti),
 		       .int_src(int_src),
+				 
+				 .ntf(ntf0),
+				 .ntr(ntr0),
 
 // t/c 0,1
 	`ifdef OC8051_TC01

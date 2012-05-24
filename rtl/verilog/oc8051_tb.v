@@ -89,7 +89,7 @@
 `include "oc8051_defines.v"
 
 
-`define POST_ROUTE
+//`define POST_ROUTE
 
 module oc8051_tb();
 
