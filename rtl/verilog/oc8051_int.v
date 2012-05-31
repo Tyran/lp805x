@@ -79,6 +79,8 @@ module oc8051_int (clk, rst,
 //timer interrupts
         tf0, tf1, t2_int,
 	tr0, tr1,
+	ntf,
+	ntr,
 //external interrupts
         ie0, ie1,
 //uart interrupts
@@ -87,6 +89,8 @@ module oc8051_int (clk, rst,
         intr, reti, int_vec, ack,
 //registers
 	ie, tcon, ip);
+
+input ntf,ntr;
 
 input [7:0] wr_addr, data_in;
 input wr, tf0, tf1, t2_int, ie0, ie1, clk, rst, reti, wr_bit, bit_in, ack, uart_int;

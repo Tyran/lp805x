@@ -99,6 +99,11 @@ module oc8051_top (
 	`ifdef OC8051_TC2
 		t2_i, t2ex_i,
 	`endif
+	
+	`ifdef LP805X_NTC
+		pin_cnt,
+		pin,
+	`endif
 
 // external access (active low)
 		ea_in
@@ -188,6 +193,11 @@ wire [15:0] iadr_o;
 					  t2ex_i;		//
 `endif
 
+	`ifdef LP805X_NTC
+	input				pin_cnt;
+	output 			pin;
+	`endif
+
 wire [7:0]	dptr_hi,
 				dptr_lo, 
 				ri, 
@@ -210,12 +220,12 @@ wire [15:0] pc;
 
 //assign wbd_cyc_o = wbd_stb_o;
 
-wire        src_sel3;
-wire [1:0]  wr_sfr,
-            src_sel2;
+wire [1:0]  src_sel3;
+wire [1:0]  wr_sfr;
+wire [2:0]  src_sel2;
 wire [2:0]  ram_rd_sel,	// ram read
-            ram_wr_sel,	// ram write
-            src_sel1;
+            ram_wr_sel;	// ram write
+wire [3:0]  src_sel1;
 
 wire [7:0]  ram_data,
             ram_out,	//data from ram
@@ -610,6 +620,30 @@ oc8051_xdatai oc8051_xdatai1(
 			   .rmw(rmw));
 `endif				
 
+`ifdef LP805X_NTC
+// new timer
+wire ntf0,ntr0;
+lp805x_newtimer ntimer
+	(
+		.clk(wb_clk_s),
+		.rst(wb_rst_s),
+		.bit_in(desCy),
+		.bit_out(sfr_bit),
+		.data_in(wr_dat),
+		.data_out(sfr_out),
+		.wr(wr_o && !wr_ind),
+		.rd(!(wr_o && !wr_ind)),
+		.wr_bit(wr_bit_r),
+		.rd_bit(1'b1),
+		.wr_addr(wr_addr[7:0]),
+		.rd_addr(rd_addr[7:0]),
+		.ntf(ntf0),
+		.ntr(ntr0),
+		.pin_cnt(pin_cnt),
+		.pin(pin)
+    );
+`endif
+
 //
 //
 
@@ -656,6 +690,9 @@ oc8051_sfr oc8051_sfr1(
 		       .int1(int1_i),
 		       .reti(reti),
 		       .int_src(int_src),
+				 
+				 .ntf(ntf0),
+				 .ntr(ntr0),
 
 // t/c 0,1
 	`ifdef OC8051_TC01

@@ -119,6 +119,8 @@ module oc8051_sfr (rst, clk,
        int0, int1,
        int_src,
        reti,
+		 ntf,
+		 ntr,
 
   `ifdef OC8051_TC01
        t0, t1,
@@ -131,6 +133,7 @@ module oc8051_sfr (rst, clk,
        dptr_hi, dptr_lo,
        wait_data);
 
+input ntf,ntr;
 
 input       rst,	// reset - pin
 	    clk,	// clock - pin
@@ -384,7 +387,10 @@ oc8051_int oc8051_int1 (.clk(clk),
 			.int_vec(int_src),
 			.ie(ie),
 			.tcon(tcon), 
-			.ip(ip));
+			.ip(ip),
+			.ntf(ntf),
+			.ntr(ntr)
+			);
 
 
 //
