@@ -44,7 +44,7 @@ module lp805x_newtimer
 		
 		pin_cnt,
 		pin
-    );
+   );
 	 
 parameter TIMER_BITLEN = 16;
 parameter PRESCALE_BITLEN = 8; //prescaler of 256!
@@ -79,7 +79,7 @@ output ntf, ntr;
 
 input pin_cnt;
 
-output pin;
+output reg pin;
 
 // I/O pins
 
@@ -102,9 +102,9 @@ wire cnt_mode;
 assign
 	presc_ctr = timer_control[7:5],
 	inc_timer = timer_control[4],
-	cnt_mode = timer_control[3],
-	int_enable = timer_control[2],
-	ctc_mode = timer_control[1];
+	cnt_mode = timer_control[3],	
+	ctc_mode = timer_control[2],
+	int_enable = timer_control[1];
 
 
 always @(posedge clk or posedge rst)
@@ -133,10 +133,14 @@ reg [2:0] pres_src;
 always @( presc_ctr)
 begin
 	case ( presc_ctr)
-	3'b000: pres_src = 3'b111;
-	3'b001: pres_src = { timer_pres[7], 2'b11 };
-	3'b010: pres_src = { timer_pres[7:6], 1'b1 };
-	3'b011: pres_src = timer_pres[7:5];
+	3'b000: pres_src = 7'b111;
+	3'b001: pres_src = { timer_pres[7], 6'b11 };
+	3'b010: pres_src = { timer_pres[7:6], 5'b11111 };
+	3'b011: pres_src = { timer_pres[7:5], 4'b1111 };
+	3'b100: pres_src = { timer_pres[7:4], 3'b111 };
+	3'b101: pres_src = { timer_pres[7:3], 2'b11 };
+	3'b110: pres_src = { timer_pres[7:2], 1'b1 };
+	3'b111: pres_src = timer_pres[7:1];
 	endcase
 end
 
@@ -232,7 +236,7 @@ assign data_out = output_data ? data_read : 8'hzz;
 //
 
 reg ntc_r;
-reg nct_event;
+reg ntc_event;
 
 always @(posedge clk or posedge rst)
 begin

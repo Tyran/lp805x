@@ -94,6 +94,9 @@
 //clock management
 //`define LP805X_CLKER
 
+//new timer
+`define LP805X_NTC
+
 //
 // oc8051 simulation defines
 //
