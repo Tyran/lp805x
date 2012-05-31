@@ -99,6 +99,11 @@ module oc8051_top (
 	`ifdef OC8051_TC2
 		t2_i, t2ex_i,
 	`endif
+	
+	`ifdef LP805X_NTC
+		pin_cnt,
+		pin,
+	`endif
 
 // external access (active low)
 		ea_in
@@ -187,6 +192,11 @@ wire [15:0] iadr_o;
 	input         t2_i,		// counter 2 input
 					  t2ex_i;		//
 `endif
+
+	`ifdef LP805X_NTC
+	input				pin_cnt;
+	output 			pin;
+	`endif
 
 wire [7:0]	dptr_hi,
 				dptr_lo, 
@@ -610,6 +620,7 @@ oc8051_xdatai oc8051_xdatai1(
 			   .rmw(rmw));
 `endif				
 
+`ifdef LP805X_NTC
 // new timer
 wire ntf0,ntr0;
 lp805x_newtimer ntimer
@@ -627,8 +638,11 @@ lp805x_newtimer ntimer
 		.wr_addr(wr_addr[7:0]),
 		.rd_addr(rd_addr[7:0]),
 		.ntf(ntf0),
-		.ntr(ntr0)
+		.ntr(ntr0),
+		.pin_cnt(pin_cnt),
+		.pin(pin)
     );
+`endif
 
 //
 //
