@@ -1,4 +1,3 @@
-`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -19,6 +18,10 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
+// synopsys translate_off
+`include "oc8051_timescale.v"
+// synopsys translate_on
+`include "oc8051_defines.v"
 
 `define LP805X_SFR_NTMRH 8'hea
 `define LP805X_SFR_NTMRL 8'heb
