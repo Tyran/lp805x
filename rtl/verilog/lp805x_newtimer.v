@@ -47,7 +47,7 @@ module lp805x_newtimer
 		
 		pin_cnt,
 		pin
-   );
+	);
 	 
 parameter TIMER_BITLEN = 16;
 parameter PRESCALE_BITLEN = 8; //prescaler of 256!
@@ -71,10 +71,8 @@ input bit_in;
 output tri [7:0] data_out;
 output tri bit_out;
 
-assign bit_out = 1'bz;
-	 
 reg [7:0] data_read;
-
+reg		 bit_read;
 
 output ntf, ntr;
 
@@ -86,13 +84,9 @@ output reg pin;
 
 // I/O pins
 
-assign 
-	ntf = timer_ov,
-	ntr = 1'b1;
-
 //two-ways of prescaling, let's try the lsb xtra bit count way
 reg [ (TIMER_BITLEN)-1:0] timer_count;
-reg [ PRESCALE_BITLEN-1:1] timer_pres; // bit 0 - no bit at all
+reg [ PRESCALE_BITLEN-1:0] timer_pres; // bit 0 - no bit at all
 reg timer_ov;
 reg [7:0] timer_control;
 
@@ -108,6 +102,11 @@ assign
 	cnt_mode = timer_control[3],	
 	ctc_mode = timer_control[2],
 	int_enable = timer_control[1];
+	
+
+assign 
+	ntf = timer_ov,
+	ntr = 1'b1;
 
 
 always @(posedge clk or posedge rst)
@@ -124,26 +123,29 @@ begin
 				`LP805X_SFR_B_NTMRCTR: timer_control[wr_addr[2:0]] <= #1 bit_in;
 			endcase
 		end
-	end
-	
-	if ( !rst & timer_ov) begin
+		if ( !rst & timer_ov) begin
 		timer_control[0] <= #1 1'b1;
+		end
+	end else begin
+		if ( !rst & timer_ov) begin
+		timer_control[0] <= #1 1'b1;
+		end
 	end
 end
 
-reg [2:0] pres_src;
+reg [6:0] pres_src;
 
-always @( presc_ctr)
+always @(*)
 begin
 	case ( presc_ctr)
-	3'b000: pres_src = 7'b111;
-	3'b001: pres_src = { timer_pres[7], 6'b11 };
-	3'b010: pres_src = { timer_pres[7:6], 5'b11111 };
-	3'b011: pres_src = { timer_pres[7:5], 4'b1111 };
-	3'b100: pres_src = { timer_pres[7:4], 3'b111 };
-	3'b101: pres_src = { timer_pres[7:3], 2'b11 };
-	3'b110: pres_src = { timer_pres[7:2], 1'b1 };
-	3'b111: pres_src = timer_pres[7:1];
+	3'b000: pres_src = 7'b1111111;
+	3'b001: pres_src = { timer_pres[0], 6'b111111 };
+	3'b010: pres_src = { timer_pres[1:0], 5'b11111 };
+	3'b011: pres_src = { timer_pres[2:0], 4'b1111 };
+	3'b100: pres_src = { timer_pres[3:0], 3'b111 };
+	3'b101: pres_src = { timer_pres[4:0], 2'b11 };
+	3'b110: pres_src = { timer_pres[5:0], 1'b1 };
+	3'b111: pres_src = timer_pres[6:0];
 	endcase
 end
 
@@ -154,6 +156,12 @@ begin
 		pin <= ~pin;
 	end
 end
+
+// new timer - counter mode from pin
+//
+
+reg ntc_r;
+reg ntc_event;
 
 reg [6:0] dummy; // decoy to control prescale adder outputs
 always @(posedge clk or posedge rst)
@@ -175,26 +183,26 @@ begin
 				3'b000: { timer_ov, timer_count, dummy[6:0] }
 				<= #1 { 1'b0, timer_count, pres_src } + 1'b1;
 				
-				3'b001: { timer_ov, timer_count, timer_pres[7], dummy[5:0] }
+				3'b001: { timer_ov, timer_count, timer_pres[0], dummy[5:0] }
 				<= #1 { 1'b0, timer_count, pres_src } + 1'b1;
 				
-				3'b010: { timer_ov, timer_count, timer_pres[7:6], dummy[4:0] }
+				3'b010: { timer_ov, timer_count, timer_pres[1:0], dummy[4:0] }
 				<= #1 { 1'b0, timer_count, pres_src } + 1'b1;
 				
-				3'b011: { timer_ov, timer_count, timer_pres[7:5], dummy[3:0] }
+				3'b011: { timer_ov, timer_count, timer_pres[2:0], dummy[3:0] }
 				<= #1 { 1'b0, timer_count, pres_src } + 1'b1;
 				
-				3'b100: { timer_ov, timer_count, timer_pres[7:4], dummy[2:0] }
+				3'b100: { timer_ov, timer_count, timer_pres[3:0], dummy[2:0] }
 				<= #1 { 1'b0, timer_count, pres_src } + 1'b1;
 				
-				3'b101: { timer_ov, timer_count, timer_pres[7:3], dummy[1:0] }
+				3'b101: { timer_ov, timer_count, timer_pres[4:0], dummy[1:0] }
 				<= #1 { 1'b0, timer_count, pres_src } + 1'b1;
 				
-				3'b110: { timer_ov, timer_count, timer_pres[7:2], dummy[0] }
+				3'b110: { timer_ov, timer_count, timer_pres[5:0], dummy[0] }
 				<= #1 { 1'b0, timer_count, pres_src } + 1'b1;
 				
-				3'b111: { timer_ov, timer_count, timer_pres[7:1] }
-				<= #1 { 1'b0, timer_count, pres_src } + 1'b1;
+				3'b111: { timer_ov, timer_count, timer_pres[6:0] }
+				<= #1 { 1'b0, timer_count, pres_src } + 24'b1;
 		
 				default: 
 					begin
@@ -234,12 +242,26 @@ end
 
 assign data_out = output_data ? data_read : 8'hzz;
 
+reg output_bit;
+//
+// case of reading bit from port
+always @(posedge clk or posedge rst)
+begin
+  if (rst)
+   {output_bit,bit_read} <= #1 {1'b0,1'b0};
+  else
+   if ( rd_bit)
+    case (rd_addr[7:3])
+      `LP805X_SFR_B_NTMRCTR:    {output_bit,bit_read} <= #1 {1'b1,timer_control[rd_addr[2:0]]};
+	default:		{output_bit,bit_read} <= #1 {1'b0,1'b0};
+    endcase
+end
+
+assign bit_out = output_bit ? bit_read : 1'bz;
+
 
 // new timer - counter mode from pin
 //
-
-reg ntc_r;
-reg ntc_event;
 
 always @(posedge clk or posedge rst)
 begin
