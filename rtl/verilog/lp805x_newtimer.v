@@ -202,7 +202,7 @@ begin
 				<= #1 { 1'b0, timer_count, pres_src } + 1'b1;
 				
 				3'b111: { timer_ov, timer_count, timer_pres[6:0] }
-				<= #1 { 1'b0, timer_count, pres_src } + 24'b1;
+				<= #1 { 1'b0, timer_count, pres_src } + 1'b1;
 		
 				default: 
 					begin
