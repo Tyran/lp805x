@@ -57,6 +57,9 @@ parameter TIMER_RSTVAL = 0;
 parameter BITMODES_LEN = 3;
 
 parameter TIMERCTR_RSTVAL = 0;
+
+parameter PWMS_LEN = 0;
+parameter PWMS_TYPE = 0;
 	 
 input clk,rst; //inter
 
@@ -80,7 +83,7 @@ output ntf, ntr;
 
 input pin_cnt;
 
-output reg pin;
+output reg [PWMS_LEN-1:0] pin;
 
 // I/O pins
 
@@ -149,13 +152,47 @@ begin
 	endcase
 end
 
-always @( posedge clk)
-begin
-	if ( timer_ov & ctc_mode) //overflow & ctc turned on!
-	begin
-		pin <= ~pin;
-	end
-end
+generate 
+		if ( PWMS_LEN == 1) begin
+			always @( posedge clk)
+			begin
+				if ( timer_ov & ctc_mode) //overflow & ctc turned on!
+				begin
+					pin <= ~pin;
+				end
+			end
+		end
+		else if ( PWMS_TYPE == 0) begin
+			always @( posedge clk)
+			begin
+				if ( rst)
+				begin
+					pin <= #1 1'b1;
+				end
+				else if ( pin == 0)
+				begin
+					pin <= #1 1'b1;
+				end
+				else if ( timer_ov & ctc_mode) //overflow & ctc turned on!
+				begin
+					pin <= #1 pin << 1;
+				end
+			end
+		end
+		else if ( PWMS_TYPE == 1) begin
+			always @( posedge clk)
+			begin
+				if ( rst)
+				begin
+					pin <= #1 1'b0;
+				end
+				else if ( timer_ov & ctc_mode) //overflow & ctc turned on!
+				begin
+					pin <= pin + 1;
+				end
+			end
+		end
+endgenerate
 
 // new timer - counter mode from pin
 //
