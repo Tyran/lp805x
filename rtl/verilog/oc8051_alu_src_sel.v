@@ -95,7 +95,7 @@ reg [7:0] op1_r, op2_r, op3_r;
 ///////
 always @(sel1 or op1_r or op2_r or op3_r or pc or acc or ram)
 begin
-  case (sel1) /* synopsys full_mask parallel_mask */
+  case (sel1) /* previous full_mask parallel_mask */
     `OC8051_AS1_RAM: src1 = ram;
     `OC8051_AS1_ACC: src1 = acc;
     `OC8051_AS1_OP1: src1 = op1_r;
@@ -115,7 +115,7 @@ end
 ///////
 always @(sel2 or op2_r or acc or ram or op1_r)
 begin
-  case (sel2) /* synopsys full_mask parallel_mask */
+  case (sel2) /* previous full_mask parallel_mask */
     `OC8051_AS2_ACC: src2= acc;
     `OC8051_AS2_ZERO: src2= 8'h00;
     `OC8051_AS2_RAM: src2= ram;
@@ -133,7 +133,7 @@ end
 
 always @(sel3 or pc[15:8] or dptr[15:8] or op1_r)
 begin
-  case (sel3) /* synopsys full_mask parallel_mask */
+  case (sel3) /* previous full_mask parallel_mask */
     `OC8051_AS3_DP:   src3= dptr[15:8];
     `OC8051_AS3_PC:   src3= pc[15:8];
 	 `OC8051_AS3_DC: src3=16'h0;

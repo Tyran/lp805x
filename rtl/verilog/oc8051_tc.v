@@ -142,7 +142,7 @@ begin
    tf0 <= #1 1'b0;
    tf1_0 <= #1 1'b0;
  end else begin
-     case (tmod[1:0]) /* synopsys full_mask parallel_mask */
+     case (tmod[1:0]) /* previous full_mask parallel_mask */
       `OC8051_MODE0: begin                       // mode 0
         tf1_0 <= #1 1'b0;
         if (tc0_add)
@@ -200,7 +200,7 @@ begin
    th1 <= #1 data_in;
    tf1_1 <= #1 1'b0;
  end else begin
-     case (tmod[5:4]) /* synopsys full_mask parallel_mask */
+     case (tmod[5:4]) /* previous full_mask parallel_mask */
       `OC8051_MODE0: begin                       // mode 0
         if (tc1_add)
           {tf1_1, th1,tl1[4:0]} <= #1 {1'b0, th1, tl1[4:0]}+ 1'b1;

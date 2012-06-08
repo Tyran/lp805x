@@ -199,7 +199,7 @@ always @(op_code or src1 or src2 or srcCy or srcAc or bit_in or src3 or mulsrc1
       or sub4 or sub8 or subc or da_tmp or inc or dec or sub_result)
 begin
 
-  case (op_code) /* synopsys full_mask parallel_mask */
+  case (op_code) /* previous full_mask parallel_mask */
 //operation add
     `OC8051_ALU_ADD: begin
       des_acc = {addc[0],add8[2:0],add4[3:0]};

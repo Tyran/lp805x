@@ -185,7 +185,7 @@ always @(posedge clk or posedge rst)
 
 
 always @(rd_addr or bit_addr)
-  casex ( {bit_addr, rd_addr[7]} ) // synopsys full_mask parallel_mask
+  casex ( {bit_addr, rd_addr[7]} ) // previous full_mask parallel_mask
       2'b0?: rd_addr_m = rd_addr;
       2'b10: rd_addr_m = {4'b0010, rd_addr[6:3]};
       2'b11: rd_addr_m = {1'b1, rd_addr[6:3], 3'b000};
@@ -193,7 +193,7 @@ always @(rd_addr or bit_addr)
 
 
 always @(wr_addr or bit_addr_r)
-  casex ( {bit_addr_r, wr_addr[7]} ) // synopsys full_mask parallel_mask
+  casex ( {bit_addr_r, wr_addr[7]} ) // previous full_mask parallel_mask
       2'b0?: wr_addr_m = wr_addr;
       2'b10: wr_addr_m = {8'h00, 4'b0010, wr_addr[6:3]};
       2'b11: wr_addr_m = {8'h00, 1'b1, wr_addr[6:3], 3'b000};
@@ -201,7 +201,7 @@ always @(wr_addr or bit_addr_r)
 
 
 always @(rd_data or bit_select or bit_data_in or wr_data or bit_addr_r)
-  casex ( {bit_addr_r, bit_select} ) // synopsys full_mask parallel_mask
+  casex ( {bit_addr_r, bit_select} ) // previous full_mask parallel_mask
       4'b0_???: wr_data_m = wr_data;
       4'b1_000: wr_data_m = {rd_data[7:1], bit_data_in};
       4'b1_001: wr_data_m = {rd_data[7:2], bit_data_in, rd_data[0]};

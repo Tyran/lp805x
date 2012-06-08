@@ -97,7 +97,7 @@ begin
     buff[3'b111] <= #1 8'h00;
   end else begin
     if ((wr) & !(wr_bit_r)) begin
-      case (wr_addr) /* synopsys full_mask parallel_mask */
+      case (wr_addr) /* previous full_mask parallel_mask */
         8'h00: buff[3'b000] <= #1 data_in;
         8'h01: buff[3'b001] <= #1 data_in;
         8'h08: buff[3'b010] <= #1 data_in;

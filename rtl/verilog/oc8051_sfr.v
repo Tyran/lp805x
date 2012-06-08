@@ -570,7 +570,7 @@ begin
   else if ((adr1==adr0) & we & wr_bit_r)
     {bit_outc,bit_outd} <= #1 {1'b1,bit_in};
   else
-    case (adr0[7:3]) /* synopsys full_mask parallel_mask */
+    case (adr0[7:3]) /* previous full_mask parallel_mask */
       `OC8051_SFR_B_ACC:   {bit_outc,bit_outd} <= #1 {1'b1,acc[adr0[2:0]]};
       `OC8051_SFR_B_PSW:   {bit_outc,bit_outd} <= #1 {1'b1,psw[adr0[2:0]]};
 

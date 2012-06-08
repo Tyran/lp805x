@@ -189,7 +189,7 @@ begin
 // start transmiting
 //
   end else if (wr_sbuf) begin
-    case (scon[7:6]) /* synopsys parallel_mask */
+    case (scon[7:6]) /* previous parallell_mask */
       2'b00: begin  // mode 0
         sbuf_txd <= #1 {3'b001, data_in};
       end
@@ -286,7 +286,7 @@ begin
     {sbuf_rxd_tmp, rx_done} <= #1 {rxd, sbuf_rxd_tmp};
   end else if (receive & (scon[7:6]!=2'b00) & shift_re) begin //mode 1, 2, 3
     re_count <= #1 re_count + 4'd1;
-    case (re_count) /* synopsys full_mask parallel_mask */
+    case (re_count) /* previous full_mask parallel_mask */
       4'h7: rx_sam[0] <= #1 rxd;
       4'h8: rx_sam[1] <= #1 rxd;
       4'h9: begin
