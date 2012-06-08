@@ -75,7 +75,7 @@ reg data_out;
 
 always @(cy_sel or cy_in or data_in)
 begin
-  case (cy_sel) /* synopsys full_mask parallel_mask */
+  case (cy_sel) /* previous full_mask parallel_mask */
     `OC8051_CY_0: data_out = 1'b0;
     `OC8051_CY_PSW: data_out = cy_in;
     `OC8051_CY_RAM: data_out = data_in;

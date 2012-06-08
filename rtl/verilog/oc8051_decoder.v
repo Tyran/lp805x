@@ -171,9 +171,9 @@ assign wr_o         = wait_data ? 1'b0            : wr;
 // unregisterd outputs
 always @(op_cur or eq or state_dec or mem_wait)
 begin
-    case (state_dec) /* synopsys full_mask parallel_mask */
+    case (state_dec) /* previous full_mask parallel_mask */
       2'b01: begin
-        casex (op_cur) /* synopsys parallel_mask */
+        casex (op_cur) /* previous parallell_mask */
           `OC8051_DIV : begin
               ram_rd_sel = `OC8051_RRS_B;
             end
@@ -192,7 +192,7 @@ begin
         rmw = `OC8051_RMW_N;
       end
       2'b10: begin
-        casex (op_cur) /* synopsys parallel_mask */
+        casex (op_cur) /* previous parallell_mask */
           `OC8051_SJMP : begin
               ram_rd_sel = `OC8051_RRS_DC;
               pc_wr = `OC8051_PCW_Y;
@@ -339,7 +339,7 @@ begin
         stb_i = 1'b1;
       end
       2'b11: begin
-        casex (op_cur) /* synopsys parallel_mask */
+        casex (op_cur) /* previous parallell_mask */
           `OC8051_CJNE_R : begin
               ram_rd_sel = `OC8051_RRS_DC;
               pc_wr = `OC8051_PCW_N;
@@ -402,7 +402,7 @@ begin
         bit_addr = 1'b0;
       end
       2'b00: begin
-        casex (op_cur) /* synopsys parallel_mask */
+        casex (op_cur) /* previous parallell_mask */
           `OC8051_ACALL :begin
               ram_rd_sel = `OC8051_RRS_DC;
               pc_wr = `OC8051_PCW_Y;
@@ -1204,9 +1204,9 @@ begin
     src_sel3 <= #1 `OC8051_AS3_DC;
     wr_sfr <= #1 `OC8051_WRS_N;
   end else if (!wait_data) begin
-    case (state_dec) /* synopsys parallel_mask */
+    case (state_dec) /* previous parallell_mask */
       2'b01: begin
-        casex (op_cur) /* synopsys parallel_mask */
+        casex (op_cur) /* previous parallell_mask */
           `OC8051_MOVC_DP :begin
               ram_wr_sel <= #1 `OC8051_RWS_DC;
               src_sel1 <= #1 `OC8051_AS1_OP1;
@@ -1302,7 +1302,7 @@ begin
         src_sel3 <= #1 `OC8051_AS3_DC;
       end
       2'b10: begin
-        casex (op_cur) /* synopsys parallel_mask */
+        casex (op_cur) /* previous parallell_mask */
           `OC8051_ACALL :begin
               ram_wr_sel <= #1 `OC8051_RWS_SP;
               src_sel1 <= #1 `OC8051_AS1_PCH;
@@ -1358,7 +1358,7 @@ begin
       end
 
       2'b11: begin
-        casex (op_cur) /* synopsys parallel_mask */
+        casex (op_cur) /* previous parallell_mask */
           `OC8051_RET : begin
               src_sel1 <= #1 `OC8051_AS1_RAM;
               src_sel2 <= #1 `OC8051_AS2_DC;
@@ -1397,7 +1397,7 @@ begin
         wr_sfr <= #1 `OC8051_WRS_N;
       end
       default: begin
-        casex (op_cur) /* synopsys parallel_mask */
+        casex (op_cur) /* previous parallell_mask */
           `OC8051_ACALL :begin
               ram_wr_sel <= #1 `OC8051_RWS_SP;
               src_sel1 <= #1 `OC8051_AS1_PCL;
@@ -2643,11 +2643,11 @@ begin
   if (rst)
     state <= #1 2'b01;
   else if  (!mem_wait & !wait_data) begin
-    case (state) /* synopsys parallel_mask */
+    case (state) /* previous parallell_mask */
       2'b10: state <= #1 2'b01;
       2'b11: state <= #1 2'b10;
       2'b00:
-          casex (op_in) /* synopsys full_mask parallel_mask */
+          casex (op_in) /* previous full_mask parallel_mask */
             `OC8051_ACALL   : state <= #1 2'b10;
             `OC8051_AJMP    : state <= #1 2'b10;
             `OC8051_CJNE_R  : state <= #1 2'b10;
@@ -2695,7 +2695,7 @@ end
 //  end else if (!rd) begin
 //    mem_act <= #1 `OC8051_MAS_NO;
 //  end else
-//    casex (op_cur) /* synopsys parallel_mask */
+//    casex (op_cur) /* previous parallell_mask */
 //      `OC8051_MOVX_AI : mem_act <= #1 `OC8051_MAS_RI_W;
 //      `OC8051_MOVX_AP : mem_act <= #1 `OC8051_MAS_DPTR_W;
 //      `OC8051_MOVX_IA : mem_act <= #1 `OC8051_MAS_RI_R;
@@ -2719,7 +2719,7 @@ begin
 		mem_act = `OC8051_MAS_NO;
 	 else 
 	 begin
-		 casex (op_cur) /* synopsys parallel_mask */
+		 casex (op_cur) /* previous parallell_mask */
 			`OC8051_MOVX_AI : mem_act = `OC8051_MAS_RI_W;
 			`OC8051_MOVX_AP : mem_act = `OC8051_MAS_DPTR_W;
 			`OC8051_MOVX_IA : mem_act = `OC8051_MAS_RI_R;

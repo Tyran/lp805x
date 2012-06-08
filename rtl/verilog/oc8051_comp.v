@@ -89,7 +89,7 @@ assign eq = eq_r;// & comp_wait;
 
 always @(sel or b_in or cy or acc or des)
 begin
-  case (sel) /* synopsys full_mask parallel_mask */
+  case (sel) /* previous full_mask parallel_mask */
     `OC8051_CSS_AZ  : eq_r = (acc == 8'h00);
     `OC8051_CSS_DES : eq_r = (des == 8'h00);
     `OC8051_CSS_CY  : eq_r = cy;
