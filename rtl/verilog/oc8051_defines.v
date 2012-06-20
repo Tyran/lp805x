@@ -137,6 +137,7 @@
 
 `define LP805X_RST_CLKSR 8'h00
 `define LP805X_SFR_CLKSR 8'hc0
+`define LP805X_SFR_B_CLKSR 5'b11000
 
 `define OC8051_SFR_ACC 8'he0 //accumulator
 `define OC8051_SFR_B 8'hf0 //b register
