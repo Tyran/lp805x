@@ -92,7 +92,7 @@
 `define LP805X_ALTERA
 
 //clock management
-//`define LP805X_CLKER
+`define LP805X_CLKER
 
 //new timer
 `define LP805X_NTC
