@@ -159,14 +159,16 @@ lp805x_clkdiv clkdiv_1( .rst(rsti), .clki(clki), ._pres_factor(select), .clk_div
 	wire	  c1;
 	wire	  c2;
 	wire	  locked;
-	wire	  select;
+	wire	[7:0]  select;
+	
+`ifdef LP805X_USEDLL	
 	
 lp805x_xpllcg clker
 	(// Clock in ports
 		.CLK_IN1( clki),
 		// Clock out ports
 		.CLK_OUT1( c0),
-		.CLK_OUT2( c1),
+		.CLK_OUT2( c1), 
 		.CLK_OUT3( c2),
 		// Status and control signals
 		.RESET( rsti),
@@ -186,6 +188,24 @@ lp805x_xpllcg clker
 		.I0( c0),
 		.I1( c1),
 		.S( select),
+		.O( clk)	
+	);	
+`endif
+
+	assign
+		rst = rsti,
+		select = clock_select[2:0];
+
+		wire clk_;
+		
+		lp805x_clkdiv clkdiv_1( .rst(rsti), .clki(clki), ._pres_factor(select), .clk_div(clk_));
+		
+	BUFGMUX #(
+		.CLK_SEL_TYPE("SYNC")  // Glitchles ("SYNC") or fast ("ASYNC") clock switch-over
+   )
+	clkctrl
+	(
+		.I0( clk_),
 		.O( clk)	
 	);	
 
