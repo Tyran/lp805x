@@ -88,11 +88,12 @@
 
 //NONE-INFERED
 `define LP805X_ROM_INFER
-//`define LP805X_XILINX
-`define LP805X_ALTERA
+`define LP805X_XILINX
+//`define LP805X_ALTERA
 
 //clock management
 `define LP805X_CLKER
+`define LP805X_USELL
 
 //new timer
 `define LP805X_NTC

@@ -13,7 +13,6 @@ module lp805x_clker( rsti, clki,
 							wr_bit, rd_bit,
 
 							rst, clk //[SPECIAL FEATURE]
-							,clkii
 							); //clock selection
 
 //
@@ -48,7 +47,6 @@ reg [7:0] clock_select; //SFR register
 // [SPECIAL FEATURE] = clock control!
 output wire clk;
 output wire rst;
-input wire clkii;
 
 
 //
@@ -81,7 +79,7 @@ begin
   else
    if ( rd_bit)
     case (rd_addr[7:3])
-      `LP805X_SFR_CLKSR:    {bit_outc,bit_outd} <= #1 {1'b1,clock_select[rd_addr[2:0]]};
+      `LP805X_SFR_B_CLKSR:    {bit_outc,bit_outd} <= #1 {1'b1,clock_select[rd_addr[2:0]]};
 	default:		{bit_outc,bit_outd} <= #1 {1'b0,1'b0};
     endcase
 end
@@ -106,62 +104,12 @@ end
 
 assign data_out = output_data ? data_read : 8'hzz;
 
-`ifdef LP805X_ALTERA
-
-	wire	  pllena=1'b1; //for now
-	wire 	  c0;
-	wire	  c1;
-	wire	  c2;
-	wire	  locked;
-	wire [7:0] select;
-
-`ifdef LP805X_USEPLL
-	
-lp805x_pll clker
-	(
-		.areset( rsti),
-		.inclk0( clki),
-		.pllena( pllena),
-		.c0( c0),
-		.c1( c1),
-		.c2( c2),
-		.locked( locked)
-	);
-	
-	//wait until sync! @[StartUp]
-	assign
-			rst = rsti | ~locked,
-			select = clock_select[1:0] != 2'b00 ? clock_select[1:0] : 2'b01;
-
-lp805x_clkctrl clkctrl
-	(
-		.clkselect( select),
-		.ena( locked),
-		//.inclk0x( clki),
-		.inclk1x( clki),
-		.inclk2x( c1),
-		.inclk3x( c2),
-		.outclk( clk)
-	);
-`endif
-
-assign
-		rst = rsti,
-		select = clock_select[2:0];
-
-lp805x_clkdiv clkdiv_1( .rst(rsti), .clki(clki), ._pres_factor(select), .clk_div(clk));	
-	
-	
-`else 
-	`ifdef LP805X_XILINX
-	
 	wire 	  c0;
 	wire	  c1;
 	wire	  c2;
 	wire	  locked;
 	wire	[7:0]  select;
 	
-`ifdef LP805X_USEDLL	
 	
 lp805x_xpllcg clker
 	(// Clock in ports
@@ -190,8 +138,8 @@ lp805x_xpllcg clker
 		.S( select),
 		.O( clk)	
 	);	
-`endif
 
+/*
 	assign
 		rst = rsti,
 		select = clock_select[2:0];
@@ -207,11 +155,8 @@ lp805x_xpllcg clker
 	(
 		.I0( clk_),
 		.O( clk)	
-	);	
-
-	`endif
-`endif	
-
+	);
+	*/
 
 endmodule
 
