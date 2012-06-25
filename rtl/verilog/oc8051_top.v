@@ -34,10 +34,6 @@
 module oc8051_top (
 		wb_rst_i, 
 		wb_clk_i,
- 
-`ifdef LP805X_CLKER
-		clkii,
-`endif
 //interface to instruction rom
 `ifndef LP805X_ROM_ONCHIP
 		wbi_adr_o, 
@@ -303,8 +299,6 @@ end
 	
 `ifdef LP805X_CLKER
 
-	input clkii;
-
 	lp805x_clker clkctrl
 		( 
 			.rsti( ~wb_rst_i),
@@ -321,7 +315,6 @@ end
 			.rd_addr(rd_addr[7:0]),
 
 			.rst( wb_rst_s), .clk( wb_clk_s) //[SPECIAL FEATURE]
-			,.clkii(clkii) //xtra clock
 		);
 
 `else
