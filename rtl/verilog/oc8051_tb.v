@@ -89,13 +89,14 @@
 `include "oc8051_defines.v"
 
 
-//`define POST_ROUTE
+`define POST_ROUTE
 
 module oc8051_tb();
 
 
 //parameter FREQ  = 12000; // frequency in kHz
-parameter FREQ  = 1000; // frequency in kHz
+parameter FREQ  = 28000; // frequency in kHz
+//parameter FREQ  = 3500; // frequency in kHz
 
 parameter DELAY = 500000/FREQ;
 parameter RSTDELAY = DELAY*2;

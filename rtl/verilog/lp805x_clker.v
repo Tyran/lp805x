@@ -104,6 +104,56 @@ end
 
 assign data_out = output_data ? data_read : 8'hzz;
 
+
+`ifdef LP805X_ALTERA
+
+	wire	  pllena=1'b1; //for now
+	wire 	  c0;
+	wire	  c1;
+	wire	  c2;
+	wire	  locked;
+	wire [7:0] select;
+
+`ifdef LP805X_USEPLL
+	
+lp805x_pll clker
+	(
+		.areset( rsti),
+		.inclk0( clki),
+		.pllena( pllena),
+		.c0( c0),
+		.c1( c1),
+		.c2( c2),
+		.locked( locked)
+	);
+	
+	//wait until sync! @[StartUp]
+	assign
+			rst = rsti | ~locked,
+			select = clock_select[1:0] != 2'b00 ? clock_select[1:0] : 2'b01;
+
+lp805x_clkctrl clkctrl
+	(
+		.clkselect( select),
+		.ena( locked),
+		//.inclk0x( clki),
+		.inclk1x( clki),
+		.inclk2x( c1),
+		.inclk3x( c2),
+		.outclk( clk)
+	);
+`endif
+
+assign
+		rst = rsti;
+
+lp805x_clkdiv clkdiv_1( .rst(rsti), .clki(clki), ._pres_factor(clock_select), .clk_div(clk));	
+	
+	
+`else 
+	`ifdef LP805X_XILINX
+
+		`ifdef LP805X_USELL
 	wire 	  c0;
 	wire	  c1;
 	wire	  c2;
@@ -134,30 +184,29 @@ lp805x_xpllcg clker
 	clkctrl
 	(
 		.I0( c0),
-		.I1( c1),
+		.I1( c2),
 		.S( select),
 		.O( clk)	
 	);	
+		`else
 
-/*
 	assign
-		rst = rsti,
-		select = clock_select[2:0];
+		rst = rsti;
 
-		wire clk_;
+	wire clk_;
 		
-		lp805x_clkdiv clkdiv_1( .rst(rsti), .clki(clki), ._pres_factor(select), .clk_div(clk_));
+	lp805x_clkdiv clkdiv_1( .rst(rsti), .clki(clki), ._pres_factor(clock_select), .clk_div(clk_));
 		
-	BUFGMUX #(
-		.CLK_SEL_TYPE("SYNC")  // Glitchles ("SYNC") or fast ("ASYNC") clock switch-over
-   )
+	BUFG
 	clkctrl
 	(
-		.I0( clk_),
+		.I( clk_),
 		.O( clk)	
 	);
-	*/
-
+	
+		`endif //PLL
+	`endif // Xilinx
+`endif // Altera
 endmodule
 
 module lp805x_clkdiv( rst, clki, _pres_factor, clk_div) ;
