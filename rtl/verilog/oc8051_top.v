@@ -122,7 +122,7 @@ input				ea_in;		// external access
 		output	      wbi_stb_o,	// instruction strobe
 							wbi_cyc_o;	// instruction cycle
 		output [15:0]	wbi_adr_o;	// instruction address
-		output 			wbd_we_o,		// data write enable
+		output 			wbd_we_o,	// data write enable
 							wbd_stb_o,	// data strobe
 							wbd_cyc_o;	// data cycle
 `endif
@@ -130,8 +130,8 @@ input				ea_in;		// external access
 //
 // cpu to cache/wb_interface
 wire        iack_i,
-				istb_o,
-				icyc_o;
+				istb_o;
+//wire			icyc_o;
 wire [31:0]	idat_i;
 wire [15:0] iadr_o;
 
@@ -474,7 +474,7 @@ oc8051_indi_addr oc8051_indi_addr1 (.clk(wb_clk_s),
 
 
 
-assign icyc_o = istb_o;
+//assign icyc_o = istb_o;
 //
 //
 oc8051_memory_interface oc8051_memory_interface1
@@ -504,7 +504,7 @@ oc8051_memory_interface oc8051_memory_interface1
 			.iack_i(iack_i),
 			.iadr_o(iadr_o),
 			.idat_i(idat_i),
-			.istb_o(istb_o),
+		//	.istb_o(istb_o),
 
 // internal instruction rom
 			.idat_onchip(idat_onchip),
@@ -521,7 +521,7 @@ oc8051_memory_interface oc8051_memory_interface1
 			.rd_sel(ram_rd_sel),
 			.wr_sel(ram_wr_sel),
 			.rn({bank_sel, op1_cur}),
-			.rd_ind(rd_ind),
+			//.rd_ind(rd_ind),
 			.rd(rd),
 			.mem_act(mem_act),
 			.mem_wait(mem_wait),
