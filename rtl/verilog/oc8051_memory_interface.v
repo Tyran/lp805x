@@ -198,7 +198,7 @@ output        wr_o,
 
 //????
 reg           dack_ir;
-reg [7:0]     ddat_ir;
+//reg [7:0]     ddat_ir;
 reg [23:0]    idat_ir;
 
 /////////////////////////////
@@ -251,8 +251,8 @@ reg [7:0]     wr_addr,
 reg [4:0]     rn_r;
 reg [7:0]     ri_r,
               imm_r,
-	      imm2_r,
-	      op1_r;
+	      imm2_r;
+	      //op1_r;
 wire [7:0]    imm,
               imm2;
 
@@ -291,9 +291,9 @@ reg [7:0]     op1_o,
               op2_o,
 	      op3_o;
 
-reg [7:0]     op1_xt, 
-              op2_xt, 
-	      op3_xt;
+reg [7:0]     op3_xt, 
+              op2_xt;
+	      //op1_xt;
 
 reg [7:0]     op1,
               op2,
@@ -313,8 +313,8 @@ reg [15:0]    pc_buf;
 wire [15:0]   alu;
 
 
-reg           int_buff,
-              int_buff1; // interrupt buffer: used to prevent interrupting in the middle of executin instructions
+reg           int_buff;
+//int_buff1; // interrupt buffer: used to prevent interrupting in the middle of executin instructions
 
 
 //
@@ -330,7 +330,7 @@ reg [15:0]    iadr_t,
               dadr_ot;
 reg           dmem_wait;
 wire          pc_wait;
-wire [1:0]    bank;
+//wire [1:0]    bank;
 wire [7:0]    isr_call;
 
 reg [1:0]     op_length;
@@ -344,14 +344,14 @@ wire [15:0]   pc_out;
 reg [31:0]    idat_cur,
               idat_old;
 
-reg           inc_pc_r,
-              pc_wr_r2;
+//reg           inc_pc_r,
+reg           pc_wr_r2;
 
 reg [7:0]     cdata;
 reg           cdone;
 
 
-assign bank       = rn[4:3];
+//assign bank       = rn[4:3];
 assign imm        = op2_out;
 assign imm2       = op3_out;
 assign alu        = {des2, des_acc};
@@ -404,7 +404,7 @@ end
 //
 /////////////////////////////
 
-always @(rd_sel or sp or ri or rn or imm or dadr_o[15:0] or bank)
+always @(rd_sel or sp or ri or rn or imm or dadr_o[15:0])// or bank)
 begin
   case (rd_sel) /* previous full_mask parallel_mask */
     `OC8051_RRS_RN   : rd_addr = {3'h0, rn};
@@ -423,7 +423,7 @@ end
 
 //
 //
-always @(wr_sel or sp_w or rn_r or imm_r or ri_r or imm2_r or op1_r or dadr_o[15:0])
+always @(wr_sel or sp_w or rn_r or imm_r or ri_r or imm2_r or dadr_o[15:0])// or op1_r)
 begin
   case (wr_sel) /* previous full_mask parallel_mask */
     `OC8051_RWS_RN : wr_addr = {3'h0, rn_r}; //same code as RWS_DC!
@@ -684,15 +684,15 @@ assign op2_out = (rd) ? op2_o : op2_buff;
 always @(idat_i or iack_i or idat_ir or rd)
 begin
   if (iack_i) begin
-    op1_xt = idat_i[7:0];
+    //op1_xt = idat_i[7:0];
     op2_xt = idat_i[15:8];
     op3_xt = idat_i[23:16];
   end else if (!rd) begin
-    op1_xt = idat_ir[7:0];
+    //op1_xt = idat_ir[7:0];
     op2_xt = idat_ir[15:8];
     op3_xt = idat_ir[23:16];
   end else begin
-    op1_xt = 8'h00;
+    //op1_xt = 8'h00;
     op2_xt = 8'h00;
     op3_xt = 8'h00;
   end
@@ -953,13 +953,14 @@ always @(posedge clk or posedge rst)
 
 //
 //interrupt buffer
+/*
 always @(posedge clk or posedge rst)
   if (rst) begin
     int_buff1 <= #1 1'b0;
   end else begin
     int_buff1 <= #1 int_buff;
   end
-
+*/
 always @(posedge clk or posedge rst)
   if (rst) begin
     int_buff <= #1 1'b0;
@@ -1029,13 +1030,13 @@ assign pc_out = inc_pc ? pc_buf + 16'h4
 
 
 
-
+/*
 always @(posedge clk or posedge rst)
   if (rst)
     ddat_ir <= #1 8'h00;
   else if (dack_i)
     ddat_ir <= #1 ddat_i;
-
+*/
 /*
 
 always @(pc_buf or op1_out or pc_wait or int_buff or int_buff1 or ea_rom_sel or iack_i)
@@ -1198,7 +1199,7 @@ always @(posedge clk or posedge rst)
     imm_r     <= #1 8'h00;
     imm2_r    <= #1 8'h00;
     rd_addr_r <= #1 1'b0;
-    op1_r     <= #1 8'h0;
+    //op1_r     <= #1 8'h0;
     dack_ir   <= #1 1'b0;
     sp_r      <= #1 1'b0;
     pc_wr_r   <= #1 1'b0;
@@ -1209,20 +1210,20 @@ always @(posedge clk or posedge rst)
     imm_r     <= #1 imm;
     imm2_r    <= #1 imm2;
     rd_addr_r <= #1 rd_addr[7];
-    op1_r     <= #1 op1_out;
+   // op1_r     <= #1 op1_out;
     dack_ir   <= #1 dack_i & dstb_o;
     sp_r      <= #1 sp;
     pc_wr_r   <= #1 pc_wr && (pc_wr_sel != `OC8051_PIS_AH);
     pc_wr_r2  <= #1 pc_wr_r;
   end
-
+/*
 always @(posedge clk or posedge rst)
   if (rst) begin
     inc_pc_r  <= #1 1'b1;
   end else if (istb) begin
     inc_pc_r  <= #1 inc_pc;
   end
-
+*/
 
 // synthesis translate_off
 initial

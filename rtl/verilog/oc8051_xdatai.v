@@ -103,7 +103,7 @@ module generic_xram(
 	input [7:0] data;
 	output reg [7:0] q;
 	
-	reg [7:0] buff [0:4095] /* synthesis syn_preserve */; //4kb
+	reg [7:0] buff [0:2047] /* synthesis syn_preserve */; //4kb
 
 	always@(posedge clock)
 	begin

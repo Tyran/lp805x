@@ -197,12 +197,15 @@ lp805x_xpllcg clker
 		
 	lp805x_clkdiv clkdiv_1( .rst(rsti), .clki(clki), ._pres_factor(clock_select), .clk_div(clk_));
 		
+	assign clk = clk_; //will xise be smart?
+	/*
 	BUFG
 	clkctrl
 	(
 		.I( clk_),
 		.O( clk)	
 	);
+	*/
 	
 		`endif //PLL
 	`endif // Xilinx
