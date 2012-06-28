@@ -213,13 +213,13 @@ lp805x_xpllcg clker
 endmodule
 
 module lp805x_clkdiv( rst, clki, _pres_factor, clk_div) ;
-    input rst;
+	 parameter PRESCALE_LEN = 3;
+	 parameter COUNTER_LEN = 8;
+	 
+	 input rst;
     input clki;
 	 input [PRESCALE_LEN-1:0] _pres_factor;
     output clk_div;
-	 
-	 parameter PRESCALE_LEN = 3;
-	 parameter COUNTER_LEN = 8;
 	 
 	 reg [COUNTER_LEN-1:0] pres_counter;
 	 
