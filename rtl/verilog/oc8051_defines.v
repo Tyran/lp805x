@@ -50,8 +50,8 @@
 //
 //
 //`define OC8051_UART
-//`define OC8051_TC01
-//`define OC8051_TC2
+`define OC8051_TC01
+`define OC8051_TC2
 `define OC8051_PORTS  //ports global enable
 `define OC8051_PORT0
 `define OC8051_PORT1
@@ -88,15 +88,15 @@
 
 //NONE-INFERED
 `define LP805X_ROM_INFER
-`define LP805X_XILINX
-//`define LP805X_ALTERA
+//`define LP805X_XILINX
+`define LP805X_ALTERA
 
 //clock management
 `define LP805X_CLKER
 //`define LP805X_USELL
 
 //new timer
-`define LP805X_NTC
+//`define LP805X_NTC
 
 //
 // oc8051 simulation defines

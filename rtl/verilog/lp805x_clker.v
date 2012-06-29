@@ -114,7 +114,7 @@ assign data_out = output_data ? data_read : 8'hzz;
 	wire	  locked;
 	wire [7:0] select;
 
-`ifdef LP805X_USEPLL
+	`ifdef LP805X_USEPLL
 	
 lp805x_pll clker
 	(
@@ -142,7 +142,7 @@ lp805x_clkctrl clkctrl
 		.inclk3x( c2),
 		.outclk( clk)
 	);
-`endif
+	`endif //PLL
 
 assign
 		rst = rsti;
@@ -214,7 +214,7 @@ endmodule
 
 module lp805x_clkdiv( rst, clki, _pres_factor, clk_div) ;
 	 parameter PRESCALE_LEN = 3;
-	 parameter COUNTER_LEN = 8;
+	 parameter COUNTER_LEN = 7;
 	 
 	 input rst;
     input clki;
@@ -223,7 +223,9 @@ module lp805x_clkdiv( rst, clki, _pres_factor, clk_div) ;
 	 
 	 reg [COUNTER_LEN-1:0] pres_counter;
 	 
-	 assign clk_div = pres_counter[ _pres_factor];
+	 wire [COUNTER_LEN:0] clock_list = { pres_counter,  clki };
+	 
+	 assign clk_div = clock_list[ _pres_factor];
 	 
 	 always @(posedge clki or posedge rst)
 	 begin
