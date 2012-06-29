@@ -262,7 +262,7 @@ input enb;
 input [9 : 0] addrb;
 output reg [31 : 0] doutb;
 
-reg [31:0] buff [0:1023] /* synthesis syn_preserve=1 */; //4kb
+reg [31:0] buff [0:4095] /* synthesis syn_preserve=1 */; //4kb
 
 // synthesis translate_off
 integer i;

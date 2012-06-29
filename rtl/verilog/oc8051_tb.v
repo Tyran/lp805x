@@ -89,7 +89,7 @@
 `include "oc8051_defines.v"
 
 
-`define POST_ROUTE
+//`define POST_ROUTE
 
 module oc8051_tb();
 
@@ -120,6 +120,7 @@ wire 	[15:0]	addr;
 wire 	[31:0] 	data_o;
 wire 	[2:0] 	mem_act;
 reg				clk;
+wire				clk_div;
 wire 	[7:0]		accr,acc;
 wire	[7:0]		data_in;
 wire				wr_acc;
@@ -147,6 +148,8 @@ assign p0_in=8'h53;
 assign p1_in=8'hAA;
 
 `ifndef POST_ROUTE
+
+assign clk_div = oc8051_top_1.wb_clk_s;
 
 assign xd_addr = oc8051_top_1.oc8051_xdatai1.addr;
 assign xd_datai = oc8051_top_1.oc8051_xdatai1.data_i;
