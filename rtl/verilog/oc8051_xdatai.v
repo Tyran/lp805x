@@ -104,6 +104,15 @@ module generic_xram(
 	output reg [7:0] q;
 	
 	reg [7:0] buff [0:2047] /* synthesis syn_preserve */; //4kb
+	
+	// synthesis translate_off
+	integer i;
+	initial
+	begin
+		for ( i=0; i<1024; i=i+1)
+			buff[i] = 32'h00000000;
+	end
+	// synthesis translate_on
 
 	always@(posedge clock)
 	begin
@@ -111,10 +120,12 @@ module generic_xram(
 			buff[address] <= data;
 	end
 	
-	always@(posedge clock)
+	always@(posedge clock or posedge aclr)
 	begin
-		if ( rden)
-			q <= buff[address];		
+		if ( aclr)
+			q <= 8'b0;
+		else if ( rden)
+			q <= buff[address];	
 	end
 
 endmodule
