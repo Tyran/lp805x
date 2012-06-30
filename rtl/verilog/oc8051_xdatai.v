@@ -98,19 +98,21 @@ module generic_xram(
 	q
 );
 
+	parameter LP805X_XDATA_LEN = `LP805X_XDATASIZE;
+
 	input aclr,rden,wren,clock;
 	input [15:0] address;
 	input [7:0] data;
 	output reg [7:0] q;
 	
-	reg [7:0] buff [0:2047] /* synthesis syn_preserve */; //4kb
+	reg [7:0] buff [0:LP805X_XDATA_LEN-1] /* synthesis syn_preserve */; //4kb
 	
 	// synthesis translate_off
 	integer i;
 	initial
 	begin
-		for ( i=0; i<1024; i=i+1)
-			buff[i] = 32'h00000000;
+		for ( i=0; i<LP805X_XDATA_LEN; i=i+1)
+			buff[i] = 8'h00000000;
 	end
 	// synthesis translate_on
 
