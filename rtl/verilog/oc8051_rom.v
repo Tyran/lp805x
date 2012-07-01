@@ -40,25 +40,7 @@
 //// from http://www.opencores.org/lgpl.shtml                     ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
-//
-// CVS Revision History
-//
-// $Log: not supported by cvs2svn $
-// Revision 1.3  2003/06/03 17:09:57  simont
-// pipelined acces to axternal instruction interface added.
-//
-// Revision 1.2  2003/04/03 19:17:19  simont
-// add `include "oc8051_defines.v"
-//
-// Revision 1.1  2003/04/02 11:16:22  simont
-// initial inport
-//
-// Revision 1.4  2002/10/23 17:00:18  simont
-// signal es_int=1'b0
-//
-// Revision 1.3  2002/09/30 17:34:01  simont
-// prepared header
-//
+
 //
 // synopsys translate_off
 `include "oc8051_timescale.v"
@@ -81,7 +63,7 @@ reg ea_int;
 
 
 `ifdef LP805X_XILINX
-parameter INT_ROM_WIDTH = 12;
+parameter INT_ROM_WIDTH = (`LP805X_IROMLEN+2);
 reg [31:0] data_o;
 
 assign ea = | addr[15:INT_ROM_WIDTH];
@@ -96,17 +78,17 @@ end
 wire [31:0] data0;
 wire [31:0] data1;
 	
-reg [11:0] addr_r;
+reg [INT_ROM_WIDTH-1:0] addr_r;
 	
 always @(posedge clk or posedge rst)
 begin
 	if ( rst)
 	begin
-		addr_r <= 12'h0;
+		addr_r <= 0;
 	end
 	else
 	begin
-		addr_r <= addr[11:0];
+		addr_r <= addr[INT_ROM_WIDTH-1:0];
 	end
 end
   
@@ -130,11 +112,11 @@ romX
 	(
 	  .clka( clk),
 	  .ena( 1'b1),
-	  .addra( addr[11:2]),
+	  .addra( addr[INT_ROM_WIDTH-1:2]),
 	  .douta( data0),
 	  .clkb( clk),
 	  .enb( 1'b1),
-	  .addrb( addr[11:2]+10'b1),
+	  .addrb( addr[INT_ROM_WIDTH-1:2]+1'b1),
 	  .doutb( data1)
 	);
 
@@ -143,23 +125,23 @@ romX
 `ifdef LP805X_ALTERA
 
 reg [31:0] data_o;
-parameter INT_ROM_WIDTH = 12;
+parameter INT_ROM_WIDTH = (`LP805X_IROMLEN+2);
 assign ea = | addr[15:INT_ROM_WIDTH];
 
 wire [31:0] data0;
 wire [31:0] data1;
 	
-reg [11:0] addr_r;
+reg [INT_ROM_WIDTH-1:0] addr_r;
 	
 always @(posedge clk or posedge rst)
 begin
 	if ( rst)
 	begin
-		addr_r <= 12'h0;
+		addr_r <= 0;
 	end
 	else
 	begin
-		addr_r <= addr[11:0];
+		addr_r <= addr[INT_ROM_WIDTH-1:0];
 	end
 end
   
@@ -179,11 +161,11 @@ lp5xRomI romA
 	(
 	  .clka( clk),
 	  .ena( 1'b1),
-	  .addra( addr[11:2]),
+	  .addra( addr[INT_ROM_WIDTH-1:2]),
 	  .douta( data0),
 	  .clkb( clk),
 	  .enb( 1'b1),
-	  .addrb( addr[11:2]+10'b1),
+	  .addrb( addr[INT_ROM_WIDTH-1:2]+1'b1),
 	  .doutb( data1)
 	);
 `else
@@ -191,9 +173,9 @@ lp805x_rom romA
 	(
 	  .clock( clk),
 	  .enable( 1'b1),
-	  .address_a( addr[11:2]),
+	  .address_a( addr[INT_ROM_WIDTH-1:2]),
 	  .q_a( data0),
-	  .address_b( addr[11:2]+10'b1),
+	  .address_b( addr[INT_ROM_WIDTH-1:2]+1'b1),
 	  .q_b( data1)
 	);
 `endif
@@ -253,22 +235,25 @@ module lp5xRomI(
   doutb
 );
 
+parameter LP805X_ROM_LEN = `LP805X_IROMSIZE;
+parameter LP805X_ADD_LEN = `LP805X_IROMLEN;
+
 input clka;
 input ena;
-input [9 : 0] addra;
+input [LP805X_ADD_LEN-1 : 0] addra;
 output reg [31 : 0] douta;
 input clkb;
 input enb;
-input [9 : 0] addrb;
+input [LP805X_ADD_LEN-1 : 0] addrb;
 output reg [31 : 0] doutb;
 
-reg [31:0] buff [0:4095] /* synthesis syn_preserve=1 */; //4kb
+reg [31:0] buff [0:LP805X_ROM_LEN-1] /* synthesis syn_preserve=1 */; //4kb
 
 // synthesis translate_off
 integer i;
 initial
 begin
-	for ( i=0; i<1024; i=i+1)
+	for ( i=0; i<LP805X_ROM_LEN; i=i+1)
 		buff[i] = 32'h00000000;
 end
 // synthesis translate_on

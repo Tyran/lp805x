@@ -2663,7 +2663,7 @@ begin
             `OC8051_MOVX_IA : state <= #1 2'b10;
             `OC8051_MOVX_AI : state <= #1 2'b01;
             `OC8051_MOVX_PA : state <= #1 2'b10;
-            `OC8051_MOVX_AP : state <= #1 2'b10;
+            `OC8051_MOVX_AP : state <= #1 2'b01;
             `OC8051_RET     : state <= #1 2'b11;
             `OC8051_RETI    : state <= #1 2'b11;
             `OC8051_SJMP    : state <= #1 2'b10;

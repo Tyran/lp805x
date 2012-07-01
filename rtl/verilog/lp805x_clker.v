@@ -59,30 +59,11 @@ begin
 // write to clksr (byte addressable)
   else if (wr & ~wr_bit & (wr_addr==`LP805X_SFR_CLKSR))
     clock_select <= #1 data_in;
-//
-// write to clksr (bit addressable)
-  else if (wr & wr_bit & (wr_addr[7:3]==`LP805X_SFR_CLKSR))
-    clock_select[wr_addr[2:0]] <= #1 bit_in;
+
 end
 
 tri bit_out;
-
-reg bit_outc;
-reg bit_outd;
-assign bit_out = bit_outc ? bit_outd : 1'bz;
-//
-// case of reading bit from port
-always @(posedge clk or posedge rst)
-begin
-  if (rst)
-   {bit_outc,bit_outd} <= #1 {1'b0,1'b0};
-  else
-   if ( rd_bit)
-    case (rd_addr[7:3])
-      `LP805X_SFR_B_CLKSR:    {bit_outc,bit_outd} <= #1 {1'b1,clock_select[rd_addr[2:0]]};
-	default:		{bit_outc,bit_outd} <= #1 {1'b0,1'b0};
-    endcase
-end
+assign bit_out = 1'bz;
 
 
 reg output_data;
@@ -147,7 +128,11 @@ lp805x_clkctrl clkctrl
 assign
 		rst = rsti;
 
-lp805x_clkdiv clkdiv_1( .rst(rsti), .clki(clki), ._pres_factor(clock_select), .clk_div(clk));	
+parameter PRESCALE_LEN = 3;
+		
+	lp805x_clkdiv #(.PRESCALE_LEN(PRESCALE_LEN))
+	clkdiv_1( .rst(rsti), .clki(clki), 
+	._pres_factor(clock_select[PRESCALE_LEN-1:0]), .clk_div(clk_));
 	
 	
 `else 
@@ -194,8 +179,12 @@ lp805x_xpllcg clker
 		rst = rsti;
 
 	wire clk_;
+	
+	parameter PRESCALE_LEN = 3;
 		
-	lp805x_clkdiv clkdiv_1( .rst(rsti), .clki(clki), ._pres_factor(clock_select), .clk_div(clk_));
+	lp805x_clkdiv #(.PRESCALE_LEN(PRESCALE_LEN))
+	clkdiv_1( .rst(rsti), .clki(clki), 
+	._pres_factor(clock_select[PRESCALE_LEN-1:0]), .clk_div(clk_));
 		
 	assign clk = clk_; //will xise be smart?
 	/*

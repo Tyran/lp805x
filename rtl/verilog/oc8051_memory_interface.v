@@ -156,6 +156,7 @@ module oc8051_memory_interface (clk, rst,
 
 //sfr's
      dptr, 
+	  dptr_bypass,
      ri, 
      sp,  
      sp_w, 
@@ -221,7 +222,7 @@ wire          ea_rom_sel;
 /////////////////////////////
 input [7:0]   ri,
               ddat_i;
-input [15:0]  dptr;
+input [15:0]  dptr,dptr_bypass;
 
 output        dstb_o,
               dwe_o;
@@ -521,28 +522,28 @@ begin
     dmem_wait <= #1 1'b0;
   end else begin
     case (mem_act) /* previous full_mask parallel_mask */
-      `OC8051_MAS_DPTR_R: begin  // read from external rom: acc=(dptr)
+      `OC8051_MAS_DPTR_R: begin  // read from external ram: acc=(dptr)
         dwe_o <= #1 1'b0;
         dstb_o <= #1 1'b1;
         ddat_o <= #1 8'h00;
-        dadr_ot <= #1 {7'h0, dptr};
-        dmem_wait <= #1 1'b1;
+        dadr_ot <= #1 {7'h0, dptr_bypass};
+        dmem_wait <= #1 1'b0;
       end
-      `OC8051_MAS_DPTR_W: begin  // write to external rom: (dptr)=acc
+      `OC8051_MAS_DPTR_W: begin  // write to external ram: (dptr)=acc
         dwe_o <= #1 1'b1;
         dstb_o <= #1 1'b1;
         ddat_o <= #1 acc_bypass;
-        dadr_ot <= #1 {7'h0, dptr};
-        dmem_wait <= #1 1'b1;
+        dadr_ot <= #1 {7'h0, dptr_bypass};
+        dmem_wait <= #1 1'b0;
       end
-      `OC8051_MAS_RI_R:   begin  // read from external rom: acc=(Ri)
+      `OC8051_MAS_RI_R:   begin  // read from external ram: acc=(Ri)
         dwe_o <= #1 1'b0;
         dstb_o <= #1 1'b1;
         ddat_o <= #1 8'h00;
         dadr_ot <= #1 {15'h0, ri};
         dmem_wait <= #1 1'b0;
       end
-      `OC8051_MAS_RI_W: begin    // write to external rom: (Ri)=acc
+      `OC8051_MAS_RI_W: begin    // write to external ram: (Ri)=acc
         dwe_o <= #1 1'b1;
         dstb_o <= #1 1'b1;
         ddat_o <= #1 acc_bypass;

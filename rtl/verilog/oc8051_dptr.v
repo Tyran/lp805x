@@ -59,7 +59,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_dptr(clk, rst, addr, data_in, data2_in, wr, wr_sfr, wr_bit, data_hi, data_lo);
+module oc8051_dptr(clk, rst, addr, data_in, data2_in, wr, wr_sfr, wr_bit, data_hi, data_lo, dptr);
 //
 // clk          (in)  clock
 // rst          (in)  reset
@@ -79,8 +79,22 @@ input [1:0] wr_sfr;
 input [7:0] addr, data_in, data2_in;
 
 output [7:0] data_hi, data_lo;
+output [15:0] dptr;
 
 reg [7:0] data_hi, data_lo;
+reg [15:0] dptr;
+
+always @(*)
+begin
+	if (rst)
+		dptr = {`OC8051_RST_DPH,`OC8051_RST_DPL};
+	else if (wr_sfr==`OC8051_WRS_DPTR)
+		dptr = {data2_in,data_in};
+	else if ((addr==`OC8051_SFR_DPTR_HI) & (wr) & !(wr_bit))
+		dptr = {data_in,data_lo};
+	else if ((addr==`OC8051_SFR_DPTR_LO) & (wr) & !(wr_bit))
+		dptr = {data_hi,data_in};
+end
 
 always @(posedge clk or posedge rst)
 begin
