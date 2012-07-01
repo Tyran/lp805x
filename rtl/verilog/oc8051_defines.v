@@ -85,13 +85,15 @@
 //`define OC8051_XRAM_XILINX
 
 `define LP805X_XDATASIZE 2048
+`define LP805X_XDATALEN 11
 
-
+`define LP805X_IROMSIZE 4096 //*32B
+`define LP805X_IROMLEN 12
 
 //NONE-INFERED
 `define LP805X_ROM_INFER
-//`define LP805X_XILINX
-`define LP805X_ALTERA
+`define LP805X_XILINX
+//`define LP805X_ALTERA
 
 //clock management
 `define LP805X_CLKER
@@ -139,8 +141,8 @@
 //
 
 `define LP805X_RST_CLKSR 8'h00
-`define LP805X_SFR_CLKSR 8'hc0
-`define LP805X_SFR_B_CLKSR 5'b11000
+`define LP805X_SFR_CLKSR 8'h97
+//`define LP805X_SFR_B_CLKSR 5'b11000
 
 `define OC8051_SFR_ACC 8'he0 //accumulator
 `define OC8051_SFR_B 8'hf0 //b register

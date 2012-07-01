@@ -130,7 +130,7 @@ module oc8051_sfr (rst, clk,
        t2, t2ex,
   `endif
 
-       dptr_hi, dptr_lo,
+       dptr_hi, dptr_lo, dptr,
        wait_data);
 
 input ntf,ntr;
@@ -169,6 +169,8 @@ output [7:0] int_src,
 	     dptr_lo,
 	     acc,
 		  acc_bypass;
+		  
+output [15:0] dptr;		  
 		  
 output tri [7:0] data_out;	//data output				  
 		  
@@ -312,7 +314,8 @@ oc8051_dptr oc8051_dptr1(.clk(clk),
 			 .wr_bit(wr_bit_r),
 			 .data_hi(dptr_hi),
 			 .data_lo(dptr_lo), 
-			 .wr_sfr(wr_sfr));
+			 .wr_sfr(wr_sfr),
+			 .dptr(dptr));
 
 
 //

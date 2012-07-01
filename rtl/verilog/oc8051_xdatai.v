@@ -56,7 +56,7 @@ end
 `ifdef OC8051_XRAM_ALTERA
 myaltera_xram oc8051_xrami1(
 	.aclr(rst),
-	.address(addr),
+	.address(addr[`LP805X_XDATALEN-1:0]),
 	.clock(clk),
 	.data(data_i),
 	.wren(wr),
@@ -66,7 +66,7 @@ myaltera_xram oc8051_xrami1(
 `ifdef OC8051_XRAM_XILINX
 generic_xram oc8051_xrami1(
 	.aclr(rst),
-	.address(addr),
+	.address(addr[`LP805X_XDATALEN-1:0]),
 	.clock(clk),
 	.data(data_i),
 	.rden(1'b1),
@@ -76,7 +76,7 @@ generic_xram oc8051_xrami1(
 `else
 generic_xram oc8051_xrami1(
 	.aclr(rst),
-	.address(addr),
+	.address(addr[`LP805X_XDATALEN-1:0]),
 	.clock(clk),
 	.data(data_i),
 	.rden(1'b1),
@@ -99,9 +99,10 @@ module generic_xram(
 );
 
 	parameter LP805X_XDATA_LEN = `LP805X_XDATASIZE;
+	parameter LP805X_ADD_LEN = `LP805X_XDATALEN;
 
 	input aclr,rden,wren,clock;
-	input [15:0] address;
+	input [LP805X_ADD_LEN-1:0] address;
 	input [7:0] data;
 	output reg [7:0] q;
 	

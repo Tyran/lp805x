@@ -212,7 +212,7 @@ wire [7:0]	dptr_hi,
 
 wire [31:0] idat_onchip;
 
-wire [15:0] pc;
+wire [15:0] pc,dptr;
 
 //assign wbd_cyc_o = wbd_stb_o;
 
@@ -550,6 +550,7 @@ oc8051_memory_interface oc8051_memory_interface1
 // sfr's
 			.sp_w(sp_w), 
 			.dptr({dptr_hi, dptr_lo}),
+			.dptr_bypass( dptr),
 			.ri(ri), 
 			.acc(acc),
 			.acc_bypass(acc_bypass),
@@ -702,6 +703,7 @@ oc8051_sfr oc8051_sfr1(
 // dptr
 		       .dptr_hi(dptr_hi),
 		       .dptr_lo(dptr_lo),
+				 .dptr(dptr),
 		       .wait_data(wait_data)
 		       );
 

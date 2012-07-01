@@ -130,7 +130,8 @@ wire  [7:0] 	rd_addr,rd_data,wr_addr,wr_data;
 wire				rd_en,wr;
 
 
-wire	[7:0]		xd_addr, xd_datai, xd_datao;
+wire  [15:0] 	xd_addr;
+wire	[7:0]		xd_datai, xd_datao;
 wire				xd_wr, xd_stb, xd_ack;
 
 
@@ -368,6 +369,65 @@ begin
   clk = 0;
   forever #DELAY clk <= ~clk;
 end
+  
+  /*
+always @(posedge clk)
+  if (op_cur===8'h8b) begin
+  
+	if ( op2===8'h09) begin
+    $display("time %t => Catch ADEOS main! Nice", $time);
+	
+    $finish;
+	 end
+	 
+  end
+  */
+  /*
+    always @(posedge clk)
+  if (op_cur===8'h8a) begin
+  
+	if ( op2===8'h08) begin
+		
+	//if ( op3===8'heb) begin
+    $display("time %t => Catch 211A mov v0,r2", $time);
+	
+    $finish;
+	 //end
+	 
+	 end
+	 
+  end
+  */
+ /* 
+  always @(posedge clk)
+  if (op_cur===8'h12) begin
+  
+	if ( op2===8'h26) begin
+		if ( op3===8'h0c) begin
+    $display("time %t => Catch pStack = new char[stacksize]", $time);
+	
+    $finish;
+	 end
+	 end
+	 
+  end
+  */
+/*
+always @(addr)
+  if (addr===16'h20da) begin
+    $display("time %t => Catch 20da add!", $time);
+	
+    $finish;
+  end
+*/
+/*
+always @(posedge clk)
+  if (data_in===8'hzz) begin
+    $display("time %t => Z in data_in!", $time);
+	
+    $finish;
+  end
+  */
 
 
 
