@@ -26,14 +26,19 @@ module schedfs_tb;
 
 	// Inputs
 	reg clki;
-	reg [7:0] factor;
+	reg [8:0] factor;
+	reg rst;
+	reg start;
 
 	// Outputs
-	wire [7:0] index;
+	wire [2:0] index;
 
 	// Instantiate the Unit Under Test (UUT)
 	lp805x_schedfs uut (
-		.clki(clki), 
+		.clk( clki), 
+		.rst( rst),
+		.enable( 1'b1),
+		.start( start),
 		.factor(factor), 
 		.index(index)
 	);
@@ -41,25 +46,55 @@ module schedfs_tb;
 	initial begin
 		// Initialize Inputs
 		clki = 0;
+		rst = 1;
+		start = 0;
 		factor = 0;
 
 		// Wait 100 ns for global reset to finish
 		#100;
-      factor = 0;
-		#20
-		factor = 1;
-		#20
-		factor = 2;
-		#20
-		factor = 3;
-		#20
-		factor = 4;
-		#20
-		factor = 5;
-		#20
-		factor = 6;
-		#20
-		factor = 7;
+		rst = 0;
+		start = 1;
+      factor = 5;
+		#10
+		start = 0;
+		#100
+		start = 1;
+		factor = 8;
+		#10
+		start = 0;
+		#100
+		start = 1;
+		factor = 15;
+		#10
+		start = 0;
+		#100
+		start = 1;
+		factor = 30;
+		#10
+		start = 0;
+		#100
+		start = 1;
+		factor = 32;
+		#10
+		start = 0;
+		#100
+		start = 1;
+		factor = 70;
+		#10
+		start = 0;
+		#100
+		start = 1;
+		factor = 250;
+		#10
+		start = 0;
+		#100
+		start = 1;
+		factor = 271;
+		#10
+		start = 0;
+		#100
+		start = 1;
+		factor = 501;
 		
 		// Add stimulus here
 
