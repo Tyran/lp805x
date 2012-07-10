@@ -30,7 +30,7 @@ module lp805x_schedfs(
 	 parameter TOP_PRESCALER = 7;
 	 
 	 input clk,rst;
-	 input wire [7:0] factor;
+	 input wire [8:0] factor;
 	 output reg [2:0] index;
 	 
 	 wire [8:0] scale [1:7];
@@ -41,6 +41,8 @@ module lp805x_schedfs(
 	 input start;
 	 input enable;
 	 
+	 reg _enable;
+	 
 	 assign
 		scale[7] = 9'd7,
 		scale[6] = 9'd15,
@@ -50,7 +52,7 @@ module lp805x_schedfs(
 		scale[2] = 9'd250,
 		scale[1] = 9'd500;
 		
-	always @(posedge clk or posedge rst)
+	always @(posedge clk or posedge rst or posedge start)
 	begin
 		if ( rst | start)
 		begin
@@ -63,7 +65,7 @@ module lp805x_schedfs(
 			pipe[6] <= #1 scale[1];
 			select  <= #1 3'h7;
 		end
-		else if ( enable)
+		else if ( _enable)
 		begin
 			pipe[0] <= #1 pipe[1];
 			pipe[1] <= #1 pipe[2];
@@ -80,40 +82,18 @@ module lp805x_schedfs(
 		if ( rst)
 		begin
 			index <= #1 3'b0;
-//			enable <= #1 1'b0;
+			_enable <= #1 1'b0;
 		end
-		else if ( enable)
+		else if ( _enable)
 		begin
 			if ( factor <= pipe[0])
 			begin
-				index <= select;
-	//			enable <= #1 1'b0;
+				index <= #1 select;
+				_enable <= #1 1'b0;
 			end
 		end
+		else if ( start)
+			_enable <= #1 1'b1;
 	end
 	 
-	 
-	 
-	 
-	 /*always@(*)
-	 begin
-		if ( factor[7])
-			index = 7;
-		else if ( factor[6])
-			index = 6;
-		else if ( factor[5])
-			index = 5;
-		else if ( factor[4])
-			index = 4;
-		else if ( factor[3])
-			index = 3;
-		else if ( factor[2])
-			index = 2;
-		else if ( factor[1])
-			index = 1;
-		else if ( factor[0])
-			index = 0;
-		else
-			index = 0;
-	 end*/
 endmodule
