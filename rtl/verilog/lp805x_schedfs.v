@@ -33,9 +33,10 @@ module lp805x_schedfs(
 	 input wire [8:0] factor;
 	 output reg [2:0] index;
 	 
-	 wire [8:0] scale [1:7];
+	 wire [15:0] _factor;
+	 wire [10:0] scale [0:7];
 	 
-	 reg [8:0] pipe [0:6];
+	 reg [10:0] pipe [0:7];
 	 reg [2:0] select;
 	 
 	 input start;
@@ -44,13 +45,17 @@ module lp805x_schedfs(
 	 reg _enable;
 	 
 	 assign
-		scale[7] = 9'd7,
-		scale[6] = 9'd15,
-		scale[5] = 9'd31,
-		scale[4] = 9'd62,
-		scale[3] = 9'd125,
-		scale[2] = 9'd250,
-		scale[1] = 9'd500;
+		scale[7] = 11'd12,
+		scale[6] = 11'd25,
+		scale[5] = 11'd50,
+		scale[4] = 11'd100,
+		scale[3] = 11'd200,
+		scale[2] = 11'd400,
+		scale[1] = 11'd800,
+		scale[0] = 11'd1600;
+		
+	assign
+		_factor = factor[8:0]<<4;
 		
 	always @(posedge clk or posedge rst or posedge start)
 	begin
@@ -63,6 +68,7 @@ module lp805x_schedfs(
 			pipe[4] <= #1 scale[3];
 			pipe[5] <= #1 scale[2];
 			pipe[6] <= #1 scale[1];
+			pipe[7] <= #1 scale[0];
 			select  <= #1 3'h7;
 		end
 		else if ( _enable)
@@ -73,6 +79,7 @@ module lp805x_schedfs(
 			pipe[3] <= #1 pipe[4];
 			pipe[4] <= #1 pipe[5];
 			pipe[5] <= #1 pipe[6];
+			pipe[6] <= #1 pipe[7];
 			select  <= #1 select - 1'b1;
 		end
 	end
@@ -86,7 +93,12 @@ module lp805x_schedfs(
 		end
 		else if ( _enable)
 		begin
-			if ( factor <= pipe[0])
+			if ( select == 0)
+			begin
+				index <= #1 select;
+				_enable <= #1 1'b0;
+			end
+			else if ( _factor <= pipe[0])
 			begin
 				index <= #1 select;
 				_enable <= #1 1'b0;

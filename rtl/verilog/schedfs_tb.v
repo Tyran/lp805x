@@ -95,6 +95,8 @@ module schedfs_tb;
 		#100
 		start = 1;
 		factor = 501;
+		#10
+		start = 0;
 		
 		// Add stimulus here
 
