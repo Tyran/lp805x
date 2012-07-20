@@ -18,33 +18,68 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
+
+`define LP805X_SFR_SCHEDH 8'he9
+`define LP805X_SFR_SCHEDL 8'hea
+
 module lp805x_schedfs(
 		rst,
 		clk,
-		factor,
-		index,
-		enable,
-		start
+		bit_in,
+		bit_out,
+		data_in,
+		data_out,
+		wr, 
+		wr_bit,
+		rd,
+		rd_bit,
+		wr_addr, 
+		rd_addr
     );
 	 
-	 parameter TOP_PRESCALER = 7;
+	parameter SCHEDH_RSTVAL = 8'h0;
+	parameter SCHEDL_RSTVAL = 8'h0;
 	 
-	 input clk,rst;
-	 input wire [8:0] factor;
-	 output reg [2:0] index;
+	parameter TOP_PRESCALER = 7;
 	 
-	 wire [15:0] _factor;
-	 wire [10:0] scale [0:7];
+	input clk,rst;
 	 
-	 reg [10:0] pipe [0:7];
-	 reg [2:0] select;
+	input wr,rd;
+	input wr_bit,rd_bit;
+
+	input [7:0]	wr_addr,rd_addr;
+	
+	input [7:0] data_in;
+	input bit_in;
+	reg [7:0] data_read;
 	 
-	 input start;
-	 input enable;
 	 
-	 reg _enable;
+	wire [15:0] factor;
+	wire [10:0] scale [0:7];
+
+	reg [10:0] pipe [0:7];
+	reg [2:0] select;
+
+	
+	wire _enable;
+	reg running;
 	 
-	 assign
+	//registers
+	reg [7:0] sched_h, sched_l; //factor
+	reg [7:0] index; //freq select [no-bind]
+
+	//read operation
+	output tri [7:0] data_out;
+	output tri bit_out;
+
+	wire start,enable;//complete is not necessary, just check start negedge ;)
+	assign
+		start = sched_h[7],
+		enable = sched_h[6],
+		//still space for fore functions :-)
+		factor = { sched_h[3:0], sched_l, 4'b0 };
+
+	assign //binding frequency select
 		scale[7] = 11'd12,
 		scale[6] = 11'd25,
 		scale[5] = 11'd50,
@@ -55,9 +90,10 @@ module lp805x_schedfs(
 		scale[0] = 11'd1600;
 		
 	assign
-		_factor = factor[8:0]<<4;
+		_enable = start & !running & enable ? 1'b1 : running & enable ? 1'b1 : 1'b0;
 		
-	always @(posedge clk or posedge rst or posedge start)
+		
+	always @(posedge clk or posedge start)
 	begin
 		if ( rst | start)
 		begin
@@ -89,23 +125,59 @@ module lp805x_schedfs(
 		if ( rst)
 		begin
 			index <= #1 3'b0;
-			_enable <= #1 1'b0;
+			running <= #1 1'b0;
 		end
 		else if ( _enable)
 		begin
 			if ( select == 0)
 			begin
 				index <= #1 select;
-				_enable <= #1 1'b0;
+				running <= #1 1'b0;
 			end
-			else if ( _factor <= pipe[0])
+			else if ( factor <= pipe[0])
 			begin
 				index <= #1 select;
-				_enable <= #1 1'b0;
+				running <= #1 1'b0;
 			end
 		end
-		else if ( start)
-			_enable <= #1 1'b1;
+		else if ( start & enable)
+			running <= #1 1'b1;
 	end
-	 
+	
+	
+	always @(posedge clk or posedge rst)
+	begin
+		if ( rst) begin
+			sched_h <= #1 SCHEDH_RSTVAL;
+			sched_l <= #1 SCHEDL_RSTVAL;
+		end else if (wr & !wr_bit) begin
+				case ( wr_addr)
+					`LP805X_SFR_SCHEDH: sched_h <= #1 data_in;
+					`LP805X_SFR_SCHEDL: sched_l <= #1 data_in;
+					default: sched_h[7] <= 1'b0;
+				endcase
+		end else
+			sched_h[7] <= 1'b0;
+	end
+
+	reg output_data;
+	//
+	// case of reading byte from port
+	always @(posedge clk or posedge rst)
+	begin
+	  if (rst)
+		 {output_data,data_read} <= #1 {1'b0,8'h0};
+	  else
+		//if ( !rd_bit)
+		 case (rd_addr)
+			`LP805X_SFR_SCHEDH: 	{output_data,data_read} <= #1 {1'b1,sched_h};
+			`LP805X_SFR_SCHEDL: 	{output_data,data_read} <= #1 {1'b1,sched_l};
+			default:             {output_data,data_read} <= #1 {1'b0,8'h0};
+		 endcase
+	end
+
+assign data_out = output_data ? data_read : 8'hzz;
+
+assign bit_out = 1'bz;
+	
 endmodule
