@@ -102,6 +102,8 @@
 //new timer
 //`define LP805X_NTC
 
+`define LP805X_HWSCHED
+
 //
 // oc8051 simulation defines
 //

@@ -77,7 +77,8 @@ module lp805x_schedfs(
 		start = sched_h[7],
 		enable = sched_h[6],
 		//still space for fore functions :-)
-		factor = { sched_h[3:0], sched_l, 4'b0 };
+		//factor = { sched_h[2:0], sched_l, 4'b0 }; //mul by 16
+		factor = { sched_h[2:0], sched_l }; //mul by 16
 
 	assign //binding frequency select
 		scale[7] = 11'd12,
@@ -154,10 +155,12 @@ module lp805x_schedfs(
 				case ( wr_addr)
 					`LP805X_SFR_SCHEDH: sched_h <= #1 data_in;
 					`LP805X_SFR_SCHEDL: sched_l <= #1 data_in;
-					default: sched_h[7] <= 1'b0;
+					default: begin sched_h[7] <= #1 running; sched_h[5:3] <= #1 index; end
 				endcase
-		end else
-			sched_h[7] <= 1'b0;
+		end else begin
+			sched_h[7] <= #1 running;
+			sched_h[5:3] <= #1 index;
+		end
 	end
 
 	reg output_data;
