@@ -102,7 +102,11 @@
 //new timer
 //`define LP805X_NTC
 
+//hardware scheduler aid
 `define LP805X_HWSCHED
+
+//watchdog timer
+`define LP805X_WDT
 
 //
 // oc8051 simulation defines
