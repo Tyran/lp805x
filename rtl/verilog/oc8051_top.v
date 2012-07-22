@@ -325,6 +325,26 @@ end
 		
 `endif	
 
+`ifdef LP805X_HWSCHED
+
+	lp805x_schedfs hwsched_1
+		(
+			.rst( wb_rst_s),
+			.clk( wb_clk_s),
+			.bit_in(desCy),
+			.bit_out(sfr_bit),
+			.data_in(wr_dat),
+			.data_out(sfr_out),
+			.wr(wr_o && !wr_ind),
+			.rd(!(wr_o && !wr_ind)),
+			.wr_bit(wr_bit_r),
+			.rd_bit(1'b1),
+			.wr_addr(wr_addr[7:0]),
+			.rd_addr(rd_addr[7:0])
+		);
+
+`endif
+
 	
 
 //
