@@ -109,8 +109,8 @@ wire widle,swrst,wdtov,wdten;
 		wdten = wdt_control[0];
 
 wire por;
-/* power on reset, or normal reset..?? */
-assign por = rsti;// | ~wdt_ovf & ~swrst;
+/* power on reset */
+assign por = rsti & ~wdt_ovf & ~swrst;
 
 //
 //case writing to clk select register
