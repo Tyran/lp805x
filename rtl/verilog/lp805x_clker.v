@@ -48,18 +48,22 @@ reg [7:0] clock_select; //SFR register
 output wire clk;
 output wire rst;
 
+reg do_switch;
 
 //
 //case writing to clk select register
 always @(posedge clk or posedge rst)
 begin
-  if (rst)
+  if (rst) begin
     clock_select <= #1 `LP805X_RST_CLKSR;
+	 do_switch <= #1 1'b0;
+  end
 //
 // write to clksr (byte addressable)
-  else if (wr & ~wr_bit & (wr_addr==`LP805X_SFR_CLKSR))
+  else if (wr & ~wr_bit & (wr_addr==`LP805X_SFR_CLKSR)) begin
     clock_select <= #1 data_in;
-
+	 do_switch <= #1 ~do_switch;
+  end
 end
 
 tri bit_out;
@@ -181,27 +185,42 @@ lp805x_xpllcg clker
 	wire clk_;
 	
 	parameter PRESCALE_LEN = 3;
+	
+	wire last_clk;
 		
 	lp805x_clkdiv #(.PRESCALE_LEN(PRESCALE_LEN))
 	clkdiv_1( .rst(rsti), .clki(clki), 
-	._pres_factor(clock_select[PRESCALE_LEN-1:0]), .clk_div(clk_));
+	._pres_factor(clock_select[PRESCALE_LEN-1:0]), .clk_div(clk_), .clk_divl(last_clk));
 		
-	assign clk = clk_; //will xise be smart?
-	/*
-	BUFG
-	clkctrl
-	(
-		.I( clk_),
-		.O( clk)	
-	);
-	*/
+	//assign clk = clk_; //will xise be smart?
+	
+	wire clk_0,clk_1;
+	
+	reg do_s_1;
+	
+	always @(posedge clk)
+		do_s_1 <= #1 do_switch;
+	
+	assign clk_0 = do_s_1 ? clk_ : last_clk; 
+	assign clk_1 = do_s_1 ? last_clk : clk_; 
+	
+	BUFGMUX #(
+      .CLK_SEL_TYPE("SYNC")  // Glitchles ("SYNC") or fast ("ASYNC") clock switch-over
+   )
+   BUFGMUX_inst (
+      .O(clk),   // 1-bit output: Clock buffer output
+      .I0(clk_0), // 1-bit input: Clock buffer input (S=0)
+      .I1(clk_1), // 1-bit input: Clock buffer input (S=1)
+      .S(do_switch)    // 1-bit input: Clock buffer select
+   );
+	
 	
 		`endif //PLL
 	`endif // Xilinx
 `endif // Altera
 endmodule
 
-module lp805x_clkdiv( rst, clki, _pres_factor, clk_div) ;
+module lp805x_clkdiv( rst, clki, _pres_factor, clk_div, clk_divl) ;
 	 parameter PRESCALE_LEN = 3;
 	 parameter COUNTER_LEN = 7;
 	 
@@ -209,14 +228,26 @@ module lp805x_clkdiv( rst, clki, _pres_factor, clk_div) ;
     input clki;
 	 input [PRESCALE_LEN-1:0] _pres_factor;
     output clk_div;
+	 output clk_divl;
+	 
+	 reg [PRESCALE_LEN-1:0] clk_divl_i;
 	 
 	 reg [COUNTER_LEN-1:0] pres_counter;
 	 
 	 wire [COUNTER_LEN:0] clock_list = { pres_counter,  clki };
 	 
 	 assign clk_div = clock_list[ _pres_factor];
+	 assign clk_divl = clock_list[ clk_divl_i];
 	 
-	 always @(posedge clki or posedge rst)
+	 always @(posedge clki)
+	 begin
+		if ( rst)
+			clk_divl_i <= #1 1'b0;
+		else
+			clk_divl_i <= _pres_factor;
+	 end
+	 
+	 always @(posedge clki)
 	 begin
 		if ( rst)
 			pres_counter <= #1 0;
