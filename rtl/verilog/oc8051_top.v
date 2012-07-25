@@ -321,7 +321,7 @@ end
 `else
 
 	assign 
-		wb_rst_w = ~wb_rst_i,
+		wb_rst_s = ~wb_rst_i,
 		wb_clk_s = wb_clk_i;
 		
 `endif	
@@ -365,7 +365,11 @@ end
 			.rst( wb_rst_w)
 		);
 
+`else
+	assign wb_rst_w = wb_rst_s;
+
 `endif
+
 	
 
 //
