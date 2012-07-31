@@ -94,6 +94,8 @@ begin
 		dptr = {data_in,data_lo};
 	else if ((addr==`OC8051_SFR_DPTR_LO) & (wr) & !(wr_bit))
 		dptr = {data_hi,data_in};
+	else
+		dptr = { data_hi, data_lo };
 end
 
 always @(posedge clk or posedge rst)

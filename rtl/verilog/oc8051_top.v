@@ -276,7 +276,7 @@ wire [1:0]  comp_sel;	//select source1 and source2 to compare
 wire        eq,		//result (from comp1 to decoder)
             srcAc,
 				cy,
-				rd_ind,
+				//rd_ind,
 				wr_ind,
 				comp_wait;
 wire [2:0]  op1_cur;
@@ -549,7 +549,7 @@ oc8051_memory_interface oc8051_memory_interface1
 			.iack_i(iack_i),
 			.iadr_o(iadr_o),
 			.idat_i(idat_i),
-		//	.istb_o(istb_o),
+			.istb_o(istb_o),
 
 // internal instruction rom
 			.idat_onchip(idat_onchip),
