@@ -186,7 +186,7 @@ myaltera_ram_dp_256x8	altera_ram (
       
       //
       // reading from ram
-      always @(posedge clk or posedge rst)
+      always @(posedge clk)
       begin
         if (rst)
           rd_data <= #1 8'h0;

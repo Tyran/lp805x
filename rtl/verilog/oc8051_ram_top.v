@@ -164,7 +164,7 @@ oc8051_ram_256x8_two_bist oc8051_idata(
 `endif
 			   );
 
-always @(posedge clk or posedge rst)
+always @(posedge clk)
   if (rst) begin
     bit_addr_r <= #1 1'b0;
     bit_select <= #1 3'b0;
@@ -174,7 +174,7 @@ always @(posedge clk or posedge rst)
   end
 
 
-always @(posedge clk or posedge rst)
+always @(posedge clk)
   if (rst) begin
     rd_en_r    <= #1 1'b0;
     wr_data_r  <= #1 8'h0;
