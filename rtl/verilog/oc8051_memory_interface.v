@@ -109,7 +109,7 @@ module oc8051_memory_interface (clk, rst,
      wr_bit_o, 
      rd_addr, 
      wr_addr, 
-     rd_ind, 
+    // rd_ind, 
      wr_ind, 
      wr_dat,
 
@@ -240,8 +240,8 @@ input [2:0]   rd_sel,
 input [4:0]   rn;
 input [7:0]   sp;
 
-output        rd_ind,
-              wr_ind;
+//output        rd_ind,
+output          wr_ind;
 output [7:0]  wr_addr,
               rd_addr;
 reg           rd_ind,

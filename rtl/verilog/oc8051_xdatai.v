@@ -123,7 +123,7 @@ module generic_xram(
 			buff[address] <= data;
 	end
 	
-	always@(posedge clock or posedge aclr)
+	always@(posedge clock)
 	begin
 		if ( aclr)
 			q <= 8'b0;
