@@ -98,7 +98,7 @@ module myfifo(
 	output reg [DATA_WIDTH-1:0] rdata;
 	input [ADDR_WIDTH-1:0] raddr;
 	
-	reg [DATA_WIDTH-1:0] buff [0:1];
+	reg [DATA_WIDTH-1:0] buff [0:0]; //(1<<ADDR_WIDTH)-1
 		
 	always @(posedge wclk)
 		if ( we)
