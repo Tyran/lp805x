@@ -69,6 +69,7 @@
 `ifdef OC8051_PORTS
 
 module oc8051_ports(
+output_data,
 			clk, 
          rst,
 			bit_in,
@@ -122,6 +123,8 @@ input [7:0]  wr_addr,	//write address [oc8051_ram_wr_sel.out]
 output tri [7:0] data_out;
 
 reg [7:0] data_read;
+
+output output_data;
 
 
 `ifdef OC8051_PORT0

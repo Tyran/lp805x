@@ -163,8 +163,18 @@ module oc8051_memory_interface (clk, rst,
      rn, 
      acc, 
 	  acc_bypass,
-     reti
+     reti,
+	  sfr_put,
+	  sfr_get,
+	  sfr_wrdy,
+	  sfr_rrdy
    );
+	
+	
+	output sfr_put;
+	output sfr_get;
+	input sfr_wrdy;
+	input sfr_rrdy;
 
 
 input         clk,
@@ -351,6 +361,8 @@ reg           pc_wr_r2;
 reg [7:0]     cdata;
 reg           cdone;
 
+wire sfr_wait;
+
 
 //assign bank       = rn[4:3];
 assign imm        = op2_out;
@@ -361,7 +373,7 @@ assign wr_o       = wr_i;
 assign wr_bit_o   = wr_bit_i;
 
 //assign mem_wait   = dmem_wait || imem_wait || pc_wr_r;
-assign mem_wait   = dmem_wait || imem_wait || pc_wr_r2;
+assign mem_wait   = dmem_wait || imem_wait || pc_wr_r2 || sfr_wait;
 //assign mem_wait   = dmem_wait || imem_wait;
 assign istb_o     = (istb || (istb_t & !iack_i)) && !dstb_o && !ea_rom_sel;
 
@@ -1225,6 +1237,34 @@ always @(posedge clk or posedge rst)
     inc_pc_r  <= #1 inc_pc;
   end
 */
+
+reg sfr_stall;
+reg sfr_put;
+reg sfr_get;
+
+assign sfr_wait = sfr_stall;
+
+
+always @(posedge clk)
+begin
+	if ( rst) begin
+		sfr_stall <= #1 0;
+		sfr_put <= #1 0;
+		sfr_get <= #1 0;
+	end else if ( rd_sel == `OC8051_RRS_D) begin
+		sfr_stall <= #1 1;
+		sfr_put <= #1 1;
+		sfr_get <= #1 0;
+	end else if ( sfr_put) begin
+		sfr_put <= #1 0;
+	end else if ( sfr_get) begin
+		sfr_get <= #1 0;
+		sfr_stall <= #1 0;
+	end else if ( sfr_rrdy) begin
+		sfr_put <= #1 0;
+		sfr_get <= #1 1;
+	end
+end
 
 // synthesis translate_off
 initial
