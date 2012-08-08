@@ -518,6 +518,163 @@ oc8051_indi_addr oc8051_indi_addr1 (.clk(wb_clk_s),
 				    .bank(bank_sel));
 
 
+//
+// ports
+// P0, P1, P2, P3
+`ifdef OC8051_PORTS
+
+	wire [28:0] sfr_bus_1e;
+	wire [28:0] sfr_bus_1;
+	
+	wire [8:0] sfr_bus_1p;
+	wire [8:0] sfr_bus_1c;
+
+	wire sfr_get;
+	wire sfr_rrdy;
+	wire sfr_wrdy;
+	wire sfr_put;
+	
+	reg sfr_pget;
+	reg sfr_preput;
+	reg sfr_pput;
+	reg sfr_postget;
+	wire sfr_pwrdy;
+	wire sfr_prrdy;
+	
+	wire od;
+	
+	wire sfr_bit1;
+	wire [7:0] sfr_out1;
+	
+	assign
+		sfr_bit =  sfr_postget ? sfr_bus_1p[0] : 1'bz,
+		sfr_out =  sfr_postget ? sfr_bus_1p[8:1] : 8'hzz;
+		
+	always @(posedge wb_clk_s)
+	if ( wb_rst_w)
+		sfr_pput <= #1 0;
+	else
+		sfr_pput <= #1 sfr_preput;
+		
+	always @(posedge wb_clk_s)
+	if ( wb_rst_w)
+		sfr_postget <= #1 0;
+	else
+		sfr_postget <= #1 sfr_get;
+		
+	always @(posedge wb_clk_s)
+	begin
+		if ( wb_rst_w)
+		begin
+			sfr_pget <= #1 0;
+			sfr_preput <= #1 0;
+		end
+		else if ( sfr_prrdy)
+		begin
+			sfr_pget <= #1 1;
+			sfr_preput <= #1 0;
+		end
+		else if ( sfr_pget & sfr_pwrdy)
+		begin
+			sfr_pget <= #1 0;
+			sfr_preput <= #1 1;
+		end
+		else if ( sfr_preput)
+		begin
+			sfr_preput <= #1 0;
+		end
+	end
+
+	lp805x_sfrbuse sfrbus_1
+	(
+		.clk(wb_clk_s),
+		.wr_addr(wr_addr[7:0]),
+		.rd_addr(rd_addr[7:0]),
+		.data_in(wr_dat),
+		.wr(wr_o && !wr_ind),
+		.rd(!(wr_o && !wr_ind)),
+		.bit_in(desCy),
+		.wr_bit(wr_bit_r),
+		.rd_bit(1'b1),
+		.load( ram_rd_sel == `OC8051_RRS_D),
+		.sfr_bus( sfr_bus_1e)
+   );
+	
+	lp805x_sfrbusd sfrbus_1d
+	(
+		.clk(wb_clk_s),
+		.data_out( sfr_out1),
+		.bit_out( sfr_bit1),
+		.load( od),
+		.sfr_bus( sfr_bus_1p)
+   );
+	
+	lp805x_syncg #(.DATA_WIDTH(9)) sync_1fp
+	(
+		.wclk(wb_clk_s),
+		.wrst(wb_rst_w),
+		.data_in(sfr_bus_1p),
+		.wput(sfr_pput),
+		.wrdy(sfr_pwrdy),
+		.rclk(wb_clk_s),
+		.rrst(wb_rst_w),
+		.data_out(sfr_bus_1c),
+		.rget(sfr_get),
+		.rrdy(sfr_rrdy)
+	);
+	
+	lp805x_syncg #(.DATA_WIDTH(29)) sync_1tp
+	(
+		.wclk(wb_clk_s),
+		.wrst(wb_rst_w),
+		.data_in(sfr_bus_1e),
+		.wput(sfr_put),
+		.wrdy(sfr_wrdy),
+		.rclk(wb_clk_s),
+		.rrst(wb_rst_w),
+		.data_out(sfr_bus_1),
+		.rget(sfr_pget),
+		.rrdy(sfr_prrdy)
+	);
+	 	
+  oc8051_ports oc8051_ports1(
+				.output_data( od),
+				.clk(wb_clk_s),
+            .rst(wb_rst_w),
+			   .bit_in( sfr_bus_1[2]),
+				.bit_out( sfr_bit1),
+			   .data_in( sfr_bus_1[12:5]),
+				.data_out( sfr_out1),
+			   .wr( sfr_bus_1[4]),
+				.rd( sfr_bus_1[3]),
+			   .wr_bit( sfr_bus_1[1]),
+				.rd_bit( sfr_bus_1[0]),
+			   .wr_addr( sfr_bus_1[28:21]),
+				.rd_addr( sfr_bus_1[20:13]),
+
+		`ifdef OC8051_PORT0
+			   .p0_out(p0_o),
+			   .p0_in(p0_i),
+		`endif
+
+		`ifdef OC8051_PORT1
+			   .p1_out(p1_o),
+			   .p1_in(p1_i),
+		`endif
+
+		`ifdef OC8051_PORT2
+			   .p2_out(p2_o),
+			   .p2_in(p2_i),
+		`endif
+
+		`ifdef OC8051_PORT3
+			   .p3_out(p3_o),
+			   .p3_in(p3_i),
+		`endif
+
+			   .rmw(rmw));
+`endif	
+
 
 //assign icyc_o = istb_o;
 //
@@ -599,7 +756,11 @@ oc8051_memory_interface oc8051_memory_interface1
 			.ri(ri), 
 			.acc(acc),
 			.acc_bypass(acc_bypass),
-			.sp(sp)
+			.sp(sp),
+			.sfr_put(sfr_put),
+			.sfr_get(sfr_get),
+			.sfr_wrdy(sfr_wrdy),
+			.sfr_rrdy(sfr_rrdy)
 		);
 
 				 
@@ -616,48 +777,7 @@ oc8051_xdatai oc8051_xdatai1(
 				.wr(wbd_we_o), 
 				.stb(wbd_stb_o), 
 				.ack(wbd_ack_i)
-				);		
-
-//
-// ports
-// P0, P1, P2, P3
-`ifdef OC8051_PORTS
-  oc8051_ports oc8051_ports1(
-				.clk(wb_clk_s),
-            .rst(wb_rst_w),
-			   .bit_in(desCy),
-				.bit_out(sfr_bit),
-			   .data_in(wr_dat),
-				.data_out(sfr_out),
-			   .wr(wr_o && !wr_ind),
-				.rd(!(wr_o && !wr_ind)),
-			   .wr_bit(wr_bit_r),
-				.rd_bit(1'b1),
-			   .wr_addr(wr_addr[7:0]),
-				.rd_addr(rd_addr[7:0]),
-
-		`ifdef OC8051_PORT0
-			   .p0_out(p0_o),
-			   .p0_in(p0_i),
-		`endif
-
-		`ifdef OC8051_PORT1
-			   .p1_out(p1_o),
-			   .p1_in(p1_i),
-		`endif
-
-		`ifdef OC8051_PORT2
-			   .p2_out(p2_o),
-			   .p2_in(p2_i),
-		`endif
-
-		`ifdef OC8051_PORT3
-			   .p3_out(p3_o),
-			   .p3_in(p3_i),
-		`endif
-
-			   .rmw(rmw));
-`endif				
+				);					
 
 `ifdef LP805X_NTC
 // new timer
