@@ -167,14 +167,21 @@ module oc8051_memory_interface (clk, rst,
 	  sfr_put,
 	  sfr_get,
 	  sfr_wrdy,
-	  sfr_rrdy
+	  sfr_rrdy,
+	  need_sync,
+	  sfr_wait,
+	  op_cur
    );
 	
+	input [7:0] op_cur;
 	
 	output sfr_put;
 	output sfr_get;
 	input sfr_wrdy;
 	input sfr_rrdy;
+	
+	output sfr_wait;
+	output need_sync;
 
 
 input         clk,
@@ -373,7 +380,7 @@ assign wr_o       = wr_i;
 assign wr_bit_o   = wr_bit_i;
 
 //assign mem_wait   = dmem_wait || imem_wait || pc_wr_r;
-assign mem_wait   = dmem_wait || imem_wait || pc_wr_r2 || sfr_wait;
+assign mem_wait   = dmem_wait || imem_wait || pc_wr_r2;// || sfr_wait;
 //assign mem_wait   = dmem_wait || imem_wait;
 assign istb_o     = (istb || (istb_t & !iack_i)) && !dstb_o && !ea_rom_sel;
 
@@ -1222,7 +1229,7 @@ always @(posedge clk or posedge rst)
     ri_r      <= #1 ri;
     imm_r     <= #1 imm;
     imm2_r    <= #1 imm2;
-    rd_addr_r <= #1 rd_addr[7];
+    rd_addr_r <= #1 rd_addr[7];//sfr_rdstall ? rd_addr_r : rd_addr[7];
    // op1_r     <= #1 op1_out;
     dack_ir   <= #1 dack_i & dstb_o;
     sp_r      <= #1 sp;
@@ -1238,12 +1245,58 @@ always @(posedge clk or posedge rst)
   end
 */
 
+reg need_syncr;
+reg need_syncw;
+
+assign need_sync = need_syncr | need_syncw | sfr_stall;
+
+always @(*)
+begin
+	need_syncr = 0;
+	if ( rd_sel == `OC8051_RRS_D)
+	begin
+		case ( rd_addr)
+		
+		`OC8051_SFR_P0:
+			need_syncr = 1;
+			
+		`OC8051_SFR_P1:
+			need_syncr = 1;
+			
+		default: 
+			need_syncr=0;
+			
+		endcase
+	end
+end
+
+always @(*)
+begin
+	need_syncw = 0;
+	if ( (wr_sel == `OC8051_RWS_D3) | (wr_sel == `OC8051_RWS_D1) | (wr_sel == `OC8051_RWS_D))
+	begin
+		case ( wr_addr)
+		
+		`OC8051_SFR_P0:
+			need_syncw = 1;
+			
+		`OC8051_SFR_P1:
+			need_syncw = 1;
+			
+		default: 
+			need_syncw=0;
+			
+		endcase
+	end
+end
+
 reg sfr_stall;
 reg sfr_put;
 reg sfr_get;
 
-assign sfr_wait = sfr_stall;
+reg wr;
 
+assign sfr_wait = sfr_stall;
 
 always @(posedge clk)
 begin
@@ -1251,7 +1304,9 @@ begin
 		sfr_stall <= #1 0;
 		sfr_put <= #1 0;
 		sfr_get <= #1 0;
-	end else if ( rd_sel == `OC8051_RRS_D) begin
+		wr <= #1 0;
+	end else if ( (need_syncw | need_syncr) & !sfr_stall ) begin
+		wr <= #1 wr_o & !wr_ind;
 		sfr_stall <= #1 1;
 		sfr_put <= #1 1;
 		sfr_get <= #1 0;
@@ -1263,6 +1318,8 @@ begin
 	end else if ( sfr_rrdy) begin
 		sfr_put <= #1 0;
 		sfr_get <= #1 1;
+	end else if ( sfr_wrdy & wr) begin
+		sfr_stall <= #1 0;
 	end
 end
 

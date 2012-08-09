@@ -370,7 +370,8 @@ end
 
 `endif
 
-	
+wire sfr_wait;	
+wire [7:0] opcs;
 
 //
 // decoder
@@ -400,7 +401,8 @@ oc8051_decoder oc8051_decoder1(.clk(wb_clk_s),
 			       .istb(istb),
 			       .mem_act(mem_act),
 			       .mem_wait(mem_wait),
-			       .wait_data(wait_data));
+			       .wait_data(wait_data | sfr_wait),
+					 .op_cur(opcs));
 
 
 wire [7:0] sub_result;
@@ -517,6 +519,7 @@ oc8051_indi_addr oc8051_indi_addr1 (.clk(wb_clk_s),
 				    .sel(op1_cur[0]),
 				    .bank(bank_sel));
 
+wire need_sync;
 
 //
 // ports
@@ -558,7 +561,7 @@ oc8051_indi_addr oc8051_indi_addr1 (.clk(wb_clk_s),
 		
 	always @(posedge wb_clk_s)
 	if ( wb_rst_w)
-		sfr_postget <= #1 0;
+		sfr_postget <= #1 1'b0;
 	else
 		sfr_postget <= #1 sfr_get;
 		
@@ -574,7 +577,7 @@ oc8051_indi_addr oc8051_indi_addr1 (.clk(wb_clk_s),
 			sfr_pget <= #1 1;
 			sfr_preput <= #1 0;
 		end
-		else if ( sfr_pget & sfr_pwrdy)
+		else if ( sfr_pget & sfr_pwrdy & sfr_bus_1[3])
 		begin
 			sfr_pget <= #1 0;
 			sfr_preput <= #1 1;
@@ -596,7 +599,7 @@ oc8051_indi_addr oc8051_indi_addr1 (.clk(wb_clk_s),
 		.bit_in(desCy),
 		.wr_bit(wr_bit_r),
 		.rd_bit(1'b1),
-		.load( ram_rd_sel == `OC8051_RRS_D),
+		.load( need_sync),
 		.sfr_bus( sfr_bus_1e)
    );
 	
@@ -760,7 +763,10 @@ oc8051_memory_interface oc8051_memory_interface1
 			.sfr_put(sfr_put),
 			.sfr_get(sfr_get),
 			.sfr_wrdy(sfr_wrdy),
-			.sfr_rrdy(sfr_rrdy)
+			.sfr_rrdy(sfr_rrdy),
+			.need_sync(need_sync),
+			.sfr_wait(sfr_wait),
+			.op_cur(opcs)
 		);
 
 				 
