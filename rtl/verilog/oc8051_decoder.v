@@ -93,7 +93,8 @@ module oc8051_decoder (clk, rst, op_in, op1_c,
   src_sel1, src_sel2, src_sel3,
   alu_op_o, psw_set, eq, cy_sel, comp_sel,
   pc_wr, pc_sel, rd, rmw, istb, mem_act, mem_wait,
-  wait_data);
+  wait_data, op_cur
+  );
 
 //
 // clk          (in)  clock
@@ -118,6 +119,8 @@ module oc8051_decoder (clk, rst, op_in, op1_c,
 // rmw          (out) read modify write feature [oc8051_ports.rmw]
 // pc_wait      (out)
 //
+
+output [7:0] op_cur; //hack...
 
 input clk, rst, eq, mem_wait, wait_data;
 input [7:0] op_in;
@@ -403,6 +406,15 @@ begin
       end
       2'b00: begin
         casex (op_cur) /* previous parallell_mask */
+		  `OC8051_MOV_DD : begin
+              ram_rd_sel = `OC8051_RRS_D;
+              pc_wr = `OC8051_PCW_N;
+              pc_sel = `OC8051_PIS_DC;
+              comp_sel =  `OC8051_CSS_DC;
+              rmw = `OC8051_RMW_N;
+              stb_i = 1'b1;
+              bit_addr = 1'b0;
+            end
           `OC8051_ACALL :begin
               ram_rd_sel = `OC8051_RRS_DC;
               pc_wr = `OC8051_PCW_Y;
@@ -948,15 +960,15 @@ begin
               stb_i = 1'b1;
               bit_addr = 1'b0;
             end
-          `OC8051_MOV_DD : begin
-              ram_rd_sel = `OC8051_RRS_D;
-              pc_wr = `OC8051_PCW_N;
-              pc_sel = `OC8051_PIS_DC;
-              comp_sel =  `OC8051_CSS_DC;
-              rmw = `OC8051_RMW_N;
-              stb_i = 1'b1;
-              bit_addr = 1'b0;
-            end
+//          `OC8051_MOV_DD : begin
+//              ram_rd_sel = `OC8051_RRS_D;
+//              pc_wr = `OC8051_PCW_N;
+//              pc_sel = `OC8051_PIS_DC;
+//              comp_sel =  `OC8051_CSS_DC;
+//              rmw = `OC8051_RMW_N;
+//              stb_i = 1'b1;
+//              bit_addr = 1'b0;
+//            end
           `OC8051_MOV_BC : begin
               ram_rd_sel = `OC8051_RRS_D;
               pc_wr = `OC8051_PCW_N;
@@ -1207,17 +1219,6 @@ begin
     case (state_dec) /* previous parallell_mask */
       2'b01: begin
         casex (op_cur) /* previous parallell_mask */
-		    `OC8051_MOV_D : begin
-              ram_wr_sel <= #1 `OC8051_RWS_DC;
-              src_sel1 <= #1 `OC8051_AS1_RAM;
-              src_sel2 <= #1 `OC8051_AS2_DC;
-              alu_op <= #1 `OC8051_ALU_NOP;
-              wr <= #1 1'b0;
-              psw_set <= #1 `OC8051_PS_NOT;
-              cy_sel <= #1 `OC8051_CY_0;
-              src_sel3 <= #1 `OC8051_AS3_DC;
-              wr_sfr <= #1 `OC8051_WRS_ACC1;
-            end
           `OC8051_MOVC_DP :begin
               ram_wr_sel <= #1 `OC8051_RWS_DC;
               src_sel1 <= #1 `OC8051_AS1_OP1;
@@ -1314,6 +1315,17 @@ begin
       end
       2'b10: begin
         casex (op_cur) /* previous parallell_mask */
+		  	`OC8051_MOV_DD : begin
+              ram_wr_sel <= #1 `OC8051_RWS_D3;
+              src_sel1 <= #1 `OC8051_AS1_RAM;
+              src_sel2 <= #1 `OC8051_AS2_DC;
+              alu_op <= #1 `OC8051_ALU_NOP;
+              wr <= #1 1'b1;
+              psw_set <= #1 `OC8051_PS_NOT;
+              cy_sel <= #1 `OC8051_CY_0;
+              src_sel3 <= #1 `OC8051_AS3_DC;
+              wr_sfr <= #1 `OC8051_WRS_N;
+            end
           `OC8051_ACALL :begin
               ram_wr_sel <= #1 `OC8051_RWS_SP;
               src_sel1 <= #1 `OC8051_AS1_PCH;
@@ -2207,14 +2219,14 @@ begin
             end
           `OC8051_MOV_D : begin
               ram_wr_sel <= #1 `OC8051_RWS_DC;
-              src_sel1 <= #1 `OC8051_AS1_DC;
+              src_sel1 <= #1 `OC8051_AS1_RAM;
               src_sel2 <= #1 `OC8051_AS2_DC;
               alu_op <= #1 `OC8051_ALU_NOP;
               wr <= #1 1'b0;
               psw_set <= #1 `OC8051_PS_NOT;
               cy_sel <= #1 `OC8051_CY_0;
               src_sel3 <= #1 `OC8051_AS3_DC;
-              wr_sfr <= #1 `OC8051_WRS_N;
+              wr_sfr <= #1 `OC8051_WRS_ACC1;
             end
           `OC8051_MOV_C : begin
               ram_wr_sel <= #1 `OC8051_RWS_DC;
@@ -2238,17 +2250,17 @@ begin
               src_sel3 <= #1 `OC8051_AS3_DC;
               wr_sfr <= #1 `OC8051_WRS_N;
             end
-          `OC8051_MOV_DD : begin
-              ram_wr_sel <= #1 `OC8051_RWS_D3;
-              src_sel1 <= #1 `OC8051_AS1_RAM;
-              src_sel2 <= #1 `OC8051_AS2_DC;
-              alu_op <= #1 `OC8051_ALU_NOP;
-              wr <= #1 1'b1;
-              psw_set <= #1 `OC8051_PS_NOT;
-              cy_sel <= #1 `OC8051_CY_0;
-              src_sel3 <= #1 `OC8051_AS3_DC;
-              wr_sfr <= #1 `OC8051_WRS_N;
-            end
+//          `OC8051_MOV_DD : begin
+//              ram_wr_sel <= #1 `OC8051_RWS_D3;
+//              src_sel1 <= #1 `OC8051_AS1_RAM;
+//              src_sel2 <= #1 `OC8051_AS2_DC;
+//              alu_op <= #1 `OC8051_ALU_NOP;
+//              wr <= #1 1'b1;
+//              psw_set <= #1 `OC8051_PS_NOT;
+//              cy_sel <= #1 `OC8051_CY_0;
+//              src_sel3 <= #1 `OC8051_AS3_DC;
+//              wr_sfr <= #1 `OC8051_WRS_N;
+//            end
           `OC8051_MOV_CD : begin
               ram_wr_sel <= #1 `OC8051_RWS_D;
               src_sel1 <= #1 `OC8051_AS1_OP3;
@@ -2645,7 +2657,7 @@ end
 // remember current instruction
 always @(posedge clk or posedge rst)
   if (rst) op <= #1 2'b00;
-  else if (state==2'b00) op <= #1 op_in;
+  else if (state==2'b00 & !wait_data) op <= #1 op_in;
 
 //
 // in case of instructions that needs more than one clock set state
@@ -2688,7 +2700,9 @@ begin
             `OC8051_JZ      : state <= #1 2'b10;
             `OC8051_DIV     : state <= #1 2'b11;
             `OC8051_MUL     : state <= #1 2'b11;
-				`OC8051_MOV_D	 : state <= #1 2'b01;
+				`OC8051_MOV_CD  : state <= #1 2'b01;
+				`OC8051_MOV_DA  : state <= #1 2'b01;
+				`OC8051_MOV_DD  : state <= #1 2'b11;
 //            default         : state <= #1 2'b00;
           endcase
       default: state <= #1 2'b00;
