@@ -69,19 +69,16 @@
 `ifdef OC8051_PORTS
 
 module oc8051_ports(
-output_data,
+			clk_cpu,
 			clk, 
-         rst,
-			bit_in,
-			bit_out,
-		   data_in,
+			rst,
+			sfr_bus,
+			sfr_get,
 			data_out,
-		   wr, 
-		   wr_bit,
-			rd,
-			rd_bit,
-		   wr_addr, 
-			rd_addr,
+			bit_out,
+			sfr_wrdy,
+			sfr_rrdy,
+			sfr_put,
 
 	`ifdef OC8051_PORT0
 		    p0_out,
@@ -106,26 +103,32 @@ output_data,
 		   rmw);
 
 input   clk,	//clock
-        rst,	//reset
-	     wr,	//write [oc8051_decoder.wr -r]
+        rst;	//reset
+
+input clk_cpu;
+
+input [28:0] sfr_bus;
+
+input sfr_get,sfr_put;
+output sfr_wrdy,sfr_rrdy;
+		  
+wire    wr,	//write [oc8051_decoder.wr -r]
 		  rd,
 	     wr_bit,	//write bit addresable [oc8051_decoder.bit_addr -r]
 		  rd_bit,
-	     bit_in,	//bit input [oc8051_alu.desCy]
-	     rmw;	//read modify write feature [oc8051_decoder.rmw]
+	     bit_in;	//bit input [oc8051_alu.desCy]
+
+input rmw;	//read modify write feature [oc8051_decoder.rmw]
 		  
 output 	bit_out;
 		  
-input [7:0]  wr_addr,	//write address [oc8051_ram_wr_sel.out]
+wire [7:0]  wr_addr,	//write address [oc8051_ram_wr_sel.out]
 				 rd_addr,
              data_in; 	//data input (from alu destiantion 1) [oc8051_alu.des1]
 				 
 output tri [7:0] data_out;
 
 reg [7:0] data_read;
-
-output output_data;
-
 
 `ifdef OC8051_PORT0
   input  [7:0] p0_in;
@@ -301,8 +304,82 @@ begin
     endcase
 end
 
-assign data_out = output_data ? data_read : 8'hzz;
+wire [28:0] sfr_bus_1;
+wire [8:0] sfr_bus_2;
+wire [8:0] sfr_bus_2s;
+wire sfr_pget, sfr_pput;
+wire sfr_prrdy, sfr_pwrdy;
+wire sfr_out;
+wire sfr_wrdy,sfr_rrdy;
 
+	lp805x_syncg #(.DATA_WIDTH(29)) sync_1tp
+		(
+			.wclk(clk_cpu),
+			.wrst(rst),
+			.data_in(sfr_bus),
+			.wput(sfr_put),
+			.wrdy(sfr_wrdy),
+			.rclk(clk),
+			.rrst(rst),
+			.data_out(sfr_bus_1),
+			.rget(sfr_pget),
+			.rrdy(sfr_prrdy)
+		);
+
+	lp805x_sfrbused decode_1
+		(
+			.sfr_bus( sfr_bus_1),
+			
+			.bit_in(bit_in),
+			.data_in(data_in),
+			.wr(wr),
+			.rd(rd),
+			.wr_bit(wr_bit),
+			.rd_bit(rd_bit),
+			.wr_addr(wr_addr),
+			.rd_addr(rd_addr)
+		);
+
+	lp805x_synctrl sync_1
+		(
+			.clk( clk),
+			.rst( rst),
+			.read( rd),
+			.sfr_prrdy( sfr_prrdy),
+			.sfr_pget( sfr_pget),
+			.sfr_pwrdy( sfr_pwrdy),
+			.sfr_pput( sfr_pput),
+			.clk_cpu( clk_cpu),
+			.sfr_get( sfr_get),
+			.sfr_out( sfr_out)
+		);
+
+	lp805x_sfrbusd sfrbusO_1
+		(
+			.clk(clk),
+			.data_out( data_read),
+			.bit_out( bit_outd),
+			.load( output_data | bit_outc),
+			.sfr_bus( sfr_bus_2)
+		);
+
+	lp805x_syncg #(.DATA_WIDTH(9)) sync_1fp
+		(
+			.wclk(clk),
+			.wrst(rst),
+			.data_in(sfr_bus_2),
+			.wput(sfr_pput),
+			.wrdy(sfr_pwrdy),
+			.rclk(clk_cpu),
+			.rrst(rst),
+			.data_out(sfr_bus_2s),
+			.rget(sfr_get),
+			.rrdy(sfr_rrdy)
+		);
+		
+		assign 
+			data_out = sfr_out ? sfr_bus_2s[8:1] : 8'hzz,
+			bit_out = sfr_out ? sfr_bus_2s[0] : 1'bz;
 
 endmodule
 
