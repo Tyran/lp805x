@@ -28,7 +28,8 @@ module lp805x_synctrl(
 		sfr_pput,
 		clk_cpu,
 		sfr_get,
-		sfr_out
+		sfr_out,
+		this
     );
 	 
 	input clk,rst;
@@ -39,6 +40,8 @@ module lp805x_synctrl(
 	input clk_cpu;
 	input sfr_get;
 	output sfr_out;
+	
+	input this;
 	
 	reg sfr_preput;
 	reg sfr_pget,sfr_pput;
@@ -63,7 +66,7 @@ module lp805x_synctrl(
 			sfr_pget <= #1 1;
 			sfr_preput <= #1 0;
 		end
-		else if ( sfr_pget & sfr_pwrdy & read)
+		else if ( sfr_pget & sfr_pwrdy & read & this)
 		begin
 			sfr_pget <= #1 0;
 			sfr_preput <= #1 1;
@@ -74,10 +77,21 @@ module lp805x_synctrl(
 		end
 	end
 	
+	reg this_sync;
+	
+	always @(posedge clk_cpu)
+	if ( rst)
+		this_sync <= #1 0;
+	else if ( sfr_preput)
+		this_sync <= #1 1;
+	else if ( sfr_pget)
+		this_sync <= #1 0;
+		
+	
 	always @(posedge clk_cpu)
 	if ( rst)
 		sfr_out <= #1 1'b0;
 	else
-		sfr_out <= #1 sfr_get;
+		sfr_out <= #1 sfr_get & this_sync;
 
 endmodule

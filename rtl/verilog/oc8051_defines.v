@@ -100,7 +100,7 @@
 //`define LP805X_USELL
 
 //new timer
-//`define LP805X_NTC
+`define LP805X_NTC
 
 //hardware scheduler aid
 //`define LP805X_HWSCHED
@@ -149,6 +149,11 @@
 `define LP805X_RST_CLKSR 8'h00
 `define LP805X_SFR_CLKSR 8'h97
 //`define LP805X_SFR_B_CLKSR 5'b11000
+
+`define LP805X_SFR_NTMRH 8'hea
+`define LP805X_SFR_NTMRL 8'heb
+`define LP805X_SFR_NTMRCTR 8'he8
+`define LP805X_SFR_B_NTMRCTR 5'b11101
 
 `define OC8051_SFR_ACC 8'he0 //accumulator
 `define OC8051_SFR_B 8'hf0 //b register

@@ -239,7 +239,7 @@ tri bit_out;
 
 reg bit_outc;
 reg bit_outd;
-assign bit_out = bit_outc ? bit_outd : 1'bz;
+//assign bit_out = bit_outc ? bit_outd : 1'bz;
 //
 // case of reading bit from port
 always @(posedge clk or posedge rst)
@@ -351,7 +351,8 @@ wire sfr_wrdy,sfr_rrdy;
 			.sfr_pput( sfr_pput),
 			.clk_cpu( clk_cpu),
 			.sfr_get( sfr_get),
-			.sfr_out( sfr_out)
+			.sfr_out( sfr_out),
+			.this( output_data | bit_outc)
 		);
 
 	lp805x_sfrbusd sfrbusO_1
