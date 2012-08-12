@@ -29,6 +29,7 @@ module lp805x_synctrl(
 		clk_cpu,
 		sfr_get,
 		sfr_out,
+		sfr_rrdy,
 		this
     );
 	 
@@ -40,6 +41,7 @@ module lp805x_synctrl(
 	input clk_cpu;
 	input sfr_get;
 	output sfr_out;
+	input sfr_rrdy;
 	
 	input this;
 	
@@ -82,11 +84,10 @@ module lp805x_synctrl(
 	always @(posedge clk_cpu)
 	if ( rst)
 		this_sync <= #1 0;
-	else if ( sfr_preput)
+	else if ( sfr_rrdy)
 		this_sync <= #1 1;
-	else if ( sfr_pget)
+	else
 		this_sync <= #1 0;
-		
 	
 	always @(posedge clk_cpu)
 	if ( rst)
