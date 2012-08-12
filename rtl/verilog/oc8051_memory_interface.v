@@ -169,16 +169,13 @@ module oc8051_memory_interface (clk, rst,
 	  sfr_wrdy,
 	  sfr_rrdy,
 	  need_sync,
-	  sfr_wait,
-	  op_cur
+	  sfr_wait
    );
-	
-	input [7:0] op_cur;
 	
 	output sfr_put;
 	output sfr_get;
-	input sfr_wrdy;
-	input sfr_rrdy;
+	input [1:0] sfr_wrdy;
+	input [1:0] sfr_rrdy;
 	
 	output sfr_wait;
 	output need_sync;
@@ -1263,6 +1260,9 @@ begin
 		`OC8051_SFR_P1:
 			need_syncr = 1;
 			
+		`LP805X_SFR_NTMRCTR:
+			need_syncr = 1;
+			
 		default: 
 			need_syncr=0;
 			
@@ -1283,6 +1283,9 @@ begin
 		`OC8051_SFR_P1:
 			need_syncw = 1;
 			
+		`LP805X_SFR_NTMRCTR:
+			need_syncw = 1;
+			
 		default: 
 			need_syncw=0;
 			
@@ -1297,6 +1300,14 @@ reg sfr_get;
 reg wr;
 
 assign sfr_wait = sfr_stall;
+
+// trust that all peripherals comply of sfr unique address rule
+wire sfr_trust_rrdy;
+wire sfr_all_wrdy;
+
+assign
+	sfr_trust_rrdy = |sfr_rrdy,
+	sfr_all_wrdy = &sfr_wrdy;
 
 always @(posedge clk)
 begin
@@ -1315,10 +1326,10 @@ begin
 	end else if ( sfr_get) begin
 		sfr_get <= #1 0;
 		sfr_stall <= #1 0;
-	end else if ( sfr_rrdy) begin
+	end else if ( sfr_trust_rrdy) begin
 		sfr_put <= #1 0;
 		sfr_get <= #1 1;
-	end else if ( sfr_wrdy & wr) begin
+	end else if ( sfr_all_wrdy & wr) begin
 		sfr_stall <= #1 0;
 	end
 end

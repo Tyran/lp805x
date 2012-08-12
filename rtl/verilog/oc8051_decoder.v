@@ -93,7 +93,7 @@ module oc8051_decoder (clk, rst, op_in, op1_c,
   src_sel1, src_sel2, src_sel3,
   alu_op_o, psw_set, eq, cy_sel, comp_sel,
   pc_wr, pc_sel, rd, rmw, istb, mem_act, mem_wait,
-  wait_data, op_cur
+  wait_data
   );
 
 //
@@ -119,8 +119,6 @@ module oc8051_decoder (clk, rst, op_in, op1_c,
 // rmw          (out) read modify write feature [oc8051_ports.rmw]
 // pc_wait      (out)
 //
-
-output [7:0] op_cur; //hack...
 
 input clk, rst, eq, mem_wait, wait_data;
 input [7:0] op_in;
