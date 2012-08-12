@@ -157,40 +157,30 @@ generate
 		if ( PWMS_LEN == 1) begin
 			always @( posedge clk)
 			begin
-				if ( timer_ov & ctc_mode) //overflow & ctc turned on!
-				begin
+				if ( rst)
+					pin <= 0;
+				else if ( timer_ov & ctc_mode) //overflow & ctc turned on!
 					pin <= ~pin;
-				end
 			end
 		end
 		else if ( PWMS_TYPE == 0) begin
 			always @( posedge clk)
 			begin
 				if ( rst)
-				begin
-					pin <= #1 1'b1;
-				end
+					pin <= #1 0;
 				else if ( pin == 0)
-				begin
-					pin <= #1 1'b1;
-				end
+					pin <= #1 1;
 				else if ( timer_ov & ctc_mode) //overflow & ctc turned on!
-				begin
 					pin <= #1 pin << 1;
-				end
 			end
 		end
 		else if ( PWMS_TYPE == 1) begin
 			always @( posedge clk)
 			begin
 				if ( rst)
-				begin
-					pin <= #1 1'b0;
-				end
+					pin <= #1 0;
 				else if ( timer_ov & ctc_mode) //overflow & ctc turned on!
-				begin
 					pin <= pin + 1;
-				end
 			end
 		end
 endgenerate
