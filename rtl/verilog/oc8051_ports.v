@@ -352,6 +352,7 @@ wire sfr_wrdy,sfr_rrdy;
 			.clk_cpu( clk_cpu),
 			.sfr_get( sfr_get),
 			.sfr_out( sfr_out),
+			.sfr_rrdy( sfr_rrdy),
 			.this( output_data | bit_outc)
 		);
 

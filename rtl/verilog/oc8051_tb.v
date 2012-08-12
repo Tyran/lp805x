@@ -148,9 +148,15 @@ wire [7:0] p1_in, p1_out;
 assign p0_in=8'h53;
 assign p1_in=8'hAA;
 
+`ifdef LP805X_NTC
+parameter PWMS_LEN=1;
+wire  pin_cnt;
+wire 	[PWMS_LEN-1:0] pin;
+`endif
+
 `ifndef POST_ROUTE
 
-assign clk_div = oc8051_top_1.wb_clk_s;
+//assign clk_div = oc8051_top_1.wb_clk_s;
 
 assign xd_addr = oc8051_top_1.oc8051_xdatai1.addr;
 assign xd_datai = oc8051_top_1.oc8051_xdatai1.data_i;
@@ -234,7 +240,7 @@ oc8051_rom romx
 //
 // oc8051 controller
 //
-oc8051_top oc8051_top_1(
+oc8051_top #(.PWMS_LEN(PWMS_LEN)) oc8051_top_1(
 		.wb_rst_i(~rst),
 		.wb_clk_i(clk),
  //        .int0_i(int0), .int1_i(int1),
@@ -282,6 +288,11 @@ oc8051_top oc8051_top_1(
    `ifdef OC8051_TC2
 	 .t2_i(t2), .t2ex_i(t2ex),
    `endif
+	
+	`ifdef LP805X_NTC
+		.pin_cnt(pin_cnt),
+		.pin(pin),
+	`endif
 
 	 `ifdef LP805X_ROM_ONCHIP
 	 .ea_in( 1'b1) 
