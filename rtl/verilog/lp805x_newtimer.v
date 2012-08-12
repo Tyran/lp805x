@@ -351,6 +351,7 @@ wire sfr_wrdy,sfr_rrdy;
 			.clk_cpu( clk_cpu),
 			.sfr_get( sfr_get),
 			.sfr_out( sfr_out),
+			.sfr_rrdy( sfr_rrdy),
 			.this( output_data | output_bit)
 		);
 
@@ -358,7 +359,7 @@ wire sfr_wrdy,sfr_rrdy;
 		(
 			.clk(clk),
 			.data_out( data_read),
-			.bit_out( bit_outd),
+			.bit_out( bit_read),
 			.load( output_data | output_bit),
 			.sfr_bus( sfr_bus_2)
 		);
