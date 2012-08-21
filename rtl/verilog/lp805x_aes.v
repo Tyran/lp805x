@@ -24,12 +24,12 @@
 
 `include "oc8051_defines.v"
 
-`define LP805X_SFR_AESCON 8'h00
-`define LP805X_SFR_AESIN 8'h00
-`define LP805X_SFR_AESOUT 8'h01
-`define LP805X_SFR_AESKEY 8'h02
+`define LP805X_SFR_AESCON 8'hf8
+`define LP805X_SFR_AESIN 8'hf9
+`define LP805X_SFR_AESOUT 8'hfA
+`define LP805X_SFR_AESKEY 8'hfB
 
-module lp805x_aes( rsti, 
+module lp805x_aes( rst, 
 						 clk,
 						 wr_addr, rd_addr,
 						 data_in, data_out, 
@@ -55,7 +55,7 @@ module lp805x_aes( rsti,
 
 parameter LP805X_RST_AESCON = 8'b0;
 
-input 			rsti, clk;
+input 			rst, clk;
 input [7:0] 	wr_addr, rd_addr;
 input [7:0]		data_in;
 input				bit_in;
@@ -80,27 +80,30 @@ output tri bit_out;
 
 /*		internal AES Crypt/DeCrypt		*/
 
-reg [4:0] aes_state;
-
-//because last data arrives 1 clock later! ;)
-reg aes_preload;
-reg aes_load;
+reg [3:0] aes_state;
+//
+////because last data arrives 1 clock later! ;)
+//reg aes_preload;
+//reg aes_load;
 
 reg [4:0] aes_sload;
+
+wire aes_rdy_o;
 
 wire [127:0] aes_out;
 reg [7:0] aes_bout;
 
 /*		internal AES Crypt/DeCrypt		*/
 
-wire aes_en,aes_cpt,aes_key,aes_rdy;
+wire aes_en,aes_cpt,aes_stw,aes_rdy;
 wire [2:0] aes_len;
 
 assign
 	aes_en = aes_control[7],
 	aes_cpt = aes_control[6],
-	aes_key = aes_control[5],
+	aes_stw = aes_control[5],
 	aes_rdy = aes_control[4],
+	aes_cln = aes_control[3],
 	aes_len = aes_control[2:0];
 	
 always @(*)
@@ -114,20 +117,6 @@ begin
 		default: aes_sload = 4'b0000;
 	endcase
 end
-
-always @(posedge clk)
-begin
-	if ( rst) begin
-		aes_preload <= #1 0;
-		aes_load <= #1 0;
-	end if ( aes_en & (aes_state == aes_sload)) begin
-		aes_preload <= #1 1;
-		aes_load <= #1 0;
-	end else begin
-		aes_preload <= #1 0;
-		aes_load <= #1 aes_preload;
-	end
-end
 	
 	//
 //case writing to aes control register
@@ -135,9 +124,10 @@ always @(posedge clk)
 begin
 	if ( rst) begin
 		aes_control <= #1 LP805X_RST_AESCON;
-		aes_load <= #1 0;
+		aes_key <= #1 0;
+		aes_data <= #1 0;
 	end else if (wr & ~wr_bit & (wr_addr==`LP805X_SFR_AESCON)) begin
-		aes_control <= #1 {data_in[7:6],data_in[5],aes_control[4],data_in[4:0]};
+		aes_control <= #1 {data_in[7:6],data_in[5],data_in[4]|aes_rdy_o,1'b0,data_in[2:0]};
 	end else if (wr & ~wr_bit & (wr_addr==`LP805X_SFR_AESIN)) begin
 		case ( aes_state)
 			4'b0000: aes_data[7:0] 		<= #1 data_in;
@@ -147,7 +137,7 @@ begin
 			4'b0100: aes_data[39:32] 	<= #1 data_in;
 			4'b0101: aes_data[47:40] 	<= #1 data_in;
 			4'b0110: aes_data[55:48] 	<= #1 data_in;
-			4'b1111: aes_data[63:56] 	<= #1 data_in;
+			4'b0111: aes_data[63:56] 	<= #1 data_in;
 			4'b1000: aes_data[71:64] 	<= #1 data_in;
 			4'b1001: aes_data[79:72] 	<= #1 data_in;
 			4'b1010: aes_data[87:80] 	<= #1 data_in;
@@ -168,7 +158,7 @@ begin
 			4'b0100: aes_key[39:32] 	<= #1 data_in;
 			4'b0101: aes_key[47:40] 	<= #1 data_in;
 			4'b0110: aes_key[55:48] 	<= #1 data_in;
-			4'b1111: aes_key[63:56] 	<= #1 data_in;
+			4'b0111: aes_key[63:56] 	<= #1 data_in;
 			4'b1000: aes_key[71:64] 	<= #1 data_in;
 			4'b1001: aes_key[79:72] 	<= #1 data_in;
 			4'b1010: aes_key[87:80]		<= #1 data_in;
@@ -179,6 +169,8 @@ begin
 			4'b1111: aes_key[127:120] 	<= #1 data_in;
 			default: aes_key <= #1 aes_key;
 		endcase
+	end else begin
+		aes_control[5:4] <= {1'b0,aes_control[4]|aes_rdy_o};
 	end
 end
 
@@ -186,26 +178,31 @@ always @(posedge clk)
 begin
 	if ( rst) begin
 		aes_state <= #1 0;
-	end else if ( wr & ~wr_bit & ((wr_addr==`LP805X_SFR_AESIN) | (wr_addr==`LP805X_SFR_AESKEY) )) begin
-		case ( aes_state)
-			5'b00000: aes_state <= #1 5'b00001;
-			5'b00001: aes_state <= #1 5'b00010;
-			5'b00010: aes_state <= #1 5'b00011;
-			5'b00011: aes_state <= #1 5'b00100;
-			5'b00100: aes_state <= #1 5'b00101;
-			5'b00101: aes_state <= #1 5'b00110;
-			5'b00110: aes_state <= #1 5'b00111;
-			5'b00111: aes_state <= #1 5'b01000;
-			5'b01000: aes_state <= #1 5'b01001;
-			5'b01001: aes_state <= #1 5'b01010;
-			5'b01010: aes_state <= #1 5'b01011;
-			5'b01011: aes_state <= #1 5'b01100;
-			5'b01100: aes_state <= #1 5'b01101;
-			5'b01101: aes_state <= #1 5'b01110;
-			5'b01110: aes_state <= #1 5'b01111;
-			5'b01111: aes_state <= #1 5'b10000;
-			5'b10000: aes_state <= #1 5'b00000;
-		endcase
+	end else if ( wr & ~wr_bit & (wr_addr==`LP805X_SFR_AESCON) & data_in[3]) begin
+		aes_state <= #1 0;
+	end else if ( (wr & ~wr_bit & ((wr_addr==`LP805X_SFR_AESIN) | (wr_addr==`LP805X_SFR_AESKEY) ))
+						| (rd & ((rd_addr == `LP805X_SFR_AESOUT) | (rd_addr == `LP805X_SFR_AESKEY))) ) begin
+		if ( aes_en & (aes_state == aes_sload))
+			aes_state <= #1 0;
+		else
+			case ( aes_state)
+				4'b0000: aes_state <= #1 4'b0001;
+				4'b0001: aes_state <= #1 4'b0010;
+				4'b0010: aes_state <= #1 4'b0011;
+				4'b0011: aes_state <= #1 4'b0100;
+				4'b0100: aes_state <= #1 4'b0101;
+				4'b0101: aes_state <= #1 4'b0110;
+				4'b0110: aes_state <= #1 4'b0111;
+				4'b0111: aes_state <= #1 4'b1000;
+				4'b1000: aes_state <= #1 4'b1001;
+				4'b1001: aes_state <= #1 4'b1010;
+				4'b1010: aes_state <= #1 4'b1011;
+				4'b1011: aes_state <= #1 4'b1100;
+				4'b1100: aes_state <= #1 4'b1101;
+				4'b1101: aes_state <= #1 4'b1110;
+				4'b1110: aes_state <= #1 4'b1111;
+				4'b1111: aes_state <= #1 4'b0000;
+			endcase
 	end
 end
 
@@ -213,22 +210,42 @@ aes aes_1
 	(
 		.clk( clk),
 		.reset( rst),
-		.load_i( aes_ld),
-		.decrypt_i( aes_cpt),
+		.load_i( aes_stw),
+		.decrypt_i( ~aes_cpt),
 		.data_i( aes_data),
 		.key_i( aes_key),
-		.ready_o( aes_rdy),
+		.ready_o( aes_rdy_o),
 		.data_o( aes_out)
 	);
-	
 	
 	always @(posedge clk)
 	begin
 		if ( rst)
-			aes_bout <= #1 0;
-		else if ( rd & output_data) begin
-			aes_bout <= #1 0;
+			aes_bout = 0;
+		else if ( aes_rdy_o) 
+			aes_bout = aes_out[7:0];
+		else if ( rd & (rd_addr == `LP805X_SFR_AESOUT)) begin
+			case ( aes_state) /* all cases */
+				4'b0000: aes_bout = aes_out[7:0];
+				4'b0001: aes_bout = aes_out[15:8];
+				4'b0010: aes_bout = aes_out[23:16];
+				4'b0011: aes_bout = aes_out[31:24];
+				4'b0100: aes_bout = aes_out[39:32];
+				4'b0101: aes_bout = aes_out[47:40];
+				4'b0110: aes_bout = aes_out[55:48];
+				4'b0111: aes_bout = aes_out[63:56];
+				4'b1000: aes_bout = aes_out[71:64];
+				4'b1001: aes_bout = aes_out[79:72];
+				4'b1010: aes_bout = aes_out[87:80];
+				4'b1011: aes_bout = aes_out[95:88];
+				4'b1100: aes_bout = aes_out[103:96];
+				4'b1101: aes_bout = aes_out[111:104];
+				4'b1110: aes_bout = aes_out[119:112];
+				4'b1111: aes_bout = aes_out[127:120];
+			endcase
 		end	
+		else
+			aes_bout = 0;
 	end
 	
 reg output_data;
@@ -245,7 +262,7 @@ begin
     case (rd_addr)
       `LP805X_SFR_AESCON: 		{output_data,data_read} <= #1 {1'b1,aes_control};
 		`LP805X_SFR_AESIN: 		{output_data,data_read} <= #1 {1'b1,aes_data};
-		`LP805X_SFR_AESOUT: 		{output_data,data_read} <= #1 {1'b1,aes_out};
+		`LP805X_SFR_AESOUT: 		{output_data,data_read} <= #1 {1'b1,aes_bout};
 		`LP805X_SFR_AESKEY: 		{output_data,data_read} <= #1 {1'b1,aes_key};
       default:             {output_data,data_read} <= #1 {1'b0,8'h0};
     endcase
