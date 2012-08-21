@@ -108,6 +108,9 @@
 //watchdog timer
 //`define LP805X_WDT
 
+//AES crypt/Decrypt
+`define LP805X_AES
+
 //
 // oc8051 simulation defines
 //
