@@ -1,273 +1,225 @@
-//////////////////////////////////////////////////////////////////////
-////                                                              ////
-////  Random Number Generator                                     ////
-////                                                              ////
-////  This file is part of the SystemC RNG                        ////
-////                                                              ////
-////  Description:                                                ////
-////                                                              ////
-////  Implementation of random number generator                   ////
-////                                                              ////
-////  To Do:                                                      ////
-////   - done                                                     ////
-////                                                              ////
-////  Author(s):                                                  ////
-////      - Javier Castillo, javier.castillo@urjc.es              ////
-////                                                              ////
-////  This core is provided by Universidad Rey Juan Carlos        ////
-////  http://www.escet.urjc.es/~jmartine                          ////
-////                                                              ////
-//////////////////////////////////////////////////////////////////////
-////                                                              ////
-//// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
-////                                                              ////
-//// This source file may be used and distributed without         ////
-//// restriction provided that this copyright statement is not    ////
-//// removed from the file and that any derivative work contains  ////
-//// the original copyright notice and the associated disclaimer. ////
-////                                                              ////
-//// This source file is free software; you can redistribute it   ////
-//// and/or modify it under the terms of the GNU Lesser General   ////
-//// Public License as published by the Free Software Foundation; ////
-//// either version 2.1 of the License, or (at your option) any   ////
-//// later version.                                               ////
-////                                                              ////
-//// This source is distributed in the hope that it will be       ////
-//// useful, but WITHOUT ANY WARRANTY; without even the implied   ////
-//// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR      ////
-//// PURPOSE.  See the GNU Lesser General Public License for more ////
-//// details.                                                     ////
-////                                                              ////
-//// You should have received a copy of the GNU Lesser General    ////
-//// Public License along with this source; if not, download it   ////
-//// from http://www.opencores.org/lgpl.shtml                     ////
-////                                                              ////
-//////////////////////////////////////////////////////////////////////
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    18:28:25 08/22/2012 
+// Design Name: 
+// Module Name:    lp805x_rand 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
 //
-// CVS Revision History
+// Dependencies: 
 //
-// $Log: not supported by cvs2svn $
-// Revision 1.3  2005/07/30 20:07:26  jcastillo
-// Correct bit 28. Correct assignation to bit 31
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: 
 //
-// Revision 1.2  2005/07/29 09:13:06  jcastillo
-// Correct bit 28 of CASR
+//////////////////////////////////////////////////////////////////////////////////
+// synopsys translate_off
+`include "oc8051_timescale.v"
+// synopsys translate_on
+
+`include "oc8051_defines.v"
+
+`define LP805X_SFR_RANDCON 8'hfc
+`define LP805X_SFR_RANDSEED 8'hfd
+`define LP805X_SFR_RANDOUT 8'hfe
+
+module lp805x_rand( rst, 
+						 clk,
+						 wr_addr, rd_addr,
+						 data_in, data_out, 
+						 wr, rd, 
+						 bit_in, bit_out,
+						 wr_bit, rd_bit
+						);
 //
-// Revision 1.1  2004/09/23 09:43:06  jcastillo
-// Verilog first import
+// clk          (in)  clock source
+// rsti         (in)  reset source
+// rst          (out) running reset
+// wr_addr      (in)  write address [oc8051_ram_wr_sel.out]
+// rd_addr      (in)  read address [oc8051_ram_wr_sel.out]
+// data_in      (in)  data input [oc8051_alu.des1]
+// bit_in       (in)  input bit data [oc8051_alu.desCy]
+// wr           (in)  write [oc8051_decoder.wr -r]
+// rd           (in)  read [oc8051_decoder.rd -r]
+// wr_bit       (in)  write bit addresable [oc8051_decoder.bit_addr -r]
+// rd_bit       (in)  read bit addresable [oc8051_decoder.bit_addr -r]
+// data_out     (out) data output [oc8051_alu.des1]
+// bit_out      (out) output bit data [oc8051_alu.desCy]
 //
- 
-module lp805x_rand (clk,reset,loadseed_i,seed_i,number_o);
-input clk;
-input reset;
-input loadseed_i;
-input [31:0] seed_i;
-output [31:0] number_o;
- 
-reg [31:0] number_o;
- 
-reg [42:0] LFSR_reg;
-reg [36:0] CASR_reg;
- 
- 
-//CASR:
-reg[36:0] CASR_varCASR,CASR_outCASR;
-always @(posedge clk or posedge reset)
- 
-   begin
- 
- 
- 
- 
-   if (reset )
- 
-      begin
- 
-      CASR_reg  = (1);
- 
-      end
- 
-   else 
- 
-      begin
- 
-      if (loadseed_i )
- 
-         begin
- 
-         CASR_varCASR [36:32]=0;
-         CASR_varCASR [31:0]=seed_i ;
-         CASR_reg  = (CASR_varCASR );
- 
- 
-         end
- 
-      else 
- 
-         begin
- 
-         CASR_varCASR =CASR_reg ;
- 
-         CASR_outCASR [36]=CASR_varCASR [35]^CASR_varCASR [0];
-         CASR_outCASR [35]=CASR_varCASR [34]^CASR_varCASR [36];
-         CASR_outCASR [34]=CASR_varCASR [33]^CASR_varCASR [35];
-         CASR_outCASR [33]=CASR_varCASR [32]^CASR_varCASR [34];
-         CASR_outCASR [32]=CASR_varCASR [31]^CASR_varCASR [33];
-         CASR_outCASR [31]=CASR_varCASR [30]^CASR_varCASR [32];
-         CASR_outCASR [30]=CASR_varCASR [29]^CASR_varCASR [31];
-         CASR_outCASR [29]=CASR_varCASR [28]^CASR_varCASR [30];
-         CASR_outCASR [28]=CASR_varCASR [27]^CASR_varCASR [29];
-         CASR_outCASR [27]=CASR_varCASR [26]^CASR_varCASR [27]^CASR_varCASR [28];
-         CASR_outCASR [26]=CASR_varCASR [25]^CASR_varCASR [27];
-         CASR_outCASR [25]=CASR_varCASR [24]^CASR_varCASR [26];
-         CASR_outCASR [24]=CASR_varCASR [23]^CASR_varCASR [25];
-         CASR_outCASR [23]=CASR_varCASR [22]^CASR_varCASR [24];
-         CASR_outCASR [22]=CASR_varCASR [21]^CASR_varCASR [23];
-         CASR_outCASR [21]=CASR_varCASR [20]^CASR_varCASR [22];
-         CASR_outCASR [20]=CASR_varCASR [19]^CASR_varCASR [21];
-         CASR_outCASR [19]=CASR_varCASR [18]^CASR_varCASR [20];
-         CASR_outCASR [18]=CASR_varCASR [17]^CASR_varCASR [19];
-         CASR_outCASR [17]=CASR_varCASR [16]^CASR_varCASR [18];
-         CASR_outCASR [16]=CASR_varCASR [15]^CASR_varCASR [17];
-         CASR_outCASR [15]=CASR_varCASR [14]^CASR_varCASR [16];
-         CASR_outCASR [14]=CASR_varCASR [13]^CASR_varCASR [15];
-         CASR_outCASR [13]=CASR_varCASR [12]^CASR_varCASR [14];
-         CASR_outCASR [12]=CASR_varCASR [11]^CASR_varCASR [13];
-         CASR_outCASR [11]=CASR_varCASR [10]^CASR_varCASR [12];
-         CASR_outCASR [10]=CASR_varCASR [9]^CASR_varCASR [11];
-         CASR_outCASR [9]=CASR_varCASR [8]^CASR_varCASR [10];
-         CASR_outCASR [8]=CASR_varCASR [7]^CASR_varCASR [9];
-         CASR_outCASR [7]=CASR_varCASR [6]^CASR_varCASR [8];
-         CASR_outCASR [6]=CASR_varCASR [5]^CASR_varCASR [7];
-         CASR_outCASR [5]=CASR_varCASR [4]^CASR_varCASR [6];
-         CASR_outCASR [4]=CASR_varCASR [3]^CASR_varCASR [5];
-         CASR_outCASR [3]=CASR_varCASR [2]^CASR_varCASR [4];
-         CASR_outCASR [2]=CASR_varCASR [1]^CASR_varCASR [3];
-         CASR_outCASR [1]=CASR_varCASR [0]^CASR_varCASR [2];
-         CASR_outCASR [0]=CASR_varCASR [36]^CASR_varCASR [1];
- 
-         CASR_reg  = (CASR_outCASR );
- 
-         end
- 
- 
-      end
- 
- 
-   end
-//LFSR:
-reg[42:0] LFSR_varLFSR;
-reg outbitLFSR;
-always @(posedge clk or posedge reset)
- 
-   begin
- 
- 
-   if (reset )
- 
-      begin
- 
-      LFSR_reg  = (1);
- 
-      end
- 
-   else 
- 
-      begin
- 
-      if (loadseed_i )
- 
-         begin
- 
-         LFSR_varLFSR [42:32]=0;
-         LFSR_varLFSR [31:0]=seed_i ;
-         LFSR_reg  = (LFSR_varLFSR );
- 
- 
-         end
- 
-      else 
- 
-         begin
- 
-         LFSR_varLFSR =LFSR_reg ;
- 
-         outbitLFSR =LFSR_varLFSR [42];
-         LFSR_varLFSR [42]=LFSR_varLFSR [41];
-         LFSR_varLFSR [41]=LFSR_varLFSR [40]^outbitLFSR ;
-         LFSR_varLFSR [40]=LFSR_varLFSR [39];
-         LFSR_varLFSR [39]=LFSR_varLFSR [38];
-         LFSR_varLFSR [38]=LFSR_varLFSR [37];
-         LFSR_varLFSR [37]=LFSR_varLFSR [36];
-         LFSR_varLFSR [36]=LFSR_varLFSR [35];
-         LFSR_varLFSR [35]=LFSR_varLFSR [34];
-         LFSR_varLFSR [34]=LFSR_varLFSR [33];
-         LFSR_varLFSR [33]=LFSR_varLFSR [32];
-         LFSR_varLFSR [32]=LFSR_varLFSR [31];
-         LFSR_varLFSR [31]=LFSR_varLFSR [30];
-         LFSR_varLFSR [30]=LFSR_varLFSR [29];
-         LFSR_varLFSR [29]=LFSR_varLFSR [28];
-         LFSR_varLFSR [28]=LFSR_varLFSR [27];
-         LFSR_varLFSR [27]=LFSR_varLFSR [26];
-         LFSR_varLFSR [26]=LFSR_varLFSR [25];
-         LFSR_varLFSR [25]=LFSR_varLFSR [24];
-         LFSR_varLFSR [24]=LFSR_varLFSR [23];
-         LFSR_varLFSR [23]=LFSR_varLFSR [22];
-         LFSR_varLFSR [22]=LFSR_varLFSR [21];
-         LFSR_varLFSR [21]=LFSR_varLFSR [20];
-         LFSR_varLFSR [20]=LFSR_varLFSR [19]^outbitLFSR ;
-         LFSR_varLFSR [19]=LFSR_varLFSR [18];
-         LFSR_varLFSR [18]=LFSR_varLFSR [17];
-         LFSR_varLFSR [17]=LFSR_varLFSR [16];
-         LFSR_varLFSR [16]=LFSR_varLFSR [15];
-         LFSR_varLFSR [15]=LFSR_varLFSR [14];
-         LFSR_varLFSR [14]=LFSR_varLFSR [13];
-         LFSR_varLFSR [13]=LFSR_varLFSR [12];
-         LFSR_varLFSR [12]=LFSR_varLFSR [11];
-         LFSR_varLFSR [11]=LFSR_varLFSR [10];
-         LFSR_varLFSR [10]=LFSR_varLFSR [9];
-         LFSR_varLFSR [9]=LFSR_varLFSR [8];
-         LFSR_varLFSR [8]=LFSR_varLFSR [7];
-         LFSR_varLFSR [7]=LFSR_varLFSR [6];
-         LFSR_varLFSR [6]=LFSR_varLFSR [5];
-         LFSR_varLFSR [5]=LFSR_varLFSR [4];
-         LFSR_varLFSR [4]=LFSR_varLFSR [3];
-         LFSR_varLFSR [3]=LFSR_varLFSR [2];
-         LFSR_varLFSR [2]=LFSR_varLFSR [1];
-         LFSR_varLFSR [1]=LFSR_varLFSR [0]^outbitLFSR ;
-         LFSR_varLFSR [0]=LFSR_varLFSR [42];
- 
-         LFSR_reg  = (LFSR_varLFSR );
- 
-         end
- 
- 
-      end
- 
- 
-   end
-//combinate:
-always @(posedge clk or posedge reset)
- 
-   begin
- 
-   if (reset )
- 
-      begin
- 
-      number_o  = (0);
- 
-      end
- 
-   else 
- 
-      begin
- 
-      number_o  = (LFSR_reg [31:0]^CASR_reg[31:0]);
- 
-      end
- 
- 
-   end
- 
+
+parameter LP805X_RST_RANDCON = 8'b0;
+
+input 			rst, clk;
+input [7:0] 	wr_addr, rd_addr;
+input [7:0]		data_in;
+input				bit_in;
+input 			wr,rd;
+input				wr_bit,rd_bit;
+
+/*		internal SFR register		*/
+
+reg [7:0] rand_control;
+reg [31:0] rand_seed;
+
+/*		internal SFR register		*/
+
+/*		internal SFR control		*/
+
+output tri [7:0] data_out;
+output tri bit_out;
+
+/*		internal SFR control		*/
+
+
+/*		internal Random Control		*/
+
+reg [1:0] rand_state;
+reg [1:0] rand_sload;
+
+reg rand_stw;
+reg rand_rund;
+
+wire [31:0] rand_out;
+reg [7:0] rand_bout;
+
+/*		internal Random Control		*/
+
+wire rand_en,rand_seedr,rand_mode,rand_clw;
+wire [1:0] rand_len;
+
+assign
+	rand_en = rand_control[7],
+	rand_seedr = rand_control[6],
+	rand_mode = rand_control[5],
+	rand_clw = rand_control[4],
+	rand_len = rand_control[1:0];
+
+always @(*)
+begin
+	case ( rand_len)
+		2'b00: rand_sload = 2'b00;
+		2'b01: rand_sload = 2'b01;
+		2'b10: rand_sload = 2'b10;
+		2'b11: rand_sload = 2'b11;
+		default: rand_sload = 2'b00;
+	endcase
+end
+	
+	//
+//case writing to rand control register
+always @(posedge clk)
+begin
+	if ( rst) begin
+		rand_control <= #1 LP805X_RST_RANDCON;
+		rand_seed <= #1 0;
+	end else if (wr & ~wr_bit & (wr_addr==`LP805X_SFR_RANDCON)) begin
+		rand_control <= #1 data_in;
+	end else if (wr & ~wr_bit & (wr_addr==`LP805X_SFR_RANDSEED)) begin
+		case ( rand_state)
+			2'b00: rand_seed[7:0] 		<= #1 data_in;
+			2'b01: rand_seed[15:8] 	<= #1 data_in;
+			2'b10: rand_seed[23:16] 	<= #1 data_in;
+			2'b11: rand_seed[31:24] 	<= #1 data_in;
+			default: rand_seed <= #1 rand_seed;
+		endcase		
+	end else begin
+		rand_control[6] <= 1'b0;
+	end
+end
+
+always @(posedge clk)
+begin
+	if ( rst) begin
+		rand_state <= #1 0;
+	end else if ( wr & ~wr_bit & (wr_addr==`LP805X_SFR_RANDCON) & data_in[4]) begin
+		rand_state <= #1 0;
+	end else if ( (wr & ~wr_bit & ((wr_addr==`LP805X_SFR_RANDSEED)))
+						| (rd & ((rd_addr == `LP805X_SFR_RANDOUT))) ) begin
+		if ( rand_en & (rand_state == rand_sload))
+			rand_state <= #1 0;
+		else
+			case ( rand_state)
+				2'b00: rand_state <= #1 2'b01;
+				2'b01: rand_state <= #1 2'b10;
+				2'b10: rand_state <= #1 2'b11;
+				2'b11: rand_state <= #1 2'b00;
+			endcase
+	end
+end
+
+always @(posedge clk)
+begin
+	if ( rst)
+		rand_stw <= 0;
+	else if ( wr & ~wr_bit & (wr_addr==`LP805X_SFR_RANDCON))
+		rand_stw <= data_in[6];
+	else
+		rand_stw <= 0;
+end
+
+	always @(posedge clk)
+	begin
+		if ( rst)
+			rand_rund <= #1 0;
+		else if ( rand_mode)
+			rand_rund <= #1 rand_en;
+		else if ( rd & (rd_addr == `LP805X_SFR_RANDOUT) & (rand_state == rand_sload))
+			rand_rund <= #1 rand_en;
+		else 
+			rand_rund <= #1 0;
+	end
+
+random psdrand_1
+	(
+		.clk( clk),
+		.reset( rst),
+		.loadseed_i( rand_stw),
+		.seed_i( rand_seed),
+		.number_o( rand_out),
+		.run( rand_rund)
+	);
+	
+	always @(posedge clk)
+	begin
+		if ( rst)
+			rand_bout = 0;
+		else if ( rd & (rd_addr == `LP805X_SFR_RANDOUT)) begin
+			case ( rand_state) /* all cases */
+				2'b00: rand_bout = rand_out[7:0];
+				2'b01: rand_bout = rand_out[15:8];
+				2'b10: rand_bout = rand_out[23:16];
+				2'b11: rand_bout = rand_out[31:24];
+			endcase
+		end	
+		else
+			rand_bout = 0;
+	end
+	
+reg output_data;
+reg [7:0] data_read;
+//
+// case of reading byte from port
+always @(posedge clk)
+begin
+  if (rst) begin
+    {output_data,data_read} <= #1 {1'b0,8'h0};
+	end
+  else
+	if ( rd)
+    case (rd_addr)
+      `LP805X_SFR_RANDCON: 		{output_data,data_read} <= #1 {1'b1,rand_control};
+		`LP805X_SFR_RANDOUT: 		{output_data,data_read} <= #1 {1'b1,rand_bout};
+      default:             {output_data,data_read} <= #1 {1'b0,8'h0};
+    endcase
+end
+
+assign data_out = output_data ? data_read : 8'hzz;
+
+assign bit_out = 1'bz; //no bit addr
+
 endmodule

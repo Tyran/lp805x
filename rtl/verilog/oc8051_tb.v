@@ -148,8 +148,8 @@ wire [7:0] p1_in, p1_out;
 assign p0_in=8'h53;
 assign p1_in=8'hAA;
 
-`ifdef LP805X_NTC
 parameter PWMS_LEN=1;
+`ifdef LP805X_NTC
 wire  pin_cnt;
 wire 	[PWMS_LEN-1:0] pin;
 `endif

@@ -411,6 +411,26 @@ wire wb_clk_p1;
 
 `endif
 
+`ifdef LP805X_RAND
+
+	lp805x_rand rnd_1
+		(
+			.rst( wb_rst_w),
+			.clk( wb_clk_cpu),
+			.bit_in(desCy),
+			.bit_out(sfr_bit),
+			.data_in(wr_dat),
+			.data_out(sfr_out),
+			.wr(wr_o && !wr_ind),
+			.rd( !sfr_wait & (ram_rd_sel == `OC8051_RRS_D)),
+			.wr_bit(wr_bit_r),
+			.rd_bit(1'b1),
+			.wr_addr(wr_addr[7:0]),
+			.rd_addr(rd_addr[7:0])
+		);
+
+`endif
+
 //
 // decoder
 oc8051_decoder oc8051_decoder1(.clk(wb_clk_cpu), 
