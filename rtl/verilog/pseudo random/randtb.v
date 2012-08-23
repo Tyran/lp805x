@@ -22,7 +22,7 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 
-module lp805x_randtb;
+module pseudo_randtb;
 
 	// Inputs
 	reg clk;
@@ -34,7 +34,7 @@ module lp805x_randtb;
 	wire [31:0] number_o;
 
 	// Instantiate the Unit Under Test (UUT)
-	lp805x_rand uut (
+	rand uut (
 		.clk(clk), 
 		.reset(reset), 
 		.loadseed_i(loadseed_i), 

@@ -110,6 +110,8 @@
 
 //AES crypt/Decrypt
 `define LP805X_AES
+//PSEUDO RANDOM
+`define LP805X_RAND
 
 //
 // oc8051 simulation defines
