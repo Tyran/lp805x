@@ -57,7 +57,7 @@
 // updating...
 //
 // Revision 1.6  2003/01/26 14:19:22  rherveille
-// Replaced oc8051_ram by generic_dpram.
+// Replaced LP805X_ram by generic_dpram.
 //
 // Revision 1.5  2003/01/13 14:14:41  simont
 // replace some modules
@@ -74,7 +74,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_ram_top (clk, 
+module lp805x_ram_top (clk, 
                        rst, 
 		       rd_addr, 
 		       rd_data, 
@@ -84,7 +84,7 @@ module oc8051_ram_top (clk,
 		       wr, 
 		       bit_data_in, 
 		       bit_data_out
-`ifdef OC8051_BIST
+`ifdef LP805X_BIST
          ,
          scanb_rst,
          scanb_clk,
@@ -100,14 +100,14 @@ parameter ram_aw = 8; // default 256 bytes
 
 //
 // clk          (in)  clock
-// rd_addr      (in)  read addres [oc8051_ram_rd_sel.out]
-// rd_data      (out) read data [oc8051_ram_sel.in_ram]
-// wr_addr      (in)  write addres [oc8051_ram_wr_sel.out]
-// bit_addr     (in)  bit addresable instruction [oc8051_decoder.bit_addr -r]
-// wr_data      (in)  write data [oc8051_alu.des1]
-// wr           (in)  write [oc8051_decoder.wr -r]
-// bit_data_in  (in)  bit data input [oc8051_alu.desCy]
-// bit_data_out (out)  bit data output [oc8051_ram_sel.bit_in]
+// rd_addr      (in)  read addres [LP805X_ram_rd_sel.out]
+// rd_data      (out) read data [LP805X_ram_sel.in_ram]
+// wr_addr      (in)  write addres [LP805X_ram_wr_sel.out]
+// bit_addr     (in)  bit addresable instruction [LP805X_decoder.bit_addr -r]
+// wr_data      (in)  write data [LP805X_alu.des1]
+// wr           (in)  write [LP805X_decoder.wr -r]
+// bit_data_in  (in)  bit data input [LP805X_alu.desCy]
+// bit_data_out (out)  bit data output [LP805X_ram_sel.bit_in]
 //
 
 input clk, wr, bit_addr, bit_data_in, rst;
@@ -116,7 +116,7 @@ input [7:0] rd_addr, wr_addr;
 output bit_data_out;
 output [7:0] rd_data;
 
-`ifdef OC8051_BIST
+`ifdef LP805X_BIST
 input   scanb_rst;
 input   scanb_clk;
 input   scanb_si;
@@ -144,7 +144,7 @@ assign bit_data_out = rd_data[bit_select];
 assign rd_data = rd_en_r ? wr_data_r: rd_data_m;
 assign rd_en   = (rd_addr_m == wr_addr_m) & wr;
 
-oc8051_ram_256x8_two_bist oc8051_idata(
+lp805x_ram_256x8_two_bist idata_1(
                            .clk     ( clk        ),
                            .rst     ( rst        ),
 			   .rd_addr ( rd_addr_m  ),
@@ -154,7 +154,7 @@ oc8051_ram_256x8_two_bist oc8051_idata(
 			   .wr_data ( wr_data_m  ),
 			   .wr_en   ( 1'b1       ),
 			   .wr      ( wr         )
-`ifdef OC8051_BIST
+`ifdef LP805X_BIST
          ,
          .scanb_rst(scanb_rst),
          .scanb_clk(scanb_clk),

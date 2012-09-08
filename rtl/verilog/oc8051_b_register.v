@@ -62,7 +62,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_b_register (clk, rst, bit_in, data_in, wr, wr_bit,
+module lp805x_b_register (clk, rst, bit_in, data_in, wr, wr_bit,
               wr_addr, data_out);
 
 
@@ -79,13 +79,13 @@ reg [7:0] data_out;
 always @(posedge clk or posedge rst)
 begin
   if (rst)
-    data_out <= #1 `OC8051_RST_B;
+    data_out <= #1 `LP805X_RST_B;
   else if (wr) begin
     if (!wr_bit) begin
-      if (wr_addr==`OC8051_SFR_B)
+      if (wr_addr==`LP805X_SFR_B)
         data_out <= #1 data_in;
     end else begin
-      if (wr_addr[7:3]==`OC8051_SFR_B_B)
+      if (wr_addr[7:3]==`LP805X_SFR_B_B)
         data_out[wr_addr[2:0]] <= #1 bit_in;
     end
   end

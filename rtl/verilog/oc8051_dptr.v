@@ -59,18 +59,18 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_dptr(clk, rst, addr, data_in, data2_in, wr, wr_sfr, wr_bit, data_hi, data_lo, dptr);
+module lp805x_dptr(clk, rst, addr, data_in, data2_in, wr, wr_sfr, wr_bit, data_hi, data_lo, dptr);
 //
 // clk          (in)  clock
 // rst          (in)  reset
-// addr         (in)  write address input [oc8051_ram_wr_sel.out]
-// data_in      (in)  destination 1 from alu [oc8051_alu.des1]
-// data2_in     (in)  destination 2 from alu [oc8051_alu.des2]
-// wr           (in)  write to ram [oc8051_decoder.wr -r]
-// wd2          (in)  write from destination 2 [oc8051_decoder.ram_wr_sel -r]
-// wr_bit       (in)  write bit addresable [oc8051_decoder.bit_addr -r]
-// data_hi      (out) output (high bits) [oc8051_alu_src3_sel.dptr, oc8051_ext_addr_sel.dptr_hi, oc8051_ram_sel.dptr_hi]
-// data_lo      (out) output (low bits) [oc8051_ext_addr_sel.dptr_lo]
+// addr         (in)  write address input [LP805X_ram_wr_sel.out]
+// data_in      (in)  destination 1 from alu [LP805X_alu.des1]
+// data2_in     (in)  destination 2 from alu [LP805X_alu.des2]
+// wr           (in)  write to ram [LP805X_decoder.wr -r]
+// wd2          (in)  write from destination 2 [LP805X_decoder.ram_wr_sel -r]
+// wr_bit       (in)  write bit addresable [LP805X_decoder.bit_addr -r]
+// data_hi      (out) output (high bits) [LP805X_alu_src3_sel.dptr, LP805X_ext_addr_sel.dptr_hi, LP805X_ram_sel.dptr_hi]
+// data_lo      (out) output (low bits) [LP805X_ext_addr_sel.dptr_lo]
 //
 
 
@@ -87,12 +87,12 @@ reg [15:0] dptr;
 always @(*)
 begin
 	if (rst)
-		dptr = {`OC8051_RST_DPH,`OC8051_RST_DPL};
-	else if (wr_sfr==`OC8051_WRS_DPTR)
+		dptr = {`LP805X_RST_DPH,`LP805X_RST_DPL};
+	else if (wr_sfr==`LP805X_WRS_DPTR)
 		dptr = {data2_in,data_in};
-	else if ((addr==`OC8051_SFR_DPTR_HI) & (wr) & !(wr_bit))
+	else if ((addr==`LP805X_SFR_DPTR_HI) & (wr) & !(wr_bit))
 		dptr = {data_in,data_lo};
-	else if ((addr==`OC8051_SFR_DPTR_LO) & (wr) & !(wr_bit))
+	else if ((addr==`LP805X_SFR_DPTR_LO) & (wr) & !(wr_bit))
 		dptr = {data_hi,data_in};
 	else
 		dptr = { data_hi, data_lo };
@@ -101,18 +101,18 @@ end
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
-    data_hi <= #1 `OC8051_RST_DPH;
-    data_lo <= #1 `OC8051_RST_DPL;
-  end else if (wr_sfr==`OC8051_WRS_DPTR) begin
+    data_hi <= #1 `LP805X_RST_DPH;
+    data_lo <= #1 `LP805X_RST_DPL;
+  end else if (wr_sfr==`LP805X_WRS_DPTR) begin
 //
 //write from destination 2 and 1
     data_hi <= #1 data2_in;
     data_lo <= #1 data_in;
-  end else if ((addr==`OC8051_SFR_DPTR_HI) & (wr) & !(wr_bit))
+  end else if ((addr==`LP805X_SFR_DPTR_HI) & (wr) & !(wr_bit))
 //
 //case of writing to dptr
     data_hi <= #1 data_in;
-  else if ((addr==`OC8051_SFR_DPTR_LO) & (wr) & !(wr_bit))
+  else if ((addr==`LP805X_SFR_DPTR_LO) & (wr) & !(wr_bit))
     data_lo <= #1 data_in;
 end
 

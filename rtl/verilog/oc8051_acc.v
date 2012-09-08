@@ -74,7 +74,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_acc (clk, rst, 
+module lp805x_acc (clk, rst, 
                  bit_in, data_in, data2_in, 
 		 data_out,
 		 acc,
@@ -98,9 +98,9 @@ wire wr_acc, wr2_acc, wr_bit_acc;
 //calculates parity
 assign p = ^acc;
 
-assign wr_acc     = (wr_sfr==`OC8051_WRS_ACC1) | (wr & !wr_bit & (wr_addr==`OC8051_SFR_ACC));
-assign wr2_acc    = (wr_sfr==`OC8051_WRS_ACC2);
-assign wr_bit_acc = (wr & wr_bit & (wr_addr[7:3]==`OC8051_SFR_B_ACC));
+assign wr_acc     = (wr_sfr==`LP805X_WRS_ACC1) | (wr & !wr_bit & (wr_addr==`LP805X_SFR_ACC));
+assign wr2_acc    = (wr_sfr==`LP805X_WRS_ACC2);
+assign wr_bit_acc = (wr & wr_bit & (wr_addr[7:3]==`LP805X_SFR_B_ACC));
 //
 //writing to acc
 always @(wr_sfr or data2_in or wr2_acc or wr_acc or wr_bit_acc or wr_addr[2:0] or data_in or bit_in or data_out)
@@ -127,17 +127,17 @@ end
 always @(posedge clk or posedge rst)
 begin
   if (rst)
-    data_out <= #1 `OC8051_RST_ACC;
+    data_out <= #1 `LP805X_RST_ACC;
   else
     data_out <= #1 acc;
 end
 
 
-`ifdef OC8051_SIMULATION
+`ifdef LP805X_SIMULATION
 // synthesis translate_off
 always @(data_out)
   if (data_out===8'hxx) begin
-    $display("time ",$time, "   failure: invalid write to ACC (oc8051_acc)");
+    $display("time ",$time, "   failure: invalid write to ACC (LP805X_acc)");
 #22
     $finish;
 

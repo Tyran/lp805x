@@ -48,7 +48,7 @@
 // remove pc_r register.
 //
 // Revision 1.2  2003/05/06 09:41:35  simont
-// remove define OC8051_AS2_PCL, chane signal src_sel2 to 2 bit wide.
+// remove define LP805X_AS2_PCL, chane signal src_sel2 to 2 bit wide.
 //
 // Revision 1.1  2003/01/13 14:13:12  simont
 // initial import
@@ -63,7 +63,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_alu_src_sel (clk, rst, rd, sel1, sel2, sel3,
+module lp805x_alu_src_sel (clk, rst, rd, sel1, sel2, sel3,
                      acc, ram, pc, dptr,
 
                      op1, op2, op3,
@@ -96,14 +96,14 @@ reg [7:0] op1_r, op2_r, op3_r;
 always @(sel1 or op1_r or op2_r or op3_r or pc or acc or ram)
 begin
   case (sel1) /* previous full_mask parallel_mask */
-    `OC8051_AS1_RAM: src1 = ram;
-    `OC8051_AS1_ACC: src1 = acc;
-    `OC8051_AS1_OP1: src1 = op1_r;
-    `OC8051_AS1_OP2: src1 = op2_r;
-    `OC8051_AS1_OP3: src1 = op3_r;
-    `OC8051_AS1_PCH: src1 = pc[15:8];
-    `OC8051_AS1_PCL: src1 = pc[7:0];
-	 `OC8051_AS1_DC: src1 = 8'h00;
+    `LP805X_AS1_RAM: src1 = ram;
+    `LP805X_AS1_ACC: src1 = acc;
+    `LP805X_AS1_OP1: src1 = op1_r;
+    `LP805X_AS1_OP2: src1 = op2_r;
+    `LP805X_AS1_OP3: src1 = op3_r;
+    `LP805X_AS1_PCH: src1 = pc[15:8];
+    `LP805X_AS1_PCL: src1 = pc[7:0];
+	 `LP805X_AS1_DC: src1 = 8'h00;
     default: src1 = 8'h00;
   endcase
 end
@@ -116,11 +116,11 @@ end
 always @(sel2 or op2_r or acc or ram or op1_r)
 begin
   case (sel2) /* previous full_mask parallel_mask */
-    `OC8051_AS2_ACC: src2= acc;
-    `OC8051_AS2_ZERO: src2= 8'h00;
-    `OC8051_AS2_RAM: src2= ram;
-    `OC8051_AS2_OP2: src2= op2_r;
-	 `OC8051_AS2_DC: src2= 8'h00;
+    `LP805X_AS2_ACC: src2= acc;
+    `LP805X_AS2_ZERO: src2= 8'h00;
+    `LP805X_AS2_RAM: src2= ram;
+    `LP805X_AS2_OP2: src2= op2_r;
+	 `LP805X_AS2_DC: src2= 8'h00;
     default: src2= 8'h00;
   endcase
 end
@@ -134,9 +134,9 @@ end
 always @(sel3 or pc[15:8] or dptr[15:8] or op1_r)
 begin
   case (sel3) /* previous full_mask parallel_mask */
-    `OC8051_AS3_DP:   src3= dptr[15:8];
-    `OC8051_AS3_PC:   src3= pc[15:8];
-	 `OC8051_AS3_DC: src3=16'h0;
+    `LP805X_AS3_DP:   src3= dptr[15:8];
+    `LP805X_AS3_PC:   src3= pc[15:8];
+	 `LP805X_AS3_DC: src3=16'h0;
     default: src3= 16'h0;
   endcase
 end

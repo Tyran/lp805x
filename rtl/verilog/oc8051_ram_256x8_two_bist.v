@@ -56,7 +56,7 @@
 //
 // two port ram
 //
-module oc8051_ram_256x8_two_bist (
+module lp805x_ram_256x8_two_bist (
                      clk,
                      rst,
 		     rd_addr,
@@ -66,7 +66,7 @@ module oc8051_ram_256x8_two_bist (
 		     wr_data,
 		     wr_en,
 		     wr
-`ifdef OC8051_BIST
+`ifdef LP805X_BIST
 	 ,
          scanb_rst,
          scanb_clk,
@@ -87,7 +87,7 @@ input  [7:0]  rd_addr,
               wr_addr;
 output [7:0]  rd_data;
 
-`ifdef OC8051_BIST
+`ifdef LP805X_BIST
 input   scanb_rst;
 input   scanb_clk;
 input   scanb_si;
@@ -95,7 +95,7 @@ output  scanb_so;
 input   scanb_en;
 `endif
 
-`ifdef OC8051_RAM_ALTERA
+`ifdef LP805X_RAM_ALTERA
 				
 myaltera_ram_dp_256x8	altera_ram (
 	.aclr ( rst ),
@@ -110,7 +110,7 @@ myaltera_ram_dp_256x8	altera_ram (
 	
 `else
 
-`ifdef OC8051_RAM_XILINX
+`ifdef LP805X_RAM_XILINX
 	
   xilinx_ram_dp xilinx_ram(
   	// read port
@@ -138,13 +138,13 @@ myaltera_ram_dp_256x8	altera_ram (
 
 `else
 
-  `ifdef OC8051_RAM_VIRTUALSILICON
+  `ifdef LP805X_RAM_VIRTUALSILICON
 
   `else
 
-    `ifdef OC8051_RAM_GENERIC
+    `ifdef LP805X_RAM_GENERIC
     
-      generic_dpram #(8, 8) oc8051_ram1(
+      generic_dpram #(8, 8) ram_1(
       	.rclk  ( clk            ),
       	.rrst  ( rst            ),
       	.rce   ( rd_en          ),
@@ -195,9 +195,9 @@ myaltera_ram_dp_256x8	altera_ram (
         else if (rd_en)
           rd_data <= #1 buff[rd_addr];
       end
-    `endif  //OC8051_RAM_GENERIC
-  `endif    //OC8051_RAM_VIRTUALSILICON  
-`endif      //OC8051_RAM_XILINX
-`endif      //OC8051_RAM_ALTERA
+    `endif  //LP805X_RAM_GENERIC
+  `endif    //LP805X_RAM_VIRTUALSILICON  
+`endif      //LP805X_RAM_XILINX
+`endif      //LP805X_RAM_ALTERA
 
 endmodule

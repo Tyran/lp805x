@@ -3,7 +3,7 @@
 // synopsys translate_on
 `include "oc8051_defines.v"
 
-module oc8051_xdatai( clk, rst, addr, data_i, data_o, wr, stb, ack);
+module lp805x_xdatai( clk, rst, addr, data_i, data_o, wr, stb, ack);
 
 input 				clk;
 input 				rst;
@@ -53,8 +53,8 @@ begin
 			ack_r <= 1'b0;
 end
 
-`ifdef OC8051_XRAM_ALTERA
-myaltera_xram oc8051_xrami1(
+`ifdef LP805X_XRAM_ALTERA
+myaltera_xram lp805x_xrami1(
 	.aclr(rst),
 	.address(addr[`LP805X_XDATALEN-1:0]),
 	.clock(clk),
@@ -63,8 +63,8 @@ myaltera_xram oc8051_xrami1(
 	.q(data_o)
 	);
 `else
-`ifdef OC8051_XRAM_XILINX
-generic_xram oc8051_xrami1(
+`ifdef LP805X_XRAM_XILINX
+generic_xram lp805x_xrami1(
 	.aclr(rst),
 	.address(addr[`LP805X_XDATALEN-1:0]),
 	.clock(clk),
@@ -74,7 +74,7 @@ generic_xram oc8051_xrami1(
 	.q(data_o)
 	);
 `else
-generic_xram oc8051_xrami1(
+generic_xram lp805x_xrami1(
 	.aclr(rst),
 	.address(addr[`LP805X_XDATALEN-1:0]),
 	.clock(clk),

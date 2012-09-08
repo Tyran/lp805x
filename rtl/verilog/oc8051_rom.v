@@ -47,7 +47,7 @@
 // synopsys translate_on
 `include "oc8051_defines.v"
 
-module oc8051_rom (rst, clk, addr, ea_int, data_o);
+module lp805x_rom (rst, clk, addr, ea_int, data_o);
 
 //parameter INT_ROM_WID= 15;
 
@@ -204,7 +204,7 @@ begin
 	for ( i=0; i<4095; i=i+1)
 		buff[i] <= 8'h00;
 #5		
-	$readmemh("oc8051_rom.in", buff);
+	$readmemh("LP805X_rom.in", buff);
 end
 // synthesis translate_on
 
