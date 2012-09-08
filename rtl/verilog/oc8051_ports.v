@@ -66,9 +66,9 @@
 `include "oc8051_defines.v"
 
 
-`ifdef OC8051_PORTS
+`ifdef LP805X_PORTS
 
-module oc8051_ports(
+module lp805x_ports(
 			clk_cpu,
 			clk, 
 			rst,
@@ -80,22 +80,22 @@ module oc8051_ports(
 			sfr_rrdy,
 			sfr_put,
 
-	`ifdef OC8051_PORT0
+	`ifdef LP805X_PORT0
 		    p0_out,
           p0_in,
 	`endif
 
-	`ifdef OC8051_PORT1
+	`ifdef LP805X_PORT1
 		    p1_out,
 		    p1_in,
 	`endif
 
-	`ifdef OC8051_PORT2
+	`ifdef LP805X_PORT2
 		    p2_out,
 		    p2_in,
 	`endif
 
-	`ifdef OC8051_PORT3
+	`ifdef LP805X_PORT3
 		    p3_out,
 		    p3_in,
 	`endif
@@ -112,25 +112,25 @@ input [28:0] sfr_bus;
 input sfr_get,sfr_put;
 output sfr_wrdy,sfr_rrdy;
 		  
-wire    wr,	//write [oc8051_decoder.wr -r]
+wire    wr,	//write [LP805X_decoder.wr -r]
 		  rd,
-	     wr_bit,	//write bit addresable [oc8051_decoder.bit_addr -r]
+	     wr_bit,	//write bit addresable [LP805X_decoder.bit_addr -r]
 		  rd_bit,
-	     bit_in;	//bit input [oc8051_alu.desCy]
+	     bit_in;	//bit input [LP805X_alu.desCy]
 
-input rmw;	//read modify write feature [oc8051_decoder.rmw]
+input rmw;	//read modify write feature [LP805X_decoder.rmw]
 		  
 output 	bit_out;
 		  
-wire [7:0]  wr_addr,	//write address [oc8051_ram_wr_sel.out]
+wire [7:0]  wr_addr,	//write address [LP805X_ram_wr_sel.out]
 				 rd_addr,
-             data_in; 	//data input (from alu destiantion 1) [oc8051_alu.des1]
+             data_in; 	//data input (from alu destiantion 1) [LP805X_alu.des1]
 				 
 output tri [7:0] data_out;
 
 reg [7:0] data_read;
 
-`ifdef OC8051_PORT0
+`ifdef LP805X_PORT0
   input  [7:0] p0_in;
   output [7:0] p0_out;
   wire    [7:0] p0_data;
@@ -140,7 +140,7 @@ reg [7:0] data_read;
 `endif
 
 
-`ifdef OC8051_PORT1
+`ifdef LP805X_PORT1
   input  [7:0] p1_in;
   output [7:0] p1_out;
   wire    [7:0] p1_data;
@@ -150,7 +150,7 @@ reg [7:0] data_read;
 `endif
 
 
-`ifdef OC8051_PORT2
+`ifdef LP805X_PORT2
   input  [7:0] p2_in;
   output [7:0] p2_out;
   wire    [7:0] p2_data;
@@ -160,7 +160,7 @@ reg [7:0] data_read;
 `endif
 
 
-`ifdef OC8051_PORT3
+`ifdef LP805X_PORT3
   input  [7:0] p3_in;
   output [7:0] p3_out;
   wire    [7:0] p3_data;
@@ -174,60 +174,60 @@ reg [7:0] data_read;
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
-`ifdef OC8051_PORT0
-    p0_out <= #1 `OC8051_RST_P0;
+`ifdef LP805X_PORT0
+    p0_out <= #1 `LP805X_RST_P0;
 `endif
 
-`ifdef OC8051_PORT1
-    p1_out <= #1 `OC8051_RST_P1;
+`ifdef LP805X_PORT1
+    p1_out <= #1 `LP805X_RST_P1;
 `endif
 
-`ifdef OC8051_PORT2
-    p2_out <= #1 `OC8051_RST_P2;
+`ifdef LP805X_PORT2
+    p2_out <= #1 `LP805X_RST_P2;
 `endif
 
-`ifdef OC8051_PORT3
-    p3_out <= #1 `OC8051_RST_P3;
+`ifdef LP805X_PORT3
+    p3_out <= #1 `LP805X_RST_P3;
 `endif
   end else if (wr) begin
     if (!wr_bit) begin
       case (wr_addr)
 //
 // bytaddresable
-`ifdef OC8051_PORT0
-        `OC8051_SFR_P0: p0_out <= #1 data_in;
+`ifdef LP805X_PORT0
+        `LP805X_SFR_P0: p0_out <= #1 data_in;
 `endif
 
-`ifdef OC8051_PORT1
-        `OC8051_SFR_P1: p1_out <= #1 data_in;
+`ifdef LP805X_PORT1
+        `LP805X_SFR_P1: p1_out <= #1 data_in;
 `endif
 
-`ifdef OC8051_PORT2
-        `OC8051_SFR_P2: p2_out <= #1 data_in;
+`ifdef LP805X_PORT2
+        `LP805X_SFR_P2: p2_out <= #1 data_in;
 `endif
 
-`ifdef OC8051_PORT3
-        `OC8051_SFR_P3: p3_out <= #1 data_in;
+`ifdef LP805X_PORT3
+        `LP805X_SFR_P3: p3_out <= #1 data_in;
 `endif
       endcase
     end else begin
       case (wr_addr[7:3])
 //
 // bit addressable
-`ifdef OC8051_PORT0
-        `OC8051_SFR_B_P0: p0_out[wr_addr[2:0]] <= #1 bit_in;
+`ifdef LP805X_PORT0
+        `LP805X_SFR_B_P0: p0_out[wr_addr[2:0]] <= #1 bit_in;
 `endif
 
-`ifdef OC8051_PORT1
-        `OC8051_SFR_B_P1: p1_out[wr_addr[2:0]] <= #1 bit_in;
+`ifdef LP805X_PORT1
+        `LP805X_SFR_B_P1: p1_out[wr_addr[2:0]] <= #1 bit_in;
 `endif
 
-`ifdef OC8051_PORT2
-        `OC8051_SFR_B_P2: p2_out[wr_addr[2:0]] <= #1 bit_in;
+`ifdef LP805X_PORT2
+        `LP805X_SFR_B_P2: p2_out[wr_addr[2:0]] <= #1 bit_in;
 `endif
 
-`ifdef OC8051_PORT3
-        `OC8051_SFR_B_P3: p3_out[wr_addr[2:0]] <= #1 bit_in;
+`ifdef LP805X_PORT3
+        `LP805X_SFR_B_P3: p3_out[wr_addr[2:0]] <= #1 bit_in;
 `endif
       endcase
     end
@@ -249,21 +249,21 @@ begin
   else
    if ( rd_bit)
     case (rd_addr[7:3])
-`ifdef OC8051_PORTS
-  `ifdef OC8051_PORT0
-      `OC8051_SFR_B_P0:    {bit_outc,bit_outd} <= #1 {1'b1,p0_data[rd_addr[2:0]]};
+`ifdef LP805X_PORTS
+  `ifdef LP805X_PORT0
+      `LP805X_SFR_B_P0:    {bit_outc,bit_outd} <= #1 {1'b1,p0_data[rd_addr[2:0]]};
   `endif
 
-  `ifdef OC8051_PORT1
-      `OC8051_SFR_B_P1:    {bit_outc,bit_outd} <= #1 {1'b1,p1_data[rd_addr[2:0]]};
+  `ifdef LP805X_PORT1
+      `LP805X_SFR_B_P1:    {bit_outc,bit_outd} <= #1 {1'b1,p1_data[rd_addr[2:0]]};
   `endif
 
-  `ifdef OC8051_PORT2
-      `OC8051_SFR_B_P2:    {bit_outc,bit_outd} <= #1 {1'b1,p2_data[rd_addr[2:0]]};
+  `ifdef LP805X_PORT2
+      `LP805X_SFR_B_P2:    {bit_outc,bit_outd} <= #1 {1'b1,p2_data[rd_addr[2:0]]};
   `endif
 
-  `ifdef OC8051_PORT3
-      `OC8051_SFR_B_P3:    {bit_outc,bit_outd} <= #1 {1'b1,p3_data[rd_addr[2:0]]};
+  `ifdef LP805X_PORT3
+      `LP805X_SFR_B_P3:    {bit_outc,bit_outd} <= #1 {1'b1,p3_data[rd_addr[2:0]]};
   `endif
 `endif
 	default:		{bit_outc,bit_outd} <= #1 {1'b0,1'b0};
@@ -283,21 +283,21 @@ begin
   else
 	//if ( !rd_bit)
     case (rd_addr)
-`ifdef OC8051_PORTS
-  `ifdef OC8051_PORT0
-      `OC8051_SFR_P0: 		{output_data,data_read} <= #1 {1'b1,p0_data};
+`ifdef LP805X_PORTS
+  `ifdef LP805X_PORT0
+      `LP805X_SFR_P0: 		{output_data,data_read} <= #1 {1'b1,p0_data};
   `endif
 
-  `ifdef OC8051_PORT1
-      `OC8051_SFR_P1: 		{output_data,data_read} <= #1 {1'b1,p1_data};
+  `ifdef LP805X_PORT1
+      `LP805X_SFR_P1: 		{output_data,data_read} <= #1 {1'b1,p1_data};
   `endif
 
-  `ifdef OC8051_PORT2
-      `OC8051_SFR_P2: 		{output_data,data_read} <= #1 {1'b1,p2_data};
+  `ifdef LP805X_PORT2
+      `LP805X_SFR_P2: 		{output_data,data_read} <= #1 {1'b1,p2_data};
   `endif
 
-  `ifdef OC8051_PORT3
-      `OC8051_SFR_P3: 		{output_data,data_read} <= #1 {1'b1,p3_data};
+  `ifdef LP805X_PORT3
+      `LP805X_SFR_P3: 		{output_data,data_read} <= #1 {1'b1,p3_data};
   `endif
 `endif
       default:             {output_data,data_read} <= #1 {1'b0,8'h0};

@@ -61,7 +61,7 @@
 // synopsys translate_on
 
 
-module oc8051_indi_addr (clk, rst, wr_addr, data_in, wr, wr_bit, ri_out, sel, bank);
+module lp805x_indi_addr (clk, rst, wr_addr, data_in, wr, wr_bit, ri_out, sel, bank);
 //
 
 

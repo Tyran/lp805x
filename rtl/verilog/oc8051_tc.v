@@ -69,7 +69,7 @@
 
 
 
-module oc8051_tc (clk, rst, 
+module lp805x_tc (clk, rst, 
             data_in,
             wr_addr,
 	    wr, wr_bit,
@@ -118,8 +118,8 @@ assign tf1= tf1_0 | tf1_1;
 always @(posedge clk or posedge rst)
 begin
  if (rst) begin
-   tmod <= #1 `OC8051_RST_TMOD;
- end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TMOD))
+   tmod <= #1 `LP805X_RST_TMOD;
+ end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_TMOD))
     tmod <= #1 data_in;
 end
 
@@ -129,32 +129,32 @@ end
 always @(posedge clk or posedge rst)
 begin
  if (rst) begin
-   tl0 <= #1 `OC8051_RST_TL0;
-   th0 <= #1 `OC8051_RST_TH0;
+   tl0 <= #1 `LP805X_RST_TL0;
+   th0 <= #1 `LP805X_RST_TH0;
    tf0 <= #1 1'b0;
    tf1_0 <= #1 1'b0;
- end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TL0)) begin
+ end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_TL0)) begin
    tl0 <= #1 data_in;
    tf0 <= #1 1'b0;
    tf1_0 <= #1 1'b0;
- end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TH0)) begin
+ end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_TH0)) begin
    th0 <= #1 data_in;
    tf0 <= #1 1'b0;
    tf1_0 <= #1 1'b0;
  end else begin
      case (tmod[1:0]) /* previous full_mask parallel_mask */
-      `OC8051_MODE0: begin                       // mode 0
+      `LP805X_MODE0: begin                       // mode 0
         tf1_0 <= #1 1'b0;
         if (tc0_add)
           {tf0, th0,tl0[4:0]} <= #1 {1'b0, th0, tl0[4:0]}+ 1'b1;
       end
-      `OC8051_MODE1: begin                       // mode 1
+      `LP805X_MODE1: begin                       // mode 1
         tf1_0 <= #1 1'b0;
         if (tc0_add)
           {tf0, th0,tl0} <= #1 {1'b0, th0, tl0}+ 1'b1;
       end
 
-      `OC8051_MODE2: begin                       // mode 2
+      `LP805X_MODE2: begin                       // mode 2
         tf1_0 <= #1 1'b0;
         if (tc0_add) begin
 	  if (tl0 == 8'b1111_1111) begin
@@ -167,7 +167,7 @@ begin
           end
 	end
       end
-      `OC8051_MODE3: begin                       // mode 3
+      `LP805X_MODE3: begin                       // mode 3
 
 	 if (tc0_add)
 	   {tf0, tl0} <= #1 {1'b0, tl0} +1'b1;
@@ -190,27 +190,27 @@ end
 always @(posedge clk or posedge rst)
 begin
  if (rst) begin
-   tl1 <=#1 `OC8051_RST_TL1;
-   th1 <=#1 `OC8051_RST_TH1;
+   tl1 <=#1 `LP805X_RST_TL1;
+   th1 <=#1 `LP805X_RST_TH1;
    tf1_1 <= #1 1'b0;
- end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TL1)) begin
+ end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_TL1)) begin
    tl1 <= #1 data_in;
    tf1_1 <= #1 1'b0;
- end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TH1)) begin
+ end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_TH1)) begin
    th1 <= #1 data_in;
    tf1_1 <= #1 1'b0;
  end else begin
      case (tmod[5:4]) /* previous full_mask parallel_mask */
-      `OC8051_MODE0: begin                       // mode 0
+      `LP805X_MODE0: begin                       // mode 0
         if (tc1_add)
           {tf1_1, th1,tl1[4:0]} <= #1 {1'b0, th1, tl1[4:0]}+ 1'b1;
       end
-      `OC8051_MODE1: begin                       // mode 1
+      `LP805X_MODE1: begin                       // mode 1
         if (tc1_add)
           {tf1_1, th1,tl1} <= #1 {1'b0, th1, tl1}+ 1'b1;
       end
 
-      `OC8051_MODE2: begin                       // mode 2
+      `LP805X_MODE2: begin                       // mode 2
         if (tc1_add) begin
 	  if (tl1 == 8'b1111_1111) begin
             tf1_1 <=#1 1'b1;

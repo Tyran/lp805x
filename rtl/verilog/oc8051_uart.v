@@ -70,7 +70,7 @@
 
 `include "oc8051_defines.v"
 
-module oc8051_uart (rst, clk, 
+module lp805x_uart (rst, clk, 
              bit_in, data_in,
 	     wr_addr,
 	     wr, wr_bit,
@@ -137,10 +137,10 @@ assign ri  = scon[0];
 always @(posedge clk or posedge rst)
 begin
   if (rst)
-    scon <= #1 `OC8051_RST_SCON;
-  else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_SCON))
+    scon <= #1 `LP805X_RST_SCON;
+  else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_SCON))
     scon <= #1 data_in;
-  else if ((wr) & (wr_bit) & (wr_addr[7:3]==`OC8051_SFR_B_SCON))
+  else if ((wr) & (wr_bit) & (wr_addr[7:3]==`LP805X_SFR_B_SCON))
     scon[wr_addr[2:0]] <= #1 bit_in;
   else if (tx_done)
     scon[1] <= #1 1'b1;
@@ -164,8 +164,8 @@ always @(posedge clk or posedge rst)
 begin
   if (rst)
   begin
-    pcon <= #1 `OC8051_RST_PCON;
-  end else if ((wr_addr==`OC8051_SFR_PCON) & (wr) & !(wr_bit))
+    pcon <= #1 `LP805X_RST_PCON;
+  end else if ((wr_addr==`LP805X_SFR_PCON) & (wr) & !(wr_bit))
     pcon <= #1 data_in;
 end
 
@@ -175,7 +175,7 @@ end
 //
 
 wire wr_sbuf;
-assign wr_sbuf = (wr_addr==`OC8051_SFR_SBUF) & (wr) & !(wr_bit);
+assign wr_sbuf = (wr_addr==`LP805X_SFR_SBUF) & (wr) & !(wr_bit);
 
 always @(posedge clk or posedge rst)
 begin

@@ -95,7 +95,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_sfr (rst, clk,
+module lp805x_sfr (rst, clk,
        adr0, adr1, data_out, 
        dat1, dat2, bit_in,
        des_acc,
@@ -111,7 +111,7 @@ module oc8051_sfr (rst, clk,
        comp_sel,
        comp_wait,
 
-  `ifdef OC8051_UART
+  `ifdef LP805X_UART
        rxd, txd,
   `endif
 
@@ -122,11 +122,11 @@ module oc8051_sfr (rst, clk,
 		 ntf,
 		 ntr,
 
-  `ifdef OC8051_TC01
+  `ifdef LP805X_TC01
        t0, t1,
   `endif
 
-  `ifdef OC8051_TC2
+  `ifdef LP805X_TC2
        t2, t2ex,
   `endif
 
@@ -180,18 +180,18 @@ output [7:0] sp,
 				 
 				 
 // serial interface
-`ifdef OC8051_UART
+`ifdef LP805X_UART
 input        rxd;
 output       txd;
 `endif
 
 // timer/counter 0,1
-`ifdef OC8051_TC01
+`ifdef LP805X_TC01
 input	     t0, t1;
 `endif
 
 // timer/counter 2
-`ifdef OC8051_TC2
+`ifdef LP805X_TC2
 input	     t2, t2ex;
 `endif
 
@@ -219,7 +219,7 @@ wire       p,
 wire [7:0] b_reg, 
            psw,
 
-`ifdef OC8051_TC2
+`ifdef LP805X_TC2
   // t/c 2
 	   t2con, 
 	   tl2, 
@@ -228,7 +228,7 @@ wire [7:0] b_reg,
 	   rcap2h,
 `endif
 
-`ifdef OC8051_TC01
+`ifdef LP805X_TC01
   // t/c 0,1
 	   tmod, 
 	   tl0, 
@@ -238,7 +238,7 @@ wire [7:0] b_reg,
 `endif
 
   // serial interface
-`ifdef OC8051_UART
+`ifdef LP805X_UART
            scon, 
 	   pcon, 
 	   sbuf,
@@ -262,7 +262,7 @@ assign srcAc = psw [6];
 //
 // accumulator
 // ACC
-oc8051_acc oc8051_acc1(.clk(clk), 
+lp805x_acc acc_1(.clk(clk), 
                        .rst(rst), 
 		       .bit_in(bit_in), 
 		       .data_in(des_acc),
@@ -279,7 +279,7 @@ oc8051_acc oc8051_acc1(.clk(clk),
 //
 // b register
 // B
-oc8051_b_register oc8051_b_register (.clk(clk),
+lp805x_b_register b_register_1 (.clk(clk),
                                      .rst(rst),
 				     .bit_in(bit_in),
 				     .data_in(des_acc),
@@ -291,7 +291,7 @@ oc8051_b_register oc8051_b_register (.clk(clk),
 //
 //stack pointer
 // SP
-oc8051_sp oc8051_sp1(.clk(clk), 
+lp805x_sp sp_1(.clk(clk), 
                      .rst(rst), 
 		     .ram_rd_sel(ram_rd_sel), 
 		     .ram_wr_sel(ram_wr_sel), 
@@ -305,7 +305,7 @@ oc8051_sp oc8051_sp1(.clk(clk),
 //
 //data pointer
 // DPTR, DPH, DPL
-oc8051_dptr oc8051_dptr1(.clk(clk), 
+lp805x_dptr dptr_1(.clk(clk), 
                          .rst(rst), 
 			 .addr(adr1), 
 			 .data_in(des_acc),
@@ -321,7 +321,7 @@ oc8051_dptr oc8051_dptr1(.clk(clk),
 //
 //program status word
 // PSW
-oc8051_psw oc8051_psw1 (
+lp805x_psw psw_1 (
 			.clk(clk), 
          .rst(rst), 
 			.wr_addr(adr1), 
@@ -340,8 +340,8 @@ oc8051_psw oc8051_psw1 (
 //
 // serial interface
 // SCON, SBUF
-`ifdef OC8051_UART
-  oc8051_uart oc8051_uatr1 (.clk(clk), 
+`ifdef LP805X_UART
+  lp805x_uart uart_1 (.clk(clk), 
                             .rst(rst), 
 			    .bit_in(bit_in),
 			    .data_in(dat1), 
@@ -369,7 +369,7 @@ oc8051_psw oc8051_psw1 (
 //
 // interrupt control
 // IP, IE, TCON
-oc8051_int oc8051_int1 (.clk(clk), 
+lp805x_int int_1 (.clk(clk), 
                         .rst(rst), 
 			.wr_addr(adr1), 
 			.bit_in(bit_in),
@@ -399,8 +399,8 @@ oc8051_int oc8051_int1 (.clk(clk),
 //
 // timer/counter control
 // TH0, TH1, TL0, TH1, TMOD
-`ifdef OC8051_TC01
-  oc8051_tc oc8051_tc1(.clk(clk), 
+`ifdef LP805X_TC01
+  lp805x_tc tc_1(.clk(clk), 
                        .rst(rst), 
 		       .wr_addr(adr1),
 		       .data_in(dat1), 
@@ -428,8 +428,8 @@ oc8051_int oc8051_int1 (.clk(clk),
 //
 // timer/counter 2
 // TH2, TL2, RCAPL2L, RCAPL2H, T2CON
-`ifdef OC8051_TC2
-  oc8051_tc2 oc8051_tc21(.clk(clk), 
+`ifdef LP805X_TC2
+  lp805x_tc2 tc2_1(.clk(clk), 
                          .rst(rst), 
 			 .wr_addr(adr1),
 			 .data_in(dat1), 
@@ -470,16 +470,16 @@ always @(posedge clk or posedge rst)
   end
 
 assign comp_wait = !(
-                    ((comp_sel==`OC8051_CSS_AZ) &
-		       ((wr_sfr==`OC8051_WRS_ACC1) |
-		        (wr_sfr==`OC8051_WRS_ACC2) |
-			((adr1==`OC8051_SFR_ACC) & we & !wr_bit_r) |
-			((adr1[7:3]==`OC8051_SFR_B_ACC) & we & wr_bit_r))) |
-		    ((comp_sel==`OC8051_CSS_CY) &
+                    ((comp_sel==`LP805X_CSS_AZ) &
+		       ((wr_sfr==`LP805X_WRS_ACC1) |
+		        (wr_sfr==`LP805X_WRS_ACC2) |
+			((adr1==`LP805X_SFR_ACC) & we & !wr_bit_r) |
+			((adr1[7:3]==`LP805X_SFR_B_ACC) & we & wr_bit_r))) |
+		    ((comp_sel==`LP805X_CSS_CY) &
 		       ((|psw_set) |
-			((adr1==`OC8051_SFR_PSW) & we & !wr_bit_r) |
-			((adr1[7:3]==`OC8051_SFR_B_PSW) & we & wr_bit_r))) |
-		    ((comp_sel==`OC8051_CSS_BIT) &
+			((adr1==`LP805X_SFR_PSW) & we & !wr_bit_r) |
+			((adr1[7:3]==`LP805X_SFR_B_PSW) & we & wr_bit_r))) |
+		    ((comp_sel==`LP805X_CSS_BIT) &
 		       ((adr1[7:3]==adr0[7:3]) & (~&adr1[2:0]) &  we & !wr_bit_r) |
 		       ((adr1==adr0) & adr1[7] & we & !wr_bit_r)));
 
@@ -493,13 +493,13 @@ begin
   if (rst) begin
     {data_outc,data_outd} <= #1 {1'b0,8'h00};
     wait_data <= #1 1'b0;
-  end else if ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_LO)) begin				//write and read same address
+  end else if ((wr_sfr==`LP805X_WRS_DPTR) & (adr0==`LP805X_SFR_DPTR_LO)) begin				//write and read same address
     {data_outc,data_outd} <= #1 {1'b1,des_acc};
     wait_data <= #1 1'b0;
   end else if (
       (
-        ((wr_sfr==`OC8051_WRS_ACC1) & (adr0==`OC8051_SFR_ACC)) | 	//write to acc
-//        ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_LO)) |	//write to dpl
+        ((wr_sfr==`LP805X_WRS_ACC1) & (adr0==`LP805X_SFR_ACC)) | 	//write to acc
+//        ((wr_sfr==`LP805X_WRS_DPTR) & (adr0==`LP805X_SFR_DPTR_LO)) |	//write to dpl
         (adr1[7] & (adr1==adr0) & we & !wr_bit_r) |			//write and read same address
         (adr1[7] & (adr1[7:3]==adr0[7:3]) & (~&adr0[2:0]) &  we & wr_bit_r) //write bit addressable to read address
       ) & !wait_data) begin
@@ -507,46 +507,46 @@ begin
     wait_data <= #1 1'b1;
 
   end else if ((
-      ((|psw_set) & (adr0==`OC8051_SFR_PSW)) |
-      ((wr_sfr==`OC8051_WRS_ACC2) & (adr0==`OC8051_SFR_ACC)) | 	//write to acc
-      ((wr_sfr==`OC8051_WRS_DPTR) & (adr0==`OC8051_SFR_DPTR_HI))	//write to dph
+      ((|psw_set) & (adr0==`LP805X_SFR_PSW)) |
+      ((wr_sfr==`LP805X_WRS_ACC2) & (adr0==`LP805X_SFR_ACC)) | 	//write to acc
+      ((wr_sfr==`LP805X_WRS_DPTR) & (adr0==`LP805X_SFR_DPTR_HI))	//write to dph
       ) & !wait_data) begin
     wait_data <= #1 1'b1;
 	// ?????
   end else begin
     case (adr0)
-      `OC8051_SFR_ACC: 		{data_outc,data_outd} <= #1 {1'b1,acc};
-      `OC8051_SFR_PSW: 		{data_outc,data_outd} <= #1 {1'b1,psw};
+      `LP805X_SFR_ACC: 		{data_outc,data_outd} <= #1 {1'b1,acc};
+      `LP805X_SFR_PSW: 		{data_outc,data_outd} <= #1 {1'b1,psw};
 
-      `OC8051_SFR_SP: 		{data_outc,data_outd} <= #1 {1'b1,sp};
-      `OC8051_SFR_B: 		{data_outc,data_outd} <= #1 {1'b1,b_reg};
-      `OC8051_SFR_DPTR_HI: 	{data_outc,data_outd} <= #1 {1'b1,dptr_hi};
-      `OC8051_SFR_DPTR_LO: 	{data_outc,data_outd} <= #1 {1'b1,dptr_lo};
+      `LP805X_SFR_SP: 		{data_outc,data_outd} <= #1 {1'b1,sp};
+      `LP805X_SFR_B: 		{data_outc,data_outd} <= #1 {1'b1,b_reg};
+      `LP805X_SFR_DPTR_HI: 	{data_outc,data_outd} <= #1 {1'b1,dptr_hi};
+      `LP805X_SFR_DPTR_LO: 	{data_outc,data_outd} <= #1 {1'b1,dptr_lo};
 
-`ifdef OC8051_UART
-      `OC8051_SFR_SCON: 	{data_outc,data_outd} <= #1 {1'b1,scon};
-      `OC8051_SFR_SBUF: 	{data_outc,data_outd} <= #1 {1'b1,sbuf};
-      `OC8051_SFR_PCON: 	{data_outc,data_outd} <= #1 {1'b1,pcon};
+`ifdef LP805X_UART
+      `LP805X_SFR_SCON: 	{data_outc,data_outd} <= #1 {1'b1,scon};
+      `LP805X_SFR_SBUF: 	{data_outc,data_outd} <= #1 {1'b1,sbuf};
+      `LP805X_SFR_PCON: 	{data_outc,data_outd} <= #1 {1'b1,pcon};
 `endif
 
-`ifdef OC8051_TC01
-      `OC8051_SFR_TH0: 		{data_outc,data_outd} <= #1 {1'b1,th0};
-      `OC8051_SFR_TH1: 		{data_outc,data_outd} <= #1 {1'b1,th1};
-      `OC8051_SFR_TL0: 		{data_outc,data_outd} <= #1 {1'b1,tl0};
-      `OC8051_SFR_TL1: 		{data_outc,data_outd} <= #1 {1'b1,tl1};
-      `OC8051_SFR_TMOD: 	{data_outc,data_outd} <= #1 {1'b1,tmod};
+`ifdef LP805X_TC01
+      `LP805X_SFR_TH0: 		{data_outc,data_outd} <= #1 {1'b1,th0};
+      `LP805X_SFR_TH1: 		{data_outc,data_outd} <= #1 {1'b1,th1};
+      `LP805X_SFR_TL0: 		{data_outc,data_outd} <= #1 {1'b1,tl0};
+      `LP805X_SFR_TL1: 		{data_outc,data_outd} <= #1 {1'b1,tl1};
+      `LP805X_SFR_TMOD: 	{data_outc,data_outd} <= #1 {1'b1,tmod};
 `endif
 
-      `OC8051_SFR_IP: 		{data_outc,data_outd} <= #1 {1'b1,ip};
-      `OC8051_SFR_IE: 		{data_outc,data_outd} <= #1 {1'b1,ie};
-      `OC8051_SFR_TCON: 	{data_outc,data_outd} <= #1 {1'b1,tcon};
+      `LP805X_SFR_IP: 		{data_outc,data_outd} <= #1 {1'b1,ip};
+      `LP805X_SFR_IE: 		{data_outc,data_outd} <= #1 {1'b1,ie};
+      `LP805X_SFR_TCON: 	{data_outc,data_outd} <= #1 {1'b1,tcon};
 
-`ifdef OC8051_TC2
-      `OC8051_SFR_RCAP2H: 	{data_outc,data_outd} <= #1 {1'b1,rcap2h};
-      `OC8051_SFR_RCAP2L: 	{data_outc,data_outd} <= #1 {1'b1,rcap2l};
-      `OC8051_SFR_TH2:    	{data_outc,data_outd} <= #1 {1'b1,th2};
-      `OC8051_SFR_TL2:    	{data_outc,data_outd} <= #1 {1'b1,tl2};
-      `OC8051_SFR_T2CON:  	{data_outc,data_outd} <= #1 {1'b1,t2con};
+`ifdef LP805X_TC2
+      `LP805X_SFR_RCAP2H: 	{data_outc,data_outd} <= #1 {1'b1,rcap2h};
+      `LP805X_SFR_RCAP2L: 	{data_outc,data_outd} <= #1 {1'b1,rcap2l};
+      `LP805X_SFR_TH2:    	{data_outc,data_outd} <= #1 {1'b1,th2};
+      `LP805X_SFR_TL2:    	{data_outc,data_outd} <= #1 {1'b1,tl2};
+      `LP805X_SFR_T2CON:  	{data_outc,data_outd} <= #1 {1'b1,t2con};
 `endif
 
       default: 			{data_outc,data_outd} <= #1 {1'b0,8'h00};
@@ -567,27 +567,27 @@ begin
     {bit_outc,bit_outd} <= #1 {1'b0,1'b0};
   else if (
           ((adr1[7:3]==adr0[7:3]) & (~&adr1[2:0]) &  we & !wr_bit_r) |
-          ((wr_sfr==`OC8051_WRS_ACC1) & (adr0[7:3]==`OC8051_SFR_B_ACC)) 	//write to acc
+          ((wr_sfr==`LP805X_WRS_ACC1) & (adr0[7:3]==`LP805X_SFR_B_ACC)) 	//write to acc
 	  )
     {bit_outc,bit_outd} <= #1 {1'b1,dat1[adr0[2:0]]};
   else if ((adr1==adr0) & we & wr_bit_r)
     {bit_outc,bit_outd} <= #1 {1'b1,bit_in};
   else
     case (adr0[7:3]) /* previous full_mask parallel_mask */
-      `OC8051_SFR_B_ACC:   {bit_outc,bit_outd} <= #1 {1'b1,acc[adr0[2:0]]};
-      `OC8051_SFR_B_PSW:   {bit_outc,bit_outd} <= #1 {1'b1,psw[adr0[2:0]]};
+      `LP805X_SFR_B_ACC:   {bit_outc,bit_outd} <= #1 {1'b1,acc[adr0[2:0]]};
+      `LP805X_SFR_B_PSW:   {bit_outc,bit_outd} <= #1 {1'b1,psw[adr0[2:0]]};
 
-      `OC8051_SFR_B_B:     {bit_outc,bit_outd} <= #1 {1'b1,b_reg[adr0[2:0]]};
-      `OC8051_SFR_B_IP:    {bit_outc,bit_outd} <= #1 {1'b1,ip[adr0[2:0]]};
-      `OC8051_SFR_B_IE:    {bit_outc,bit_outd} <= #1 {1'b1,ie[adr0[2:0]]};
-      `OC8051_SFR_B_TCON:  {bit_outc,bit_outd} <= #1 {1'b1,tcon[adr0[2:0]]};
+      `LP805X_SFR_B_B:     {bit_outc,bit_outd} <= #1 {1'b1,b_reg[adr0[2:0]]};
+      `LP805X_SFR_B_IP:    {bit_outc,bit_outd} <= #1 {1'b1,ip[adr0[2:0]]};
+      `LP805X_SFR_B_IE:    {bit_outc,bit_outd} <= #1 {1'b1,ie[adr0[2:0]]};
+      `LP805X_SFR_B_TCON:  {bit_outc,bit_outd} <= #1 {1'b1,tcon[adr0[2:0]]};
 
-`ifdef OC8051_UART
-      `OC8051_SFR_B_SCON:  {bit_outc,bit_outd} <= #1 {1'b1,scon[adr0[2:0]]};
+`ifdef LP805X_UART
+      `LP805X_SFR_B_SCON:  {bit_outc,bit_outd} <= #1 {1'b1,scon[adr0[2:0]]};
 `endif
 
-`ifdef OC8051_TC2
-      `OC8051_SFR_B_T2CON: {bit_outc,bit_outd} <= #1 {1'b1,t2con[adr0[2:0]]};
+`ifdef LP805X_TC2
+      `LP805X_SFR_B_T2CON: {bit_outc,bit_outd} <= #1 {1'b1,t2con[adr0[2:0]]};
 `endif
 
       default:             {bit_outc,bit_outd} <= #1 {1'b0,1'b0};

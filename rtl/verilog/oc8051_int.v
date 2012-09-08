@@ -72,7 +72,7 @@
 
 
 
-module oc8051_int (clk, rst, 
+module lp805x_int (clk, rst, 
         wr_addr,  
 	data_in, bit_in, 
 	wr, wr_bit,
@@ -164,10 +164,10 @@ assign intr = |int_vec;
 always @(posedge clk or posedge rst)
 begin
  if (rst) begin
-   ip <=#1 `OC8051_RST_IP;
- end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_IP)) begin
+   ip <=#1 `LP805X_RST_IP;
+ end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_IP)) begin
    ip <= #1 data_in;
- end else if ((wr) & (wr_bit) & (wr_addr[7:3]==`OC8051_SFR_B_IP))
+ end else if ((wr) & (wr_bit) & (wr_addr[7:3]==`LP805X_SFR_B_IP))
    ip[wr_addr[2:0]] <= #1 bit_in;
 end
 
@@ -176,10 +176,10 @@ end
 always @(posedge clk or posedge rst)
 begin
  if (rst) begin
-   ie <=#1 `OC8051_RST_IE;
- end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_IE)) begin
+   ie <=#1 `LP805X_RST_IE;
+ end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_IE)) begin
    ie <= #1 data_in;
- end else if ((wr) & (wr_bit) & (wr_addr[7:3]==`OC8051_SFR_B_IE))
+ end else if ((wr) & (wr_bit) & (wr_addr[7:3]==`LP805X_SFR_B_IE))
    ie[wr_addr[2:0]] <= #1 bit_in;
 end
 
@@ -190,9 +190,9 @@ always @(posedge clk or posedge rst)
 begin
  if (rst) begin
    tcon_s <=#1 4'b0000;
- end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TCON)) begin
+ end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_TCON)) begin
    tcon_s <= #1 {data_in[6], data_in[4], data_in[2], data_in[0]};
- end else if ((wr) & (wr_bit) & (wr_addr[7:3]==`OC8051_SFR_B_TCON)) begin
+ end else if ((wr) & (wr_bit) & (wr_addr[7:3]==`LP805X_SFR_B_TCON)) begin
    case (wr_addr[2:0]) /* previous full_mask parallel_mask */
      3'b000: tcon_s[0] <= #1 bit_in;
      3'b010: tcon_s[1] <= #1 bit_in;
@@ -209,13 +209,13 @@ always @(posedge clk or posedge rst)
 begin
  if (rst) begin
    tcon_tf1 <=#1 1'b0;
- end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TCON)) begin
+ end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_TCON)) begin
    tcon_tf1 <= #1 data_in[7];
- end else if ((wr) & (wr_bit) & (wr_addr=={`OC8051_SFR_B_TCON, 3'b111})) begin
+ end else if ((wr) & (wr_bit) & (wr_addr=={`LP805X_SFR_B_TCON, 3'b111})) begin
    tcon_tf1 <= #1 bit_in;
  end else if (!(tf1_buff) & (tf1)) begin
    tcon_tf1 <= #1 1'b1;
- end else if (ack & (isrc_cur==`OC8051_ISRC_TF1)) begin
+ end else if (ack & (isrc_cur==`LP805X_ISRC_TF1)) begin
    tcon_tf1 <= #1 1'b0;
  end
 end
@@ -227,13 +227,13 @@ always @(posedge clk or posedge rst)
 begin
  if (rst) begin
    tcon_tf0 <=#1 1'b0;
- end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TCON)) begin
+ end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_TCON)) begin
    tcon_tf0 <= #1 data_in[5];
- end else if ((wr) & (wr_bit) & (wr_addr=={`OC8051_SFR_B_TCON, 3'b101})) begin
+ end else if ((wr) & (wr_bit) & (wr_addr=={`LP805X_SFR_B_TCON, 3'b101})) begin
    tcon_tf0 <= #1 bit_in;
  end else if (!(tf0_buff) & (tf0)) begin
    tcon_tf0 <= #1 1'b1;
- end else if (ack & (isrc_cur==`OC8051_ISRC_TF0)) begin
+ end else if (ack & (isrc_cur==`LP805X_ISRC_TF0)) begin
    tcon_tf0 <= #1 1'b0;
  end
 end
@@ -246,13 +246,13 @@ always @(posedge clk or posedge rst)
 begin
  if (rst) begin
    tcon_ie0 <=#1 1'b0;
- end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TCON)) begin
+ end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_TCON)) begin
    tcon_ie0 <= #1 data_in[1];
- end else if ((wr) & (wr_bit) & (wr_addr=={`OC8051_SFR_B_TCON, 3'b001})) begin
+ end else if ((wr) & (wr_bit) & (wr_addr=={`LP805X_SFR_B_TCON, 3'b001})) begin
    tcon_ie0 <= #1 bit_in;
  end else if (((tcon_s[0]) & (ie0_buff) & !(ie0)) | (!(tcon_s[0]) & !(ie0))) begin
    tcon_ie0 <= #1 1'b1;
- end else if (ack & (isrc_cur==`OC8051_ISRC_IE0) & (tcon_s[0])) begin
+ end else if (ack & (isrc_cur==`LP805X_ISRC_IE0) & (tcon_s[0])) begin
    tcon_ie0 <= #1 1'b0;
  end else if (!(tcon_s[0]) & (ie0)) begin
    tcon_ie0 <= #1 1'b0;
@@ -267,13 +267,13 @@ always @(posedge clk or posedge rst)
 begin
  if (rst) begin
    tcon_ie1 <=#1 1'b0;
- end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TCON)) begin
+ end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_TCON)) begin
    tcon_ie1 <= #1 data_in[3];
- end else if ((wr) & (wr_bit) & (wr_addr=={`OC8051_SFR_B_TCON, 3'b011})) begin
+ end else if ((wr) & (wr_bit) & (wr_addr=={`LP805X_SFR_B_TCON, 3'b011})) begin
    tcon_ie1 <= #1 bit_in;
  end else if (((tcon_s[1]) & (ie1_buff) & !(ie1)) | (!(tcon_s[1]) & !(ie1))) begin
    tcon_ie1 <= #1 1'b1;
- end else if (ack & (isrc_cur==`OC8051_ISRC_IE1) & (tcon_s[1])) begin
+ end else if (ack & (isrc_cur==`LP805X_ISRC_IE1) & (tcon_s[1])) begin
    tcon_ie1 <= #1 1'b0;
  end else if (!(tcon_s[1]) & (ie1)) begin
    tcon_ie1 <= #1 1'b0;
@@ -298,50 +298,50 @@ begin
    int_dept <= #1 int_dept - 2'b01;
   end else if (((ie[7]) & (!cur_lev) || !int_proc) & il1) begin  // interrupt on level 1
    int_proc <= #1 1'b1;
-   int_lev[int_dept] <= #1 `OC8051_ILEV_L1;
+   int_lev[int_dept] <= #1 `LP805X_ILEV_L1;
    int_dept <= #1 int_dept + 2'b01;
    if (int_l1[0]) begin
-     int_vec <= #1 `OC8051_INT_X0;
-     isrc[int_dept] <= #1 `OC8051_ISRC_IE0;
+     int_vec <= #1 `LP805X_INT_X0;
+     isrc[int_dept] <= #1 `LP805X_ISRC_IE0;
    end else if (int_l1[1]) begin
-     int_vec <= #1 `OC8051_INT_T0;
-     isrc[int_dept] <= #1 `OC8051_ISRC_TF0;
+     int_vec <= #1 `LP805X_INT_T0;
+     isrc[int_dept] <= #1 `LP805X_ISRC_TF0;
    end else if (int_l1[2]) begin
-     int_vec <= #1 `OC8051_INT_X1;
-     isrc[int_dept] <= #1 `OC8051_ISRC_IE1;
+     int_vec <= #1 `LP805X_INT_X1;
+     isrc[int_dept] <= #1 `LP805X_ISRC_IE1;
    end else if (int_l1[3]) begin
-     int_vec <= #1 `OC8051_INT_T1;
-     isrc[int_dept] <= #1 `OC8051_ISRC_TF1;
+     int_vec <= #1 `LP805X_INT_T1;
+     isrc[int_dept] <= #1 `LP805X_ISRC_TF1;
    end else if (int_l1[4]) begin
-     int_vec <= #1 `OC8051_INT_UART;
-     isrc[int_dept] <= #1 `OC8051_ISRC_UART;
+     int_vec <= #1 `LP805X_INT_UART;
+     isrc[int_dept] <= #1 `LP805X_ISRC_UART;
    end else if (int_l1[5]) begin
-     int_vec <= #1 `OC8051_INT_T2;
-     isrc[int_dept] <= #1 `OC8051_ISRC_T2;
+     int_vec <= #1 `LP805X_INT_T2;
+     isrc[int_dept] <= #1 `LP805X_ISRC_T2;
    end
 
  end else if ((ie[7]) & !int_proc & il0) begin  // interrupt on level 0
    int_proc <= #1 1'b1;
-   int_lev[int_dept] <= #1 `OC8051_ILEV_L0;
+   int_lev[int_dept] <= #1 `LP805X_ILEV_L0;
    int_dept <= #1 2'b01;
    if (int_l0[0]) begin
-     int_vec <= #1 `OC8051_INT_X0;
-     isrc[int_dept] <= #1 `OC8051_ISRC_IE0;
+     int_vec <= #1 `LP805X_INT_X0;
+     isrc[int_dept] <= #1 `LP805X_ISRC_IE0;
    end else if (int_l0[1]) begin
-     int_vec <= #1 `OC8051_INT_T0;
-     isrc[int_dept] <= #1 `OC8051_ISRC_TF0;
+     int_vec <= #1 `LP805X_INT_T0;
+     isrc[int_dept] <= #1 `LP805X_ISRC_TF0;
    end else if (int_l0[2]) begin
-     int_vec <= #1 `OC8051_INT_X1;
-     isrc[int_dept] <= #1 `OC8051_ISRC_IE1;
+     int_vec <= #1 `LP805X_INT_X1;
+     isrc[int_dept] <= #1 `LP805X_ISRC_IE1;
    end else if (int_l0[3]) begin
-     int_vec <= #1 `OC8051_INT_T1;
-     isrc[int_dept] <= #1 `OC8051_ISRC_TF1;
+     int_vec <= #1 `LP805X_INT_T1;
+     isrc[int_dept] <= #1 `LP805X_ISRC_TF1;
    end else if (int_l0[4]) begin
-     int_vec <= #1 `OC8051_INT_UART;
-     isrc[int_dept] <= #1 `OC8051_ISRC_UART;
+     int_vec <= #1 `LP805X_INT_UART;
+     isrc[int_dept] <= #1 `LP805X_ISRC_UART;
    end else if (int_l0[5]) begin
-     int_vec <= #1 `OC8051_INT_T2;
-     isrc[int_dept] <= #1 `OC8051_ISRC_T2;
+     int_vec <= #1 `LP805X_INT_T2;
+     isrc[int_dept] <= #1 `LP805X_ISRC_T2;
    end
  end else begin
    int_vec <= #1 8'h00;

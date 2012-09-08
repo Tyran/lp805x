@@ -61,7 +61,7 @@
 
 
 
-module oc8051_tc2 (clk, rst,
+module lp805x_tc2 (clk, rst,
             wr_addr,
 	    data_in, bit_in,
 	    wr, wr_bit,
@@ -117,10 +117,10 @@ assign cprl2 = t2con[0];
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
-    t2con <= #1 `OC8051_RST_T2CON;
-  end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_T2CON)) begin
+    t2con <= #1 `LP805X_RST_T2CON;
+  end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_T2CON)) begin
     t2con <= #1 data_in;
-  end else if ((wr) & (wr_bit) & (wr_addr[7:3]==`OC8051_SFR_B_T2CON)) begin
+  end else if ((wr) & (wr_bit) & (wr_addr[7:3]==`LP805X_SFR_B_T2CON)) begin
     t2con[wr_addr[2:0]] <= #1 bit_in;
   end else if (tf2_set) begin
     t2con[7] <= #1 1'b1;
@@ -140,16 +140,16 @@ begin
 //
 // reset
 //
-    tl2 <= #1 `OC8051_RST_TL2;
-    th2 <= #1 `OC8051_RST_TH2;
+    tl2 <= #1 `LP805X_RST_TL2;
+    th2 <= #1 `LP805X_RST_TH2;
     brate2 <= #1 1'b0;
     tf2_set <= #1 1'b0;
-  end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TH2)) begin
+  end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_TH2)) begin
 //
 // write to timer 2 high
 //
     th2 <= #1 data_in;
-  end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_TL2)) begin
+  end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_TL2)) begin
 //
 // write to timer 2 low
 //
@@ -200,11 +200,11 @@ end
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
-    rcap2l <= #1 `OC8051_RST_RCAP2L;
-    rcap2h <= #1 `OC8051_RST_RCAP2H;
-  end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_RCAP2H)) begin
+    rcap2l <= #1 `LP805X_RST_RCAP2L;
+    rcap2h <= #1 `LP805X_RST_RCAP2H;
+  end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_RCAP2H)) begin
     rcap2h <= #1 data_in;
-  end else if ((wr) & !(wr_bit) & (wr_addr==`OC8051_SFR_RCAP2L)) begin
+  end else if ((wr) & !(wr_bit) & (wr_addr==`LP805X_SFR_RCAP2L)) begin
     rcap2l <= #1 data_in;
   end else if (!(rclk | tclk) & exen2 & cprl2 & neg_trans) begin
     rcap2l <= #1 tl2;

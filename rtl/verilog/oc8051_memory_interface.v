@@ -89,7 +89,7 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_memory_interface (clk, rst,
+module lp805x_memory_interface (clk, rst,
 
 //decoder
      wr_i,
@@ -386,7 +386,7 @@ assign pc_wait    = rd && (ea_rom_sel || (!istb_t && iack_i));
 assign wr_dat     = des1;
 
 
-`ifdef OC8051_SIMULATION
+`ifdef LP805X_SIMULATION
 // synthesis translate_off
   always @(negedge rst) begin
     #5
@@ -424,15 +424,15 @@ end
 always @(rd_sel or sp or ri or rn or imm or dadr_o[15:0])// or bank)
 begin
   case (rd_sel) /* previous full_mask parallel_mask */
-    `OC8051_RRS_RN   : rd_addr = {3'h0, rn};
-    `OC8051_RRS_I    : rd_addr = ri;
-    `OC8051_RRS_D    : rd_addr = imm;
-    `OC8051_RRS_SP   : rd_addr = sp;
+    `LP805X_RRS_RN   : rd_addr = {3'h0, rn};
+    `LP805X_RRS_I    : rd_addr = ri;
+    `LP805X_RRS_D    : rd_addr = imm;
+    `LP805X_RRS_SP   : rd_addr = sp;
 
-    `OC8051_RRS_B    : rd_addr = `OC8051_SFR_B;
-    `OC8051_RRS_DPTR : rd_addr = `OC8051_SFR_DPTR_LO;
-    `OC8051_RRS_PSW  : rd_addr = `OC8051_SFR_PSW;
-    `OC8051_RRS_ACC  : rd_addr = `OC8051_SFR_ACC;
+    `LP805X_RRS_B    : rd_addr = `LP805X_SFR_B;
+    `LP805X_RRS_DPTR : rd_addr = `LP805X_SFR_DPTR_LO;
+    `LP805X_RRS_PSW  : rd_addr = `LP805X_SFR_PSW;
+    `LP805X_RRS_ACC  : rd_addr = `LP805X_SFR_ACC;
     default          : rd_addr = 2'bxx;
   endcase
 end
@@ -443,12 +443,12 @@ end
 always @(wr_sel or sp_w or rn_r or imm_r or ri_r or imm2_r or dadr_o[15:0])// or op1_r)
 begin
   case (wr_sel) /* previous full_mask parallel_mask */
-    `OC8051_RWS_RN : wr_addr = {3'h0, rn_r}; //same code as RWS_DC!
-    `OC8051_RWS_I  : wr_addr = ri_r;
-    `OC8051_RWS_D  : wr_addr = imm_r;
-    `OC8051_RWS_SP : wr_addr = sp_w;
-    `OC8051_RWS_D3 : wr_addr = imm2_r;
-    `OC8051_RWS_B  : wr_addr = `OC8051_SFR_B;
+    `LP805X_RWS_RN : wr_addr = {3'h0, rn_r}; //same code as RWS_DC!
+    `LP805X_RWS_I  : wr_addr = ri_r;
+    `LP805X_RWS_D  : wr_addr = imm_r;
+    `LP805X_RWS_SP : wr_addr = sp_w;
+    `LP805X_RWS_D3 : wr_addr = imm2_r;
+    `LP805X_RWS_B  : wr_addr = `LP805X_SFR_B;
     default        : wr_addr = 2'bxx;
   endcase
 end
@@ -456,13 +456,13 @@ end
 always @(posedge clk or posedge rst)
   if (rst)
     rd_ind <= #1 1'b0;
-  else if ((rd_sel==`OC8051_RRS_I) || (rd_sel==`OC8051_RRS_SP))
+  else if ((rd_sel==`LP805X_RRS_I) || (rd_sel==`LP805X_RRS_SP))
     rd_ind <= #1 1'b1;
   else
     rd_ind <= #1 1'b0;
 
 always @(wr_sel)
-  if ((wr_sel==`OC8051_RWS_I) || (wr_sel==`OC8051_RWS_SP))
+  if ((wr_sel==`LP805X_RWS_I) || (wr_sel==`LP805X_RWS_SP))
     wr_ind = 1'b1;
   else
     wr_ind = 1'b0;
@@ -501,7 +501,7 @@ begin
 		istb_t <= #1 1'b1;
 		imem_wait <= #1 1'b0;
 	end
-	else if (mem_act==`OC8051_MAS_CODE) begin
+	else if (mem_act==`LP805X_MAS_CODE) begin
 		xwait <= #1 1'b1;
 	end
 	else if (ea_rom_sel && imem_wait) begin
@@ -538,28 +538,28 @@ begin
     dmem_wait <= #1 1'b0;
   end else begin
     case (mem_act) /* previous full_mask parallel_mask */
-      `OC8051_MAS_DPTR_R: begin  // read from external ram: acc=(dptr)
+      `LP805X_MAS_DPTR_R: begin  // read from external ram: acc=(dptr)
         dwe_o <= #1 1'b0;
         dstb_o <= #1 1'b1;
         ddat_o <= #1 8'h00;
         dadr_ot <= #1 {7'h0, dptr_bypass};
         dmem_wait <= #1 1'b0;
       end
-      `OC8051_MAS_DPTR_W: begin  // write to external ram: (dptr)=acc
+      `LP805X_MAS_DPTR_W: begin  // write to external ram: (dptr)=acc
         dwe_o <= #1 1'b1;
         dstb_o <= #1 1'b1;
         ddat_o <= #1 acc_bypass;
         dadr_ot <= #1 {7'h0, dptr_bypass};
         dmem_wait <= #1 1'b0;
       end
-      `OC8051_MAS_RI_R:   begin  // read from external ram: acc=(Ri)
+      `LP805X_MAS_RI_R:   begin  // read from external ram: acc=(Ri)
         dwe_o <= #1 1'b0;
         dstb_o <= #1 1'b1;
         ddat_o <= #1 8'h00;
         dadr_ot <= #1 {15'h0, ri};
         dmem_wait <= #1 1'b0;
       end
-      `OC8051_MAS_RI_W: begin    // write to external ram: (Ri)=acc
+      `LP805X_MAS_RI_W: begin    // write to external ram: (Ri)=acc
         dwe_o <= #1 1'b1;
         dstb_o <= #1 1'b1;
         ddat_o <= #1 acc_bypass;
@@ -721,7 +721,7 @@ end
 always @(op1 or op2 or op3 or int_ack_t or int_vec_buff or iack_i or ea_rom_sel)
 begin
   if (int_ack_t && (iack_i || ea_rom_sel)) begin
-    op1_o = `OC8051_LCALL;
+    op1_o = `LP805X_LCALL;
     op2_o = 8'h00;
     op3_o = int_vec_buff;
   end else begin
@@ -735,7 +735,7 @@ end
 //in case of reti
 always @(posedge clk or posedge rst)
   if (rst) reti <= #1 1'b0;
-  else if ((op1_o==`OC8051_RETI) & rd & !mem_wait) reti <= #1 1'b1;
+  else if ((op1_o==`LP805X_RETI) & rd & !mem_wait) reti <= #1 1'b1;
   else reti <= #1 1'b0;
 
 //
@@ -760,74 +760,74 @@ end
 always @(op1_out)
 begin
         casex (op1_out) /* previous parallell_mask */
-          `OC8051_ACALL :  op_length = 2'h2;
-          `OC8051_AJMP :   op_length = 2'h2;
+          `LP805X_ACALL :  op_length = 2'h2;
+          `LP805X_AJMP :   op_length = 2'h2;
 
         //op_code [7:3]
-          `OC8051_CJNE_R : op_length = 2'h3;
-          `OC8051_DJNZ_R : op_length = 2'h2;
-          `OC8051_MOV_DR : op_length = 2'h2;
-          `OC8051_MOV_CR : op_length = 2'h2;
-          `OC8051_MOV_RD : op_length = 2'h2;
+          `LP805X_CJNE_R : op_length = 2'h3;
+          `LP805X_DJNZ_R : op_length = 2'h2;
+          `LP805X_MOV_DR : op_length = 2'h2;
+          `LP805X_MOV_CR : op_length = 2'h2;
+          `LP805X_MOV_RD : op_length = 2'h2;
 
         //op_code [7:1]
-          `OC8051_CJNE_I : op_length = 2'h3;
-          `OC8051_MOV_ID : op_length = 2'h2;
-          `OC8051_MOV_DI : op_length = 2'h2;
-          `OC8051_MOV_CI : op_length = 2'h2;
+          `LP805X_CJNE_I : op_length = 2'h3;
+          `LP805X_MOV_ID : op_length = 2'h2;
+          `LP805X_MOV_DI : op_length = 2'h2;
+          `LP805X_MOV_CI : op_length = 2'h2;
 
         //op_code [7:0]
-          `OC8051_ADD_D :  op_length = 2'h2;
-          `OC8051_ADD_C :  op_length = 2'h2;
-          `OC8051_ADDC_D : op_length = 2'h2;
-          `OC8051_ADDC_C : op_length = 2'h2;
-          `OC8051_ANL_D :  op_length = 2'h2;
-          `OC8051_ANL_C :  op_length = 2'h2;
-          `OC8051_ANL_DD : op_length = 2'h2;
-          `OC8051_ANL_DC : op_length = 2'h3;
-          `OC8051_ANL_B :  op_length = 2'h2;
-          `OC8051_ANL_NB : op_length = 2'h2;
-          `OC8051_CJNE_D : op_length = 2'h3;
-          `OC8051_CJNE_C : op_length = 2'h3;
-          `OC8051_CLR_B :  op_length = 2'h2;
-          `OC8051_CPL_B :  op_length = 2'h2;
-          `OC8051_DEC_D :  op_length = 2'h2;
-          `OC8051_DJNZ_D : op_length = 2'h3;
-          `OC8051_INC_D :  op_length = 2'h2;
-          `OC8051_JB :     op_length = 2'h3;
-          `OC8051_JBC :    op_length = 2'h3;
-          `OC8051_JC :     op_length = 2'h2;
-          `OC8051_JNB :    op_length = 2'h3;
-          `OC8051_JNC :    op_length = 2'h2;
-          `OC8051_JNZ :    op_length = 2'h2;
-          `OC8051_JZ :     op_length = 2'h2;
-          `OC8051_LCALL :  op_length = 2'h3;
-          `OC8051_LJMP :   op_length = 2'h3;
-          `OC8051_MOV_D :  op_length = 2'h2;
-          `OC8051_MOV_C :  op_length = 2'h2;
-          `OC8051_MOV_DA : op_length = 2'h2;
-          `OC8051_MOV_DD : op_length = 2'h3;
-          `OC8051_MOV_CD : op_length = 2'h3;
-          `OC8051_MOV_BC : op_length = 2'h2;
-          `OC8051_MOV_CB : op_length = 2'h2;
-          `OC8051_MOV_DP : op_length = 2'h3;
-          `OC8051_ORL_D :  op_length = 2'h2;
-          `OC8051_ORL_C :  op_length = 2'h2;
-          `OC8051_ORL_AD : op_length = 2'h2;
-          `OC8051_ORL_CD : op_length = 2'h3;
-          `OC8051_ORL_B :  op_length = 2'h2;
-          `OC8051_ORL_NB : op_length = 2'h2;
-          `OC8051_POP :    op_length = 2'h2;
-          `OC8051_PUSH :   op_length = 2'h2;
-          `OC8051_SETB_B : op_length = 2'h2;
-          `OC8051_SJMP :   op_length = 2'h2;
-          `OC8051_SUBB_D : op_length = 2'h2;
-          `OC8051_SUBB_C : op_length = 2'h2;
-          `OC8051_XCH_D :  op_length = 2'h2;
-          `OC8051_XRL_D :  op_length = 2'h2;
-          `OC8051_XRL_C :  op_length = 2'h2;
-          `OC8051_XRL_AD : op_length = 2'h2;
-          `OC8051_XRL_CD : op_length = 2'h3;
+          `LP805X_ADD_D :  op_length = 2'h2;
+          `LP805X_ADD_C :  op_length = 2'h2;
+          `LP805X_ADDC_D : op_length = 2'h2;
+          `LP805X_ADDC_C : op_length = 2'h2;
+          `LP805X_ANL_D :  op_length = 2'h2;
+          `LP805X_ANL_C :  op_length = 2'h2;
+          `LP805X_ANL_DD : op_length = 2'h2;
+          `LP805X_ANL_DC : op_length = 2'h3;
+          `LP805X_ANL_B :  op_length = 2'h2;
+          `LP805X_ANL_NB : op_length = 2'h2;
+          `LP805X_CJNE_D : op_length = 2'h3;
+          `LP805X_CJNE_C : op_length = 2'h3;
+          `LP805X_CLR_B :  op_length = 2'h2;
+          `LP805X_CPL_B :  op_length = 2'h2;
+          `LP805X_DEC_D :  op_length = 2'h2;
+          `LP805X_DJNZ_D : op_length = 2'h3;
+          `LP805X_INC_D :  op_length = 2'h2;
+          `LP805X_JB :     op_length = 2'h3;
+          `LP805X_JBC :    op_length = 2'h3;
+          `LP805X_JC :     op_length = 2'h2;
+          `LP805X_JNB :    op_length = 2'h3;
+          `LP805X_JNC :    op_length = 2'h2;
+          `LP805X_JNZ :    op_length = 2'h2;
+          `LP805X_JZ :     op_length = 2'h2;
+          `LP805X_LCALL :  op_length = 2'h3;
+          `LP805X_LJMP :   op_length = 2'h3;
+          `LP805X_MOV_D :  op_length = 2'h2;
+          `LP805X_MOV_C :  op_length = 2'h2;
+          `LP805X_MOV_DA : op_length = 2'h2;
+          `LP805X_MOV_DD : op_length = 2'h3;
+          `LP805X_MOV_CD : op_length = 2'h3;
+          `LP805X_MOV_BC : op_length = 2'h2;
+          `LP805X_MOV_CB : op_length = 2'h2;
+          `LP805X_MOV_DP : op_length = 2'h3;
+          `LP805X_ORL_D :  op_length = 2'h2;
+          `LP805X_ORL_C :  op_length = 2'h2;
+          `LP805X_ORL_AD : op_length = 2'h2;
+          `LP805X_ORL_CD : op_length = 2'h3;
+          `LP805X_ORL_B :  op_length = 2'h2;
+          `LP805X_ORL_NB : op_length = 2'h2;
+          `LP805X_POP :    op_length = 2'h2;
+          `LP805X_PUSH :   op_length = 2'h2;
+          `LP805X_SETB_B : op_length = 2'h2;
+          `LP805X_SJMP :   op_length = 2'h2;
+          `LP805X_SUBB_D : op_length = 2'h2;
+          `LP805X_SUBB_C : op_length = 2'h2;
+          `LP805X_XCH_D :  op_length = 2'h2;
+          `LP805X_XRL_D :  op_length = 2'h2;
+          `LP805X_XRL_C :  op_length = 2'h2;
+          `LP805X_XRL_AD : op_length = 2'h2;
+          `LP805X_XRL_CD : op_length = 2'h3;
           default:         op_length = 2'h1;
         endcase
 end
@@ -840,74 +840,74 @@ begin
 //    end else if (pc_wait) begin
     end else begin
         casex (op1_out)
-          `OC8051_ACALL :  op_length <= #1 2'h2;
-          `OC8051_AJMP :   op_length <= #1 2'h2;
+          `LP805X_ACALL :  op_length <= #1 2'h2;
+          `LP805X_AJMP :   op_length <= #1 2'h2;
 
         //op_code [7:3]
-          `OC8051_CJNE_R : op_length <= #1 2'h3;
-          `OC8051_DJNZ_R : op_length <= #1 2'h2;
-          `OC8051_MOV_DR : op_length <= #1 2'h2;
-          `OC8051_MOV_CR : op_length <= #1 2'h2;
-          `OC8051_MOV_RD : op_length <= #1 2'h2;
+          `LP805X_CJNE_R : op_length <= #1 2'h3;
+          `LP805X_DJNZ_R : op_length <= #1 2'h2;
+          `LP805X_MOV_DR : op_length <= #1 2'h2;
+          `LP805X_MOV_CR : op_length <= #1 2'h2;
+          `LP805X_MOV_RD : op_length <= #1 2'h2;
 
         //op_code [7:1]
-          `OC8051_CJNE_I : op_length <= #1 2'h3;
-          `OC8051_MOV_ID : op_length <= #1 2'h2;
-          `OC8051_MOV_DI : op_length <= #1 2'h2;
-          `OC8051_MOV_CI : op_length <= #1 2'h2;
+          `LP805X_CJNE_I : op_length <= #1 2'h3;
+          `LP805X_MOV_ID : op_length <= #1 2'h2;
+          `LP805X_MOV_DI : op_length <= #1 2'h2;
+          `LP805X_MOV_CI : op_length <= #1 2'h2;
 
         //op_code [7:0]
-          `OC8051_ADD_D :  op_length <= #1 2'h2;
-          `OC8051_ADD_C :  op_length <= #1 2'h2;
-          `OC8051_ADDC_D : op_length <= #1 2'h2;
-          `OC8051_ADDC_C : op_length <= #1 2'h2;
-          `OC8051_ANL_D :  op_length <= #1 2'h2;
-          `OC8051_ANL_C :  op_length <= #1 2'h2;
-          `OC8051_ANL_DD : op_length <= #1 2'h2;
-          `OC8051_ANL_DC : op_length <= #1 2'h3;
-          `OC8051_ANL_B :  op_length <= #1 2'h2;
-          `OC8051_ANL_NB : op_length <= #1 2'h2;
-          `OC8051_CJNE_D : op_length <= #1 2'h3;
-          `OC8051_CJNE_C : op_length <= #1 2'h3;
-          `OC8051_CLR_B :  op_length <= #1 2'h2;
-          `OC8051_CPL_B :  op_length <= #1 2'h2;
-          `OC8051_DEC_D :  op_length <= #1 2'h2;
-          `OC8051_DJNZ_D : op_length <= #1 2'h3;
-          `OC8051_INC_D :  op_length <= #1 2'h2;
-          `OC8051_JB :     op_length <= #1 2'h3;
-          `OC8051_JBC :    op_length <= #1 2'h3;
-          `OC8051_JC :     op_length <= #1 2'h2;
-          `OC8051_JNB :    op_length <= #1 2'h3;
-          `OC8051_JNC :    op_length <= #1 2'h2;
-          `OC8051_JNZ :    op_length <= #1 2'h2;
-          `OC8051_JZ :     op_length <= #1 2'h2;
-          `OC8051_LCALL :  op_length <= #1 2'h3;
-          `OC8051_LJMP :   op_length <= #1 2'h3;
-          `OC8051_MOV_D :  op_length <= #1 2'h2;
-          `OC8051_MOV_C :  op_length <= #1 2'h2;
-          `OC8051_MOV_DA : op_length <= #1 2'h2;
-          `OC8051_MOV_DD : op_length <= #1 2'h3;
-          `OC8051_MOV_CD : op_length <= #1 2'h3;
-          `OC8051_MOV_BC : op_length <= #1 2'h2;
-          `OC8051_MOV_CB : op_length <= #1 2'h2;
-          `OC8051_MOV_DP : op_length <= #1 2'h3;
-          `OC8051_ORL_D :  op_length <= #1 2'h2;
-          `OC8051_ORL_C :  op_length <= #1 2'h2;
-          `OC8051_ORL_AD : op_length <= #1 2'h2;
-          `OC8051_ORL_CD : op_length <= #1 2'h3;
-          `OC8051_ORL_B :  op_length <= #1 2'h2;
-          `OC8051_ORL_NB : op_length <= #1 2'h2;
-          `OC8051_POP :    op_length <= #1 2'h2;
-          `OC8051_PUSH :   op_length <= #1 2'h2;
-          `OC8051_SETB_B : op_length <= #1 2'h2;
-          `OC8051_SJMP :   op_length <= #1 2'h2;
-          `OC8051_SUBB_D : op_length <= #1 2'h2;
-          `OC8051_SUBB_C : op_length <= #1 2'h2;
-          `OC8051_XCH_D :  op_length <= #1 2'h2;
-          `OC8051_XRL_D :  op_length <= #1 2'h2;
-          `OC8051_XRL_C :  op_length <= #1 2'h2;
-          `OC8051_XRL_AD : op_length <= #1 2'h2;
-          `OC8051_XRL_CD : op_length <= #1 2'h3;
+          `LP805X_ADD_D :  op_length <= #1 2'h2;
+          `LP805X_ADD_C :  op_length <= #1 2'h2;
+          `LP805X_ADDC_D : op_length <= #1 2'h2;
+          `LP805X_ADDC_C : op_length <= #1 2'h2;
+          `LP805X_ANL_D :  op_length <= #1 2'h2;
+          `LP805X_ANL_C :  op_length <= #1 2'h2;
+          `LP805X_ANL_DD : op_length <= #1 2'h2;
+          `LP805X_ANL_DC : op_length <= #1 2'h3;
+          `LP805X_ANL_B :  op_length <= #1 2'h2;
+          `LP805X_ANL_NB : op_length <= #1 2'h2;
+          `LP805X_CJNE_D : op_length <= #1 2'h3;
+          `LP805X_CJNE_C : op_length <= #1 2'h3;
+          `LP805X_CLR_B :  op_length <= #1 2'h2;
+          `LP805X_CPL_B :  op_length <= #1 2'h2;
+          `LP805X_DEC_D :  op_length <= #1 2'h2;
+          `LP805X_DJNZ_D : op_length <= #1 2'h3;
+          `LP805X_INC_D :  op_length <= #1 2'h2;
+          `LP805X_JB :     op_length <= #1 2'h3;
+          `LP805X_JBC :    op_length <= #1 2'h3;
+          `LP805X_JC :     op_length <= #1 2'h2;
+          `LP805X_JNB :    op_length <= #1 2'h3;
+          `LP805X_JNC :    op_length <= #1 2'h2;
+          `LP805X_JNZ :    op_length <= #1 2'h2;
+          `LP805X_JZ :     op_length <= #1 2'h2;
+          `LP805X_LCALL :  op_length <= #1 2'h3;
+          `LP805X_LJMP :   op_length <= #1 2'h3;
+          `LP805X_MOV_D :  op_length <= #1 2'h2;
+          `LP805X_MOV_C :  op_length <= #1 2'h2;
+          `LP805X_MOV_DA : op_length <= #1 2'h2;
+          `LP805X_MOV_DD : op_length <= #1 2'h3;
+          `LP805X_MOV_CD : op_length <= #1 2'h3;
+          `LP805X_MOV_BC : op_length <= #1 2'h2;
+          `LP805X_MOV_CB : op_length <= #1 2'h2;
+          `LP805X_MOV_DP : op_length <= #1 2'h3;
+          `LP805X_ORL_D :  op_length <= #1 2'h2;
+          `LP805X_ORL_C :  op_length <= #1 2'h2;
+          `LP805X_ORL_AD : op_length <= #1 2'h2;
+          `LP805X_ORL_CD : op_length <= #1 2'h3;
+          `LP805X_ORL_B :  op_length <= #1 2'h2;
+          `LP805X_ORL_NB : op_length <= #1 2'h2;
+          `LP805X_POP :    op_length <= #1 2'h2;
+          `LP805X_PUSH :   op_length <= #1 2'h2;
+          `LP805X_SETB_B : op_length <= #1 2'h2;
+          `LP805X_SJMP :   op_length <= #1 2'h2;
+          `LP805X_SUBB_D : op_length <= #1 2'h2;
+          `LP805X_SUBB_C : op_length <= #1 2'h2;
+          `LP805X_XCH_D :  op_length <= #1 2'h2;
+          `LP805X_XRL_D :  op_length <= #1 2'h2;
+          `LP805X_XRL_C :  op_length <= #1 2'h2;
+          `LP805X_XRL_AD : op_length <= #1 2'h2;
+          `LP805X_XRL_CD : op_length <= #1 2'h3;
           default:         op_length <= #1 2'h1;
         endcase
 //
@@ -1019,18 +1019,18 @@ end
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
-    pc_buf <= #1 `OC8051_RST_PC;
+    pc_buf <= #1 `LP805X_RST_PC;
   end else if (pc_wr) begin
 //
 //case of writing new value to pc (jupms)
       case (pc_wr_sel) /* previous full_mask parallel_mask */
-        `OC8051_PIS_ALU: pc_buf        <= #1 alu;
-        `OC8051_PIS_AL:  pc_buf[7:0]   <= #1 alu[7:0];
-        `OC8051_PIS_AH:  pc_buf[15:8]  <= #1 alu[7:0];
-        `OC8051_PIS_I11: pc_buf[10:0]  <= #1 {op1_out[7:5], op2_out};
-        `OC8051_PIS_I16: pc_buf        <= #1 {op2_out, op3_out};
-        `OC8051_PIS_SO1: pc_buf        <= #1 pcs_result;
-        `OC8051_PIS_SO2: pc_buf        <= #1 pcs_result;
+        `LP805X_PIS_ALU: pc_buf        <= #1 alu;
+        `LP805X_PIS_AL:  pc_buf[7:0]   <= #1 alu[7:0];
+        `LP805X_PIS_AH:  pc_buf[15:8]  <= #1 alu[7:0];
+        `LP805X_PIS_I11: pc_buf[10:0]  <= #1 {op1_out[7:5], op2_out};
+        `LP805X_PIS_I16: pc_buf        <= #1 {op2_out, op3_out};
+        `LP805X_PIS_SO1: pc_buf        <= #1 pcs_result;
+        `LP805X_PIS_SO2: pc_buf        <= #1 pcs_result;
       endcase
 //  end else if (inc_pc) begin
   end else begin
@@ -1066,74 +1066,74 @@ begin
 //      pc = {pc_buf[22:8], alu[7:0]};
     end else if (pc_wait) begin
         casex (op1_out)
-          `OC8051_ACALL :  pc= pc_buf + 16'h2;
-          `OC8051_AJMP :   pc= pc_buf + 16'h2;
+          `LP805X_ACALL :  pc= pc_buf + 16'h2;
+          `LP805X_AJMP :   pc= pc_buf + 16'h2;
 
         //op_code [7:3]
-          `OC8051_CJNE_R : pc= pc_buf + 16'h3;
-          `OC8051_DJNZ_R : pc= pc_buf + 16'h2;
-          `OC8051_MOV_DR : pc= pc_buf + 16'h2;
-          `OC8051_MOV_CR : pc= pc_buf + 16'h2;
-          `OC8051_MOV_RD : pc= pc_buf + 16'h2;
+          `LP805X_CJNE_R : pc= pc_buf + 16'h3;
+          `LP805X_DJNZ_R : pc= pc_buf + 16'h2;
+          `LP805X_MOV_DR : pc= pc_buf + 16'h2;
+          `LP805X_MOV_CR : pc= pc_buf + 16'h2;
+          `LP805X_MOV_RD : pc= pc_buf + 16'h2;
 
         //op_code [7:1]
-          `OC8051_CJNE_I : pc= pc_buf + 16'h3;
-          `OC8051_MOV_ID : pc= pc_buf + 16'h2;
-          `OC8051_MOV_DI : pc= pc_buf + 16'h2;
-          `OC8051_MOV_CI : pc= pc_buf + 16'h2;
+          `LP805X_CJNE_I : pc= pc_buf + 16'h3;
+          `LP805X_MOV_ID : pc= pc_buf + 16'h2;
+          `LP805X_MOV_DI : pc= pc_buf + 16'h2;
+          `LP805X_MOV_CI : pc= pc_buf + 16'h2;
 
         //op_code [7:0]
-          `OC8051_ADD_D :  pc= pc_buf + 16'h2;
-          `OC8051_ADD_C :  pc= pc_buf + 16'h2;
-          `OC8051_ADDC_D : pc= pc_buf + 16'h2;
-          `OC8051_ADDC_C : pc= pc_buf + 16'h2;
-          `OC8051_ANL_D :  pc= pc_buf + 16'h2;
-          `OC8051_ANL_C :  pc= pc_buf + 16'h2;
-          `OC8051_ANL_DD : pc= pc_buf + 16'h2;
-          `OC8051_ANL_DC : pc= pc_buf + 16'h3;
-          `OC8051_ANL_B :  pc= pc_buf + 16'h2;
-          `OC8051_ANL_NB : pc= pc_buf + 16'h2;
-          `OC8051_CJNE_D : pc= pc_buf + 16'h3;
-          `OC8051_CJNE_C : pc= pc_buf + 16'h3;
-          `OC8051_CLR_B :  pc= pc_buf + 16'h2;
-          `OC8051_CPL_B :  pc= pc_buf + 16'h2;
-          `OC8051_DEC_D :  pc= pc_buf + 16'h2;
-          `OC8051_DJNZ_D : pc= pc_buf + 16'h3;
-          `OC8051_INC_D :  pc= pc_buf + 16'h2;
-          `OC8051_JB :     pc= pc_buf + 16'h3;
-          `OC8051_JBC :    pc= pc_buf + 16'h3;
-          `OC8051_JC :     pc= pc_buf + 16'h2;
-          `OC8051_JNB :    pc= pc_buf + 16'h3;
-          `OC8051_JNC :    pc= pc_buf + 16'h2;
-          `OC8051_JNZ :    pc= pc_buf + 16'h2;
-          `OC8051_JZ :     pc= pc_buf + 16'h2;
-          `OC8051_LCALL :  pc= pc_buf + 16'h3;
-          `OC8051_LJMP :   pc= pc_buf + 16'h3;
-          `OC8051_MOV_D :  pc= pc_buf + 16'h2;
-          `OC8051_MOV_C :  pc= pc_buf + 16'h2;
-          `OC8051_MOV_DA : pc= pc_buf + 16'h2;
-          `OC8051_MOV_DD : pc= pc_buf + 16'h3;
-          `OC8051_MOV_CD : pc= pc_buf + 16'h3;
-          `OC8051_MOV_BC : pc= pc_buf + 16'h2;
-          `OC8051_MOV_CB : pc= pc_buf + 16'h2;
-          `OC8051_MOV_DP : pc= pc_buf + 16'h3;
-          `OC8051_ORL_D :  pc= pc_buf + 16'h2;
-          `OC8051_ORL_C :  pc= pc_buf + 16'h2;
-          `OC8051_ORL_AD : pc= pc_buf + 16'h2;
-          `OC8051_ORL_CD : pc= pc_buf + 16'h3;
-          `OC8051_ORL_B :  pc= pc_buf + 16'h2;
-          `OC8051_ORL_NB : pc= pc_buf + 16'h2;
-          `OC8051_POP :    pc= pc_buf + 16'h2;
-          `OC8051_PUSH :   pc= pc_buf + 16'h2;
-          `OC8051_SETB_B : pc= pc_buf + 16'h2;
-          `OC8051_SJMP :   pc= pc_buf + 16'h2;
-          `OC8051_SUBB_D : pc= pc_buf + 16'h2;
-          `OC8051_SUBB_C : pc= pc_buf + 16'h2;
-          `OC8051_XCH_D :  pc= pc_buf + 16'h2;
-          `OC8051_XRL_D :  pc= pc_buf + 16'h2;
-          `OC8051_XRL_C :  pc= pc_buf + 16'h2;
-          `OC8051_XRL_AD : pc= pc_buf + 16'h2;
-          `OC8051_XRL_CD : pc= pc_buf + 16'h3;
+          `LP805X_ADD_D :  pc= pc_buf + 16'h2;
+          `LP805X_ADD_C :  pc= pc_buf + 16'h2;
+          `LP805X_ADDC_D : pc= pc_buf + 16'h2;
+          `LP805X_ADDC_C : pc= pc_buf + 16'h2;
+          `LP805X_ANL_D :  pc= pc_buf + 16'h2;
+          `LP805X_ANL_C :  pc= pc_buf + 16'h2;
+          `LP805X_ANL_DD : pc= pc_buf + 16'h2;
+          `LP805X_ANL_DC : pc= pc_buf + 16'h3;
+          `LP805X_ANL_B :  pc= pc_buf + 16'h2;
+          `LP805X_ANL_NB : pc= pc_buf + 16'h2;
+          `LP805X_CJNE_D : pc= pc_buf + 16'h3;
+          `LP805X_CJNE_C : pc= pc_buf + 16'h3;
+          `LP805X_CLR_B :  pc= pc_buf + 16'h2;
+          `LP805X_CPL_B :  pc= pc_buf + 16'h2;
+          `LP805X_DEC_D :  pc= pc_buf + 16'h2;
+          `LP805X_DJNZ_D : pc= pc_buf + 16'h3;
+          `LP805X_INC_D :  pc= pc_buf + 16'h2;
+          `LP805X_JB :     pc= pc_buf + 16'h3;
+          `LP805X_JBC :    pc= pc_buf + 16'h3;
+          `LP805X_JC :     pc= pc_buf + 16'h2;
+          `LP805X_JNB :    pc= pc_buf + 16'h3;
+          `LP805X_JNC :    pc= pc_buf + 16'h2;
+          `LP805X_JNZ :    pc= pc_buf + 16'h2;
+          `LP805X_JZ :     pc= pc_buf + 16'h2;
+          `LP805X_LCALL :  pc= pc_buf + 16'h3;
+          `LP805X_LJMP :   pc= pc_buf + 16'h3;
+          `LP805X_MOV_D :  pc= pc_buf + 16'h2;
+          `LP805X_MOV_C :  pc= pc_buf + 16'h2;
+          `LP805X_MOV_DA : pc= pc_buf + 16'h2;
+          `LP805X_MOV_DD : pc= pc_buf + 16'h3;
+          `LP805X_MOV_CD : pc= pc_buf + 16'h3;
+          `LP805X_MOV_BC : pc= pc_buf + 16'h2;
+          `LP805X_MOV_CB : pc= pc_buf + 16'h2;
+          `LP805X_MOV_DP : pc= pc_buf + 16'h3;
+          `LP805X_ORL_D :  pc= pc_buf + 16'h2;
+          `LP805X_ORL_C :  pc= pc_buf + 16'h2;
+          `LP805X_ORL_AD : pc= pc_buf + 16'h2;
+          `LP805X_ORL_CD : pc= pc_buf + 16'h3;
+          `LP805X_ORL_B :  pc= pc_buf + 16'h2;
+          `LP805X_ORL_NB : pc= pc_buf + 16'h2;
+          `LP805X_POP :    pc= pc_buf + 16'h2;
+          `LP805X_PUSH :   pc= pc_buf + 16'h2;
+          `LP805X_SETB_B : pc= pc_buf + 16'h2;
+          `LP805X_SJMP :   pc= pc_buf + 16'h2;
+          `LP805X_SUBB_D : pc= pc_buf + 16'h2;
+          `LP805X_SUBB_C : pc= pc_buf + 16'h2;
+          `LP805X_XCH_D :  pc= pc_buf + 16'h2;
+          `LP805X_XRL_D :  pc= pc_buf + 16'h2;
+          `LP805X_XRL_C :  pc= pc_buf + 16'h2;
+          `LP805X_XRL_AD : pc= pc_buf + 16'h2;
+          `LP805X_XRL_CD : pc= pc_buf + 16'h3;
           default:         pc= pc_buf + 16'h1;
         endcase
 //
@@ -1179,19 +1179,19 @@ end
 always @(posedge clk or posedge rst)
 begin
   if (rst) begin
-    pc_buf <= #1 `OC8051_RST_PC;
+    pc_buf <= #1 `LP805X_RST_PC;
   end else begin
     if (pc_wr) begin
 //
 //case of writing new value to pc (jupms)
       case (pc_wr_sel)
-        `OC8051_PIS_ALU: pc_buf        <= #1 alu;
-        `OC8051_PIS_AL:  pc_buf[7:0]   <= #1 alu[7:0];
-        `OC8051_PIS_AH:  pc_buf[15:8]  <= #1 alu[7:0];
-        `OC8051_PIS_I11: pc_buf[10:0]  <= #1 {op1_out[7:5], op2_out};
-        `OC8051_PIS_I16: pc_buf        <= #1 {op2_out, op3_out};
-        `OC8051_PIS_SO1: pc_buf        <= #1 pcs_result;
-        `OC8051_PIS_SO2: pc_buf        <= #1 pcs_result;
+        `LP805X_PIS_ALU: pc_buf        <= #1 alu;
+        `LP805X_PIS_AL:  pc_buf[7:0]   <= #1 alu[7:0];
+        `LP805X_PIS_AH:  pc_buf[15:8]  <= #1 alu[7:0];
+        `LP805X_PIS_I11: pc_buf[10:0]  <= #1 {op1_out[7:5], op2_out};
+        `LP805X_PIS_I16: pc_buf        <= #1 {op2_out, op3_out};
+        `LP805X_PIS_SO1: pc_buf        <= #1 pcs_result;
+        `LP805X_PIS_SO2: pc_buf        <= #1 pcs_result;
       endcase
     end else
 //
@@ -1230,7 +1230,7 @@ always @(posedge clk or posedge rst)
    // op1_r     <= #1 op1_out;
     dack_ir   <= #1 dack_i & dstb_o;
     sp_r      <= #1 sp;
-    pc_wr_r   <= #1 pc_wr && (pc_wr_sel != `OC8051_PIS_AH);
+    pc_wr_r   <= #1 pc_wr && (pc_wr_sel != `LP805X_PIS_AH);
     pc_wr_r2  <= #1 pc_wr_r;
   end
 /*
@@ -1250,14 +1250,14 @@ assign need_sync = need_syncr | need_syncw | sfr_stall;
 always @(*)
 begin
 	need_syncr = 0;
-	if ( rd_sel == `OC8051_RRS_D)
+	if ( rd_sel == `LP805X_RRS_D)
 	begin
 		case ( rd_addr)
 		
-		`OC8051_SFR_P0:
+		`LP805X_SFR_P0:
 			need_syncr = 1;
 			
-		`OC8051_SFR_P1:
+		`LP805X_SFR_P1:
 			need_syncr = 1;
 			
 		`LP805X_SFR_NTMRCTR:
@@ -1273,14 +1273,14 @@ end
 always @(*)
 begin
 	need_syncw = 0;
-	if ( (wr_sel == `OC8051_RWS_D3) | (wr_sel == `OC8051_RWS_D1) | (wr_sel == `OC8051_RWS_D))
+	if ( (wr_sel == `LP805X_RWS_D3) | (wr_sel == `LP805X_RWS_D1) | (wr_sel == `LP805X_RWS_D))
 	begin
 		case ( wr_addr)
 		
-		`OC8051_SFR_P0:
+		`LP805X_SFR_P0:
 			need_syncw = 1;
 			
-		`OC8051_SFR_P1:
+		`LP805X_SFR_P1:
 			need_syncw = 1;
 			
 		`LP805X_SFR_NTMRCTR:

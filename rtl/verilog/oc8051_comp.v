@@ -63,16 +63,16 @@
 `include "oc8051_defines.v"
 
 
-module oc8051_comp (sel, b_in, cy, acc, des, /*comp_wait, */eq);
+module lp805x_comp (sel, b_in, cy, acc, des, /*comp_wait, */eq);
 //
-// sel          (in)  select whithc sourses to compare (look defines.v) [oc8051_decoder.comp_sel]
-// b_in         (in)  bit in - output from bit addressable memory space [oc8051_ram_sel.bit_out]
-// cy           (in)  carry flag [oc8051_psw.data_out[7] ]
-// acc          (in)  accumulator [oc8051_acc.data_out]
-// ram          (in)  input from ram [oc8051_ram_sel.out_data]
-// op2          (in)  immediate data [oc8051_op_select.op2_out -r]
-// des          (in)  destination from alu [oc8051_alu.des1 -r]
-// eq           (out) if (src1 == src2) eq = 1  [oc8051_decoder.eq]
+// sel          (in)  select whithc sourses to compare (look defines.v) [LP805X_decoder.comp_sel]
+// b_in         (in)  bit in - output from bit addressable memory space [LP805X_ram_sel.bit_out]
+// cy           (in)  carry flag [LP805X_psw.data_out[7] ]
+// acc          (in)  accumulator [LP805X_acc.data_out]
+// ram          (in)  input from ram [LP805X_ram_sel.out_data]
+// op2          (in)  immediate data [LP805X_op_select.op2_out -r]
+// des          (in)  destination from alu [LP805X_alu.des1 -r]
+// eq           (out) if (src1 == src2) eq = 1  [LP805X_decoder.eq]
 //
 
 
@@ -90,10 +90,10 @@ assign eq = eq_r;// & comp_wait;
 always @(sel or b_in or cy or acc or des)
 begin
   case (sel) /* previous full_mask parallel_mask */
-    `OC8051_CSS_AZ  : eq_r = (acc == 8'h00);
-    `OC8051_CSS_DES : eq_r = (des == 8'h00);
-    `OC8051_CSS_CY  : eq_r = cy;
-    `OC8051_CSS_BIT : eq_r = b_in;
+    `LP805X_CSS_AZ  : eq_r = (acc == 8'h00);
+    `LP805X_CSS_DES : eq_r = (des == 8'h00);
+    `LP805X_CSS_CY  : eq_r = cy;
+    `LP805X_CSS_BIT : eq_r = b_in;
   endcase
 end
 
