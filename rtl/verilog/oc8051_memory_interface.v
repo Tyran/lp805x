@@ -89,7 +89,7 @@
 `include "oc8051_defines.v"
 
 
-module lp805x_memory_interface (clk, rst,
+module lp805x_control (clk, rst,
 
 //decoder
      wr_i,
@@ -483,8 +483,6 @@ always @(wr_sel)
 //reg [15:0] iadr_o;
 reg xwait;
 
-
-
 // faster 1 clock cycle
 assign iadr_o = (xwait) ? alu : pc_out;
 
@@ -638,55 +636,6 @@ begin
   endcase
 end
 
-//always @(op_pos or idat_cur or idat_old)
-//begin
-//  case (op_pos)  /* previous parallell_mask */
-//    3'b000: begin
-//       op1 = idat_cur[7:0]  ;
-//       op2 = idat_cur[15:8] ;
-//       op3 = idat_cur[23:16];
-//      end
-//    3'b001: begin
-//       op1 = idat_cur[15:8] ;
-//       op2 = idat_cur[23:16];
-//       op3 = idat_cur[31:24];
-//      end
-//    3'b010: begin
-//       op1 = idat_cur[23:16];
-//       op2 = idat_cur[31:24];
-//       op3 = idat_old[7:0]  ;
-//      end
-//    3'b011: begin
-//       op1 = idat_cur[31:24];
-//       op2 = idat_old[7:0]  ;
-//       op3 = idat_old[15:8] ;
-//      end
-//    3'b100: begin
-//       op1 = idat_old[7:0]  ;
-//       op2 = idat_old[15:8] ;
-//       op3 = idat_old[23:16];
-//      end
-//    default: begin
-//       op1 = idat_old[15:8] ;
-//       op2 = idat_old[23:16];
-//       op3 = idat_old[31:24];
-//      end
-//  endcase
-//end
-
-/*assign op1 = ea_rom_sel ? idat_onchip[7:0]   : op1_xt;
-assign op2 = ea_rom_sel ? idat_onchip[15:8]  : op2_xt;
-assign op3 = ea_rom_sel ? idat_onchip[23:16] : op3_xt;*/
-
-
-//always @(dack_ir or ddat_ir or op1_o or iram_out or cdone or cdata)
-//  if (dack_ir)
-//    op1_out = ddat_ir;
-//  else if (cdone)
-//    op1_out = cdata;
-//  else
-//    op1_out = op1_o;
-
 always @( *)
   if (dack_i)
     op1_out = ddat_i;
@@ -831,92 +780,6 @@ begin
           default:         op_length = 2'h1;
         endcase
 end
-
-/*
-always @(posedge clk or posedge rst)
-begin
-    if (rst) begin
-      op_length = 2'h2;
-//    end else if (pc_wait) begin
-    end else begin
-        casex (op1_out)
-          `LP805X_ACALL :  op_length <= #1 2'h2;
-          `LP805X_AJMP :   op_length <= #1 2'h2;
-
-        //op_code [7:3]
-          `LP805X_CJNE_R : op_length <= #1 2'h3;
-          `LP805X_DJNZ_R : op_length <= #1 2'h2;
-          `LP805X_MOV_DR : op_length <= #1 2'h2;
-          `LP805X_MOV_CR : op_length <= #1 2'h2;
-          `LP805X_MOV_RD : op_length <= #1 2'h2;
-
-        //op_code [7:1]
-          `LP805X_CJNE_I : op_length <= #1 2'h3;
-          `LP805X_MOV_ID : op_length <= #1 2'h2;
-          `LP805X_MOV_DI : op_length <= #1 2'h2;
-          `LP805X_MOV_CI : op_length <= #1 2'h2;
-
-        //op_code [7:0]
-          `LP805X_ADD_D :  op_length <= #1 2'h2;
-          `LP805X_ADD_C :  op_length <= #1 2'h2;
-          `LP805X_ADDC_D : op_length <= #1 2'h2;
-          `LP805X_ADDC_C : op_length <= #1 2'h2;
-          `LP805X_ANL_D :  op_length <= #1 2'h2;
-          `LP805X_ANL_C :  op_length <= #1 2'h2;
-          `LP805X_ANL_DD : op_length <= #1 2'h2;
-          `LP805X_ANL_DC : op_length <= #1 2'h3;
-          `LP805X_ANL_B :  op_length <= #1 2'h2;
-          `LP805X_ANL_NB : op_length <= #1 2'h2;
-          `LP805X_CJNE_D : op_length <= #1 2'h3;
-          `LP805X_CJNE_C : op_length <= #1 2'h3;
-          `LP805X_CLR_B :  op_length <= #1 2'h2;
-          `LP805X_CPL_B :  op_length <= #1 2'h2;
-          `LP805X_DEC_D :  op_length <= #1 2'h2;
-          `LP805X_DJNZ_D : op_length <= #1 2'h3;
-          `LP805X_INC_D :  op_length <= #1 2'h2;
-          `LP805X_JB :     op_length <= #1 2'h3;
-          `LP805X_JBC :    op_length <= #1 2'h3;
-          `LP805X_JC :     op_length <= #1 2'h2;
-          `LP805X_JNB :    op_length <= #1 2'h3;
-          `LP805X_JNC :    op_length <= #1 2'h2;
-          `LP805X_JNZ :    op_length <= #1 2'h2;
-          `LP805X_JZ :     op_length <= #1 2'h2;
-          `LP805X_LCALL :  op_length <= #1 2'h3;
-          `LP805X_LJMP :   op_length <= #1 2'h3;
-          `LP805X_MOV_D :  op_length <= #1 2'h2;
-          `LP805X_MOV_C :  op_length <= #1 2'h2;
-          `LP805X_MOV_DA : op_length <= #1 2'h2;
-          `LP805X_MOV_DD : op_length <= #1 2'h3;
-          `LP805X_MOV_CD : op_length <= #1 2'h3;
-          `LP805X_MOV_BC : op_length <= #1 2'h2;
-          `LP805X_MOV_CB : op_length <= #1 2'h2;
-          `LP805X_MOV_DP : op_length <= #1 2'h3;
-          `LP805X_ORL_D :  op_length <= #1 2'h2;
-          `LP805X_ORL_C :  op_length <= #1 2'h2;
-          `LP805X_ORL_AD : op_length <= #1 2'h2;
-          `LP805X_ORL_CD : op_length <= #1 2'h3;
-          `LP805X_ORL_B :  op_length <= #1 2'h2;
-          `LP805X_ORL_NB : op_length <= #1 2'h2;
-          `LP805X_POP :    op_length <= #1 2'h2;
-          `LP805X_PUSH :   op_length <= #1 2'h2;
-          `LP805X_SETB_B : op_length <= #1 2'h2;
-          `LP805X_SJMP :   op_length <= #1 2'h2;
-          `LP805X_SUBB_D : op_length <= #1 2'h2;
-          `LP805X_SUBB_C : op_length <= #1 2'h2;
-          `LP805X_XCH_D :  op_length <= #1 2'h2;
-          `LP805X_XRL_D :  op_length <= #1 2'h2;
-          `LP805X_XRL_C :  op_length <= #1 2'h2;
-          `LP805X_XRL_AD : op_length <= #1 2'h2;
-          `LP805X_XRL_CD : op_length <= #1 2'h3;
-          default:         op_length <= #1 2'h1;
-        endcase
-//
-//in case of instructions that use more than one clock hold current pc
-//    end else begin
-//      pc= pc_buf;
-   end
-end
-*/
 
 assign inc_pc = ((op_pos[2] | (&op_pos[1:0])) & rd) | pc_wr_r2;
 

@@ -106,7 +106,7 @@ module generic_xram(
 	input [7:0] data;
 	output reg [7:0] q;
 	
-	reg [7:0] buff [0:LP805X_XDATA_LEN-1] /* synthesis syn_preserve */; //4kb
+	reg [7:0] buff [0:LP805X_XDATA_LEN-1] /* synthesis syn_preserve=true */; //4kb
 	
 	// synthesis translate_off
 	integer i;

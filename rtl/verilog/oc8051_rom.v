@@ -247,7 +247,7 @@ input enb;
 input [LP805X_ADD_LEN-1 : 0] addrb;
 output reg [31 : 0] doutb;
 
-reg [31:0] buff [0:LP805X_ROM_LEN-1] /* synthesis syn_preserve=1 */; //4kb
+reg [31:0] buff [0:LP805X_ROM_LEN-1] /* synthesis syn_preserve=true */; //4kb
 
 // synthesis translate_off
 integer i;
