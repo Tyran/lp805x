@@ -87,7 +87,7 @@
 `include "oc8051_defines.v"
 
 
-module lp805x_control (clk, rst, op_in, op1_c,
+module lp805x_decoder (clk, rst, op_in, op1_c,
   ram_rd_sel_o, ram_wr_sel_o,
   bit_addr, wr_o, wr_sfr_o,
   src_sel1, src_sel2, src_sel3,

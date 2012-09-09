@@ -69,7 +69,7 @@
 // remove wb_bus_mon
 //
 // Revision 1.7  2002/10/28 16:43:12  simont
-// add module oc8051_wb_iinterface
+// add module lp805x_wb_iinterface
 //
 // Revision 1.6  2002/10/24 13:36:53  simont
 // add instruction cache and DELAY parameters for external ram, rom
@@ -91,7 +91,7 @@
 
 //`define POST_ROUTE
 
-module oc8051_tb();
+module lp805x_tb();
 
 
 //parameter FREQ  = 12000; // frequency in kHz
@@ -156,57 +156,57 @@ wire 	[PWMS_LEN-1:0] pin;
 
 `ifndef POST_ROUTE
 
-//assign clk_div = oc8051_top_1.wb_clk_s;
+//assign clk_div = lp805x_top_1.wb_clk_s;
 
-assign xd_addr = oc8051_top_1.oc8051_xdatai1.addr;
-assign xd_datai = oc8051_top_1.oc8051_xdatai1.data_i;
-assign xd_datao = oc8051_top_1.oc8051_xdatai1.data_o;
-assign xd_wr = oc8051_top_1.oc8051_xdatai1.wr;
-assign xd_stb = oc8051_top_1.oc8051_xdatai1.stb;
-assign xd_ack = oc8051_top_1.oc8051_xdatai1.ack;
+assign xd_addr = lp805x_top_1.xdatai_1.addr;
+assign xd_datai = lp805x_top_1.xdatai_1.data_i;
+assign xd_datao = lp805x_top_1.xdatai_1.data_o;
+assign xd_wr = lp805x_top_1.xdatai_1.wr;
+assign xd_stb = lp805x_top_1.xdatai_1.stb;
+assign xd_ack = lp805x_top_1.xdatai_1.ack;
 
-//assign ea_rom_sel = oc8051_top_1.oc8051_memory_interface1.ea_rom_sel;
-assign op1 = oc8051_top_1.oc8051_memory_interface1.op1;
-assign op2 = oc8051_top_1.oc8051_memory_interface1.op2;
-assign op3 = oc8051_top_1.oc8051_memory_interface1.op3;
-//assign op1_o = oc8051_top_1.oc8051_memory_interface1.op1_o;
-//assign op2_o = oc8051_top_1.oc8051_memory_interface1.op2_o;
-//assign op3_o = oc8051_top_1.oc8051_memory_interface1.op3_o;
-assign op_pos = oc8051_top_1.oc8051_memory_interface1.op_pos;
-//assign op1_out = oc8051_top_1.oc8051_memory_interface1.op1_out;//assign op2_out = oc8051_top_1.oc8051_memory_interface1.op2_out;
-//assign op3_out = oc8051_top_1.oc8051_memory_interface1.op3_out;
-assign op_cur = oc8051_top_1.oc8051_decoder1.op_cur;
-assign mem_act = oc8051_top_1.oc8051_decoder1.mem_act;
-assign op_in = oc8051_top_1.oc8051_decoder1.op_in;
-assign state = oc8051_top_1.oc8051_decoder1.state;
-assign imm = oc8051_top_1.oc8051_memory_interface1.imm;
-assign imm2 = oc8051_top_1.oc8051_memory_interface1.imm2;
-assign imm_r = oc8051_top_1.oc8051_memory_interface1.imm_r;
-assign imm2_r = oc8051_top_1.oc8051_memory_interface1.imm2_r;
-assign cdata = oc8051_top_1.oc8051_memory_interface1.cdata;
-assign cdone = oc8051_top_1.oc8051_memory_interface1.cdone;
-assign idat_cur = oc8051_top_1.oc8051_memory_interface1.idat_cur;
-assign idat_old = oc8051_top_1.oc8051_memory_interface1.idat_old;
+//assign ea_rom_sel = lp805x_top_1.control_interface_1.ea_rom_sel;
+assign op1 = lp805x_top_1.control_interface_1.op1;
+assign op2 = lp805x_top_1.control_interface_1.op2;
+assign op3 = lp805x_top_1.control_interface_1.op3;
+//assign op1_o = lp805x_top_1.control_interface_1.op1_o;
+//assign op2_o = lp805x_top_1.control_interface_1.op2_o;
+//assign op3_o = lp805x_top_1.control_interface_1.op3_o;
+assign op_pos = lp805x_top_1.control_interface_1.op_pos;
+//assign op1_out = lp805x_top_1.control_interface_1.op1_out;//assign op2_out = lp805x_top_1.control_interface_1.op2_out;
+//assign op3_out = lp805x_top_1.control_interface_1.op3_out;
+assign op_cur = lp805x_top_1.decoder_1.op_cur;
+assign mem_act = lp805x_top_1.decoder_1.mem_act;
+assign op_in = lp805x_top_1.decoder_1.op_in;
+assign state = lp805x_top_1.decoder_1.state;
+assign imm = lp805x_top_1.control_interface_1.imm;
+assign imm2 = lp805x_top_1.control_interface_1.imm2;
+assign imm_r = lp805x_top_1.control_interface_1.imm_r;
+assign imm2_r = lp805x_top_1.control_interface_1.imm2_r;
+assign cdata = lp805x_top_1.control_interface_1.cdata;
+assign cdone = lp805x_top_1.control_interface_1.cdone;
+assign idat_cur = lp805x_top_1.control_interface_1.idat_cur;
+assign idat_old = lp805x_top_1.control_interface_1.idat_old;
 `ifdef LP805X_ROM_ONCHIP
-assign addr = oc8051_top_1.oc8051_rom1.addr;
-assign data_o = oc8051_top_1.oc8051_rom1.data_o;
+assign addr = lp805x_top_1.rom_1.addr;
+assign data_o = lp805x_top_1.rom_1.data_o;
 `endif
-//assign addr_sel0 = oc8051_top_1.oc8051_rom1.addr_sel0;
-//assign addr_sel1 = oc8051_top_1.oc8051_rom1.addr_sel1;
-//assign addr_sel2 = oc8051_top_1.oc8051_rom1.addr_sel2;
-//assign addr_sel3 = oc8051_top_1.oc8051_rom1.addr_sel3;
-assign accr = oc8051_top_1.oc8051_sfr1.oc8051_acc1.data_out;
-assign acc = oc8051_top_1.oc8051_sfr1.oc8051_acc1.acc;
-assign wr_acc = oc8051_top_1.oc8051_sfr1.oc8051_acc1.wr_acc;
-assign data_in = oc8051_top_1.oc8051_sfr1.oc8051_acc1.data_in;
-assign pc_out = oc8051_top_1.oc8051_memory_interface1.pc_out;
-assign rd = oc8051_top_1.rd;
-assign rd_addr = oc8051_top_1.oc8051_ram_top1.oc8051_idata.rd_addr;
-assign rd_data = oc8051_top_1.oc8051_ram_top1.oc8051_idata.rd_data;
-assign wr_addr = oc8051_top_1.oc8051_ram_top1.oc8051_idata.wr_addr;
-assign wr_data = oc8051_top_1.oc8051_ram_top1.oc8051_idata.wr_data;
-assign rd_en = oc8051_top_1.oc8051_ram_top1.oc8051_idata.rd_en;
-assign wr = oc8051_top_1.oc8051_ram_top1.oc8051_idata.wr;
+//assign addr_sel0 = lp805x_top_1.rom_1.addr_sel0;
+//assign addr_sel1 = lp805x_top_1.rom_1.addr_sel1;
+//assign addr_sel2 = lp805x_top_1.rom_1.addr_sel2;
+//assign addr_sel3 = lp805x_top_1.rom_1.addr_sel3;
+assign accr = lp805x_top_1.sfr_1.acc_1.data_out;
+assign acc = lp805x_top_1.sfr_1.acc_1.acc;
+assign wr_acc = lp805x_top_1.sfr_1.acc_1.wr_acc;
+assign data_in = lp805x_top_1.sfr_1.acc_1.data_in;
+assign pc_out = lp805x_top_1.control_interface_1.pc_out;
+assign rd = lp805x_top_1.rd;
+assign rd_addr = lp805x_top_1.dataram_1.idata_1.rd_addr;
+assign rd_data = lp805x_top_1.dataram_1.idata_1.rd_data;
+assign wr_addr = lp805x_top_1.dataram_1.idata_1.wr_addr;
+assign wr_data = lp805x_top_1.dataram_1.idata_1.wr_data;
+assign rd_en = lp805x_top_1.dataram_1.idata_1.rd_en;
+assign wr = lp805x_top_1.dataram_1.idata_1.wr;
 
 `endif
 
@@ -228,7 +228,7 @@ assign
 	wbi_err_i = 1'b0,
 	iack_i = 1'b1;
 
-oc8051_rom romx
+lp805x_rom romx
 			(
 				.rst( rst),
 				.clk( clk),
@@ -238,9 +238,9 @@ oc8051_rom romx
 `endif
 
 //
-// oc8051 controller
+// lp805x controller
 //
-oc8051_top #(.PWMS_LEN(PWMS_LEN)) oc8051_top_1(
+lp805x_top #(.PWMS_LEN(PWMS_LEN)) lp805x_top_1(
 		.wb_rst_i(~rst),
 		.wb_clk_i(clk),
  //        .int0_i(int0), .int1_i(int1),
@@ -253,39 +253,39 @@ oc8051_top #(.PWMS_LEN(PWMS_LEN)) oc8051_top_1(
 		.wbi_err_i( wbi_err_i),
 `endif		
 
-  `ifdef OC8051_PORTS
+  `ifdef LP805X_PORTS
 
-   `ifdef OC8051_PORT0
+   `ifdef LP805X_PORT0
 	 .p0_i(p0_in),
 	 .p0_o(p0_out),
    `endif
 
-   `ifdef OC8051_PORT1
+   `ifdef LP805X_PORT1
 	 .p1_i(p1_in),
 	 .p1_o(p1_out),
    `endif
 
-   `ifdef OC8051_PORT2
+   `ifdef LP805X_PORT2
 	 .p2_i(p2_in),
 	 .p2_o(p2_out),
    `endif
 
-   `ifdef OC8051_PORT3
+   `ifdef LP805X_PORT3
 	 .p3_i(p3_in),
 	 .p3_o(p3_out),
    `endif
   `endif
 
 
-   `ifdef OC8051_UART
+   `ifdef LP805X_UART
 	 .rxd_i(rxd), .txd_o(txd),
    `endif
 
-   `ifdef OC8051_TC01
+   `ifdef LP805X_TC01
 	 .t0_i(t0), .t1_i(t1),
    `endif
 
-   `ifdef OC8051_TC2
+   `ifdef LP805X_TC2
 	 .t2_i(t2), .t2ex_i(t2ex),
    `endif
 	
@@ -305,10 +305,10 @@ oc8051_top #(.PWMS_LEN(PWMS_LEN)) oc8051_top_1(
 //
 // external data ram
 //
-//oc8051_xram oc8051_xram1 (.clk(clk), .rst(rst), .wr(write_xram), .addr(ext_addr), 
+//lp805x_xram lp805x_xram1 (.clk(clk), .rst(rst), .wr(write_xram), .addr(ext_addr), 
 //.data_in(data_out), .data_out(data_out_xram), .ack(ack_xram), .stb(stb_o));
 
-//myaltera_xram oc8051_xram1(
+//myaltera_xram lp805x_xram1(
 //	.aclr(rst),
 //	.address(ext_addr),
 //	.clock(clk),
@@ -318,18 +318,18 @@ oc8051_top #(.PWMS_LEN(PWMS_LEN)) oc8051_top_1(
 //	.q(data_out_xram)
 //	);
 
-//defparam oc8051_xram1.DELAY = 2;
+//defparam lp805x_xram1.DELAY = 2;
 
-`ifdef OC8051_SERIAL
+`ifdef LP805X_SERIAL
 
 //
 // test programs with serial interface
 //
-oc8051_serial oc8051_serial1(.clk(clk), .rst(rst), .rxd(txd), .txd(rxd));
+lp805x_serial lp805x_serial1(.clk(clk), .rst(rst), .rxd(txd), .txd(rxd));
 
-defparam oc8051_serial1.FREQ  = FREQ;
-//defparam oc8051_serial1.BRATE = 9.6;
-defparam oc8051_serial1.BRATE = 4.8;
+defparam lp805x_serial1.FREQ  = FREQ;
+//defparam lp805x_serial1.BRATE = 9.6;
+defparam lp805x_serial1.BRATE = 4.8;
 
 
 `else
@@ -337,7 +337,7 @@ defparam oc8051_serial1.BRATE = 4.8;
 //
 // external uart
 //
-//oc8051_uart_test oc8051_uart_test1(.clk(clk), .rst(rst), .addr(ext_addr[7:0]), .wr(write_uart),
+//lp805x_uart_test lp805x_uart_test1(.clk(clk), .rst(rst), .addr(ext_addr[7:0]), .wr(write_uart),
   //                .wr_bit(p3_out[0]), .data_in(data_out), .data_out(data_out_uart), .bit_out(bit_out), .rxd(txd),
 	//	  .txd(rxd), .ow(p3_out[1]), .intr(int_uart), .stb(stb_o), .ack(ack_uart));
 

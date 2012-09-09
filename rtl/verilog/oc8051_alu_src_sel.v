@@ -134,9 +134,9 @@ end
 always @(sel3 or pc[15:8] or dptr[15:8] or op1_r)
 begin
   case (sel3) /* previous full_mask parallel_mask */
-    `LP805X_AS3_DP:   src3= dptr[15:8];
-    `LP805X_AS3_PC:   src3= pc[15:8];
-	 `LP805X_AS3_DC: src3=16'h0;
+    `LP805X_AS3_DP:	src3= dptr[15:8];
+    `LP805X_AS3_PC:	src3= pc[15:8];
+	 `LP805X_AS3_DC:	src3=16'h0;
     default: src3= 16'h0;
   endcase
 end

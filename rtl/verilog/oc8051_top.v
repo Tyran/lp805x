@@ -298,7 +298,7 @@ wire need_sync;
 // sfr bus for peripherals...
 // sync to async, not suited for cpu sync sfr's
 	wire [28:0] sfr_bus_I;
-
+`ifdef LP805X_MULTIFREQ
 	lp805x_sfrbuse sfrbusI_1
 	(
 		.clk(wb_clk_cpu),
@@ -313,7 +313,7 @@ wire need_sync;
 		.load( need_sync),
 		.sfr_bus( sfr_bus_I)
    );
-
+`endif
 	
 `ifdef LP805X_CLKER
 
@@ -433,7 +433,7 @@ wire wb_clk_p1;
 
 //
 // decoder
-lp805x_control control_1
+lp805x_decoder decoder_1
 					(
 					 .clk(wb_clk_cpu), 
                 .rst(wb_rst_w), 
@@ -656,7 +656,7 @@ lp805x_newtimer #(.PWMS_LEN(PWMS_LEN)) ntimer_1
 //assign icyc_o = istb_o;
 //
 //
-lp805x_memory_interface memory_interface_1
+lp805x_control control_interface_1
 		(
 			.clk(wb_clk_cpu), 
          .rst(wb_rst_w),

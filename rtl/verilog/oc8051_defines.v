@@ -51,12 +51,12 @@
 //
 `define LP805X_UART
 `define LP805X_TC01
-//`define LP805X_TC2
+`define LP805X_TC2
 //`define LP805X_PORTS  //ports global enable
 `define LP805X_PORT0
 `define LP805X_PORT1
-//`define LP805X_PORT2
-//`define LP805X_PORT3
+`define LP805X_PORT2
+`define LP805X_PORT3
 
 
 //
@@ -87,7 +87,7 @@
 `define LP805X_XDATASIZE 2048
 `define LP805X_XDATALEN 11
 
-`define LP805X_IROMSIZE 4096 //*32B
+`define LP805X_IROMSIZE 256 //*32B
 `define LP805X_IROMLEN 12
 
 //NONE-INFERED
