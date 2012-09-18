@@ -194,7 +194,7 @@ int main( int argc, char ** argv)
 {
     ofstream rom[4];
     ifstream in;
-	MemoryModel<unsigned char,16384> MEM( MemoryModel<unsigned char,16384>::STATIC);
+	MemoryModel<unsigned char,65536> MEM( MemoryModel<unsigned char,65536>::STATIC);
 	
     
     if ( argc != 4 && argc != 5)
