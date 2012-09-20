@@ -283,14 +283,14 @@ wire        bit_addr,	//bit addresable instruction
 				wait_data;
 reg 			wr_bit_r;
 
-always @(posedge wb_clk_cpu or posedge wb_rst_w)
-begin
-  if (wb_rst_w) begin
-    wr_bit_r <= 1'b0;
-  end else begin
-    wr_bit_r <= #1 bit_addr_o;
-  end
-end
+//always @(posedge wb_clk_cpu or posedge wb_rst_w)
+//begin
+//  if (wb_rst_w) begin
+//    wr_bit_r <= 1'b0;
+//  end else begin
+//    wr_bit_r <= #1 bit_addr_o;
+//  end
+//end
 
 wire sfr_wait;	
 wire need_sync;
@@ -457,7 +457,9 @@ lp805x_decoder decoder_1
 			       .eq(eq),
 			       .wr_sfr_o(wr_sfr),
 			       .rd(rd),
+					 `ifdef LP805X_PORTS
 			       .rmw(rmw),
+					 `endif
 			       .istb(istb),
 			       .mem_act(mem_act),
 			       .mem_wait(mem_wait),
@@ -683,7 +685,7 @@ lp805x_control control_interface_1
 			.iack_i(iack_i),
 			.iadr_o(iadr_o),
 			.idat_i(idat_i),
-			.istb_o(istb_o),
+			//.istb_o(istb_o),
 
 // internal instruction rom
 			.idat_onchip(idat_onchip),
@@ -727,19 +729,21 @@ lp805x_control control_interface_1
 			.pc(pc),
 
 // sfr's
+			`ifdef LP805X_MULTIFREQ
+			.sfr_put(sfr_put),
+			.sfr_get(sfr_get),
+			.sfr_wrdy({sfr_wrdy_io,sfr_wrdy_nt}),
+			.sfr_rrdy({sfr_rrdy_io,sfr_rrdy_nt}),
+			.need_sync(need_sync),
+			.sfr_wait(sfr_wait),
+			`endif
 			.sp_w(sp_w), 
 			.dptr({dptr_hi, dptr_lo}),
 			.dptr_bypass( dptr),
 			.ri(ri), 
 			.acc(acc),
 			.acc_bypass(acc_bypass),
-			.sp(sp),
-			.sfr_put(sfr_put),
-			.sfr_get(sfr_get),
-			.sfr_wrdy({sfr_wrdy_io,sfr_wrdy_nt}),
-			.sfr_rrdy({sfr_rrdy_io,sfr_rrdy_nt}),
-			.need_sync(need_sync),
-			.sfr_wait(sfr_wait)
+			.sp(sp)
 		);
 
 				 
@@ -805,8 +809,8 @@ lp805x_sfr sfr_1(
 		       .reti(reti),
 		       .int_src(int_src),
 				 
-			//	 .ntf(ntf0),
-			//	 .ntr(ntr0),
+				 .ntf(ntf0),
+				 .ntr(ntr0),
 
 // t/c 0,1
 	`ifdef LP805X_TC01

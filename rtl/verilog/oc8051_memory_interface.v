@@ -651,15 +651,15 @@ always @(idat_i or iack_i or idat_ir or rd)
 begin
   if (iack_i) begin
     //op1_xt = idat_i[7:0];
-    op2_xt = idat_i[15:8];
+  //  op2_xt = idat_i[15:8];
     op3_xt = idat_i[23:16];
   end else if (!rd) begin
     //op1_xt = idat_ir[7:0];
-    op2_xt = idat_ir[15:8];
+  //  op2_xt = idat_ir[15:8];
     op3_xt = idat_ir[23:16];
   end else begin
     //op1_xt = 8'h00;
-    op2_xt = 8'h00;
+   // op2_xt = 8'h00;
     op3_xt = 8'h00;
   end
 end
@@ -841,13 +841,13 @@ always @(posedge clk or posedge rst)
     int_buff1 <= #1 int_buff;
   end
 */
-always @(posedge clk or posedge rst)
-  if (rst) begin
-    int_buff <= #1 1'b0;
-  end else if (intr) begin
-    int_buff <= #1 1'b1;
-  end else if (pc_wait)
-    int_buff <= #1 1'b0;
+//always @(posedge clk or posedge rst)
+//  if (rst) begin
+//    int_buff <= #1 1'b0;
+//  end else if (intr) begin
+//    int_buff <= #1 1'b1;
+//  end else if (pc_wait)
+//    int_buff <= #1 1'b0;
 
 wire [7:0]  pcs_source;
 reg  [15:0] pcs_result;
@@ -1080,7 +1080,7 @@ always @(posedge clk or posedge rst)
     imm2_r    <= #1 8'h00;
     rd_addr_r <= #1 1'b0;
     //op1_r     <= #1 8'h0;
-    dack_ir   <= #1 1'b0;
+    //dack_ir   <= #1 1'b0;
     sp_r      <= #1 1'b0;
     pc_wr_r   <= #1 1'b0;
     pc_wr_r2  <= #1 1'b0;
@@ -1091,7 +1091,7 @@ always @(posedge clk or posedge rst)
     imm2_r    <= #1 imm2;
     rd_addr_r <= #1 rd_addr[7];//sfr_rdstall ? rd_addr_r : rd_addr[7];
    // op1_r     <= #1 op1_out;
-    dack_ir   <= #1 dack_i & dstb_o;
+    //dack_ir   <= #1 dack_i & dstb_o;
     sp_r      <= #1 sp;
     pc_wr_r   <= #1 pc_wr && (pc_wr_sel != `LP805X_PIS_AH);
     pc_wr_r2  <= #1 pc_wr_r;

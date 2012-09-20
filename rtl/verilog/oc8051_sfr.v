@@ -459,12 +459,12 @@ lp805x_int int_1 (.clk(clk),
 
 always @(posedge clk or posedge rst)
   if (rst) begin
-    adr0_r <= #1 8'h00;
+    //adr0_r <= #1 8'h00;
     ram_wr_sel_r <= #1 3'b000;
     wr_bit_r <= #1 1'b0;
 //    wait_data <= #1 1'b0;
   end else begin
-    adr0_r <= #1 adr0;
+    //adr0_r <= #1 adr0;
     ram_wr_sel_r <= #1 ram_wr_sel;
     wr_bit_r <= #1 wr_bit;
   end

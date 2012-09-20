@@ -131,7 +131,7 @@ assign intr = scon[1] | scon [0];
 wire ren, tb8, rb8, ri;
 assign ren = scon[4];
 assign tb8 = scon[3];
-assign rb8 = scon[2];
+//assign rb8 = scon[2];
 assign ri  = scon[0];
 
 always @(posedge clk or posedge rst)

@@ -114,7 +114,7 @@ reg [2:0] isrc [1:0];
 reg [1:0] int_dept;
 wire [1:0] int_dept_1;
 reg int_proc;
-reg [1:0] int_lev [1:0];
+reg [1:0] int_lev;
 wire cur_lev;
 
 assign isrc_cur = int_proc ? isrc[int_dept_1] : 2'h0;
