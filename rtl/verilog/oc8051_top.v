@@ -685,7 +685,7 @@ lp805x_control control_interface_1
 			.iack_i(iack_i),
 			.iadr_o(iadr_o),
 			.idat_i(idat_i),
-			//.istb_o(istb_o),
+			.istb_o(istb_o),
 
 // internal instruction rom
 			.idat_onchip(idat_onchip),

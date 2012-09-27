@@ -49,14 +49,14 @@
 // LP805X pherypherals
 //
 //
-`define LP805X_UART
-`define LP805X_TC01
-`define LP805X_TC2
-//`define LP805X_PORTS  //ports global enable
+//`define LP805X_UART
+//`define LP805X_TC01
+//`define LP805X_TC2
+`define LP805X_PORTS  //ports global enable
 `define LP805X_PORT0
 `define LP805X_PORT1
-`define LP805X_PORT2
-`define LP805X_PORT3
+//`define LP805X_PORT2
+//`define LP805X_PORT3
 
 
 //
@@ -98,6 +98,8 @@
 //clock management
 //`define LP805X_CLKER
 //`define LP805X_USELL
+
+`define LP805X_MULTIFREQ
 
 //new timer
 //`define LP805X_NTC
