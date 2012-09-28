@@ -283,14 +283,14 @@ wire        bit_addr,	//bit addresable instruction
 				wait_data;
 reg 			wr_bit_r;
 
-//always @(posedge wb_clk_cpu or posedge wb_rst_w)
-//begin
-//  if (wb_rst_w) begin
-//    wr_bit_r <= 1'b0;
-//  end else begin
-//    wr_bit_r <= #1 bit_addr_o;
-//  end
-//end
+always @(posedge wb_clk_cpu)
+begin
+  if (wb_rst_s) begin
+    wr_bit_r <= 1'b0;
+  end else begin
+    wr_bit_r <= #1 bit_addr_o;
+  end
+end
 
 wire sfr_wait;	
 wire need_sync;
@@ -343,7 +343,8 @@ wire wb_clk_p1;
 
 	assign 
 		wb_rst_s = ~wb_rst_i,
-		wb_clk_cpu = wb_clk_i;
+		wb_clk_cpu = wb_clk_i,
+		wb_clk_p1 = wb_clk_cpu;
 		
 `endif	
 

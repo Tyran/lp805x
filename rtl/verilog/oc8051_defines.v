@@ -102,7 +102,7 @@
 `define LP805X_MULTIFREQ
 
 //new timer
-//`define LP805X_NTC
+`define LP805X_NTC
 
 //hardware scheduler aid
 //`define LP805X_HWSCHED
