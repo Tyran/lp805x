@@ -123,7 +123,7 @@ begin
 		wdt_control <= #1 {data_in[7:4],wdt_control[3:2],data_in[1],wdt_control[0]};
 	end else if (wr & ~wr_bit & (wr_addr==`LP805X_SFR_WDTRST)) begin
 
-/* simplified wdt control, no state machine, check later if needed */
+/* simplified wdt control, no explicit state machine, check later if needed */
 		if ( ~wdten & (data_in==8'h1e))
 			wdt_control[0] <= #1 1'b1;
 		else if ( wdten & (data_in==8'he1))
