@@ -63,7 +63,7 @@ reg ea_int;
 
 
 `ifdef LP805X_XILINX
-parameter INT_ROM_WIDTH = (`LP805X_IROMLEN+2);
+parameter INT_ROM_WIDTH = `LP805X_IROMLEN;
 reg [31:0] data_o;
 
 assign ea = | addr[15:INT_ROM_WIDTH];
@@ -125,7 +125,7 @@ romX
 `ifdef LP805X_ALTERA
 
 reg [31:0] data_o;
-parameter INT_ROM_WIDTH = (`LP805X_IROMLEN+2);
+parameter INT_ROM_WIDTH = (`LP805X_IROMLEN);
 assign ea = | addr[15:INT_ROM_WIDTH];
 
 wire [31:0] data0;
@@ -235,8 +235,8 @@ module lp5xRomI(
   doutb
 );
 
-parameter LP805X_ROM_LEN = `LP805X_IROMSIZE;
-parameter LP805X_ADD_LEN = `LP805X_IROMLEN;
+parameter LP805X_ROM_LEN = `LP805X_IROMSIZE / 4;
+parameter LP805X_ADD_LEN = `LP805X_IROMLEN - 2;
 
 input clka;
 input ena;

@@ -50,8 +50,8 @@
 //
 //
 //`define LP805X_UART
-//`define LP805X_TC01
-//`define LP805X_TC2
+`define LP805X_TC01
+`define LP805X_TC2
 `define LP805X_PORTS  //ports global enable
 `define LP805X_PORT0
 `define LP805X_PORT1
@@ -87,8 +87,8 @@
 `define LP805X_XDATASIZE 2048
 `define LP805X_XDATALEN 11
 
-`define LP805X_IROMSIZE 256 //*32B
-`define LP805X_IROMLEN 12
+`define LP805X_IROMSIZE 16384
+`define LP805X_IROMLEN 14
 
 //NONE-INFERED
 `define LP805X_ROM_INFER
@@ -105,7 +105,7 @@
 `define LP805X_NTC
 
 //hardware scheduler aid
-//`define LP805X_HWSCHED
+`define LP805X_HWSCHED
 
 //watchdog timer
 //`define LP805X_WDT

@@ -42,6 +42,8 @@ private:
 	PUSHMODEL _model;
 	
 	bool _sticky;
+	//to keep track of last needed position
+	size_t top_write;
 	
 	void m_exchangeEndian( ostringstream & in)
 	{
@@ -67,6 +69,7 @@ public:
 	{
 		_mem.fill(0);
 		_sticky=false;
+		top_write=0;
 	}
 	~MemoryModel() { }
 	
@@ -83,6 +86,8 @@ public:
 		else
 		{
 			_mem[location] = value;
+			//keep track of top position
+			top_write = location > top_write ? location : top_write;
 		}
 	}
 	
@@ -104,7 +109,9 @@ public:
 	{
 	ostringstream tmp;
 	int cnt=3;
-		for ( auto it=_mem.cbegin(); it!=_mem.cend(); ++it, --cnt )
+	size_t counter=0;
+
+		for ( auto it=_mem.cbegin(); it!=_mem.cend(); ++it, --cnt, counter++ )
 		{
 			if ( *it < 0x10)
 				tmp << "0";
@@ -118,6 +125,11 @@ public:
 				
 				out << tmp.str() << endl;
 				tmp.str("");
+				
+				if ( counter > (top_write+4))
+				{	//ok no more is needed....
+					break;
+				}
 			}
 		}
 	}
@@ -127,8 +139,10 @@ public:
 	//typename array<D,S>::iterator it;
 	int cnt=3;
 	ostringstream tmp;
+	size_t counter=0;
+	
 	out << "memory_initialization_radix=16;\nmemory_initialization_vector=\n";
-		for ( auto it=_mem.cbegin(); it!=_mem.cend(); ++it, --cnt )
+		for ( auto it=_mem.cbegin(); it!=_mem.cend(); ++it, --cnt, counter++ )
 		{
 			if ( it != _mem.begin())
 			{
@@ -150,6 +164,11 @@ public:
 				
 				out << tmp.str();
 				tmp.str("");
+							
+				if ( counter > (top_write+4))
+				{	//ok no more is needed....
+					break;
+				}
 			}
 		}
 	out << ";";
@@ -175,6 +194,11 @@ public:
 				out << hex << (i-3)/4 << "\t:\t";
 				out << tmp.str() << ";" << endl;
 				tmp.str("");
+				
+				if ( i > static_cast<int>(top_write+4))
+				{	//ok no more is needed....
+					break;
+				}
 			}
 		}
 	out << "END;" << endl;

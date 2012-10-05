@@ -95,7 +95,7 @@ module lp805x_tb();
 
 
 //parameter FREQ  = 12000; // frequency in kHz
-parameter FREQ  = 28000; // frequency in kHz
+parameter FREQ  = 30000; // frequency in kHz
 //parameter FREQ  = 3500; // frequency in kHz
 
 parameter DELAY = 500000/FREQ;
@@ -366,7 +366,7 @@ initial begin
   p1_in = 8'h00;
   p2_in = 8'h00;
   */
-#RSTDELAY
+repeat(2)@(posedge clk);
   rst = 1'b0;
 
 //#20000
