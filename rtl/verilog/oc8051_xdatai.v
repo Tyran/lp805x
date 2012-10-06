@@ -113,7 +113,7 @@ module generic_xram(
 	initial
 	begin
 		for ( i=0; i<LP805X_XDATA_LEN; i=i+1)
-			buff[i] = 8'h00000000;
+			buff[i] = 8'hff;
 	end
 	// synthesis translate_on
 

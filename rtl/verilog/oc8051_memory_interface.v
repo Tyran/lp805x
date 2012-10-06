@@ -155,6 +155,8 @@ module lp805x_control (clk, rst,
      des2,
 
 //sfr's
+		cy_sel,
+	  rd_sfr, //if read from sfr...
      dptr, 
 	  dptr_bypass,
      ri, 
@@ -172,6 +174,8 @@ module lp805x_control (clk, rst,
 	  sfr_wait
    );
 	
+	input [1:0] cy_sel;
+	output rd_sfr;
 	output sfr_put;
 	output sfr_get;
 	input [1:0] sfr_wrdy;
@@ -434,6 +438,22 @@ begin
     `LP805X_RRS_PSW  : rd_addr = `LP805X_SFR_PSW;
     `LP805X_RRS_ACC  : rd_addr = `LP805X_SFR_ACC;
     default          : rd_addr = 2'bxx;
+  endcase
+end
+reg rd_sfr;
+always @(*)
+begin
+  case (rd_sel)
+    `LP805X_RRS_RN   : rd_sfr = 1'b0;
+    `LP805X_RRS_I    : rd_sfr = 1'b0;
+    `LP805X_RRS_D    : rd_sfr = 1'b1;
+    `LP805X_RRS_SP   : rd_sfr = cy_sel[0] ? 1'b1 : 1'b0;
+
+    `LP805X_RRS_B    : rd_sfr = 1'b1;
+    `LP805X_RRS_DPTR : rd_sfr = 1'b1;
+    `LP805X_RRS_PSW  : rd_sfr = 1'b1;
+    `LP805X_RRS_ACC  : rd_sfr = 1'b1;
+    default          : rd_sfr = 1'bx;
   endcase
 end
 

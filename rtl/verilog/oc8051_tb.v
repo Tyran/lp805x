@@ -439,6 +439,58 @@ always @(posedge clk)
     $finish;
   end
   */
+  
+  // synthesis translate_off
+
+// catch P0=II
+always @(op_cur or imm)
+  if ((op_cur==8'h75) && (imm==8'h80)) begin
+    $display("time %t => catch P0=!!!", $time);
+
+  end
+  
+//catch a LCALL ?FLT_MUL
+always @(op_cur or imm or imm2)
+  if ((op1==8'h12) && (imm==8'h02) && (imm2==8'h40)) begin
+    $display("time %t => catch LCALL ?FLT_MUL", $time);
+
+  end
+  
+//catch a LCALL __start_call_ctors
+always @(op_cur or imm or imm2)
+  if ((op1==8'h12) && (imm==8'h25) && (imm2==8'hA8)) begin
+    $display("time %t => catch LCALL __start_call_ctors", $time);
+
+  end
+
+//catch a LCALL main
+always @(op_cur or imm or imm2)
+  if ((op_cur==8'h12) && (imm==8'h1E) && (imm2==8'h1A)) begin
+    $display("time %t => catch LCALL main", $time);
+
+  end
+  
+//catch a LCALL ?CALL_IND
+always @(op_cur or imm or imm2)
+  if ((op_cur==8'h12) && (imm==8'h0A) && (imm2==8'h29)) begin
+    $display("time %t => catch LCALL ?CALL_IND", $time);
+
+  end
+  
+//catch a LCALL ?FUNC_ENTER_XDATA
+always @(op_cur or imm or imm2)
+  if ((op_cur==8'h12) && (imm==8'h0A) && (imm2==8'h2B)) begin
+    $display("time %t => catch LCALL ?FUNC_ENTER_XDATA", $time);
+
+  end
+  
+//catch a LJMP ?FUNC_LEAVE_XDATA
+always @(op_cur or imm or imm2)
+  if ((op_cur==8'h02) && (imm==8'h0A) && (imm2==8'h91)) begin
+    $display("time %t => catch LJMP ?FUNC_LEAVE_XDATA", $time);
+
+  end
+// synthesis translate_on
 
 
 

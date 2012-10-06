@@ -2442,7 +2442,7 @@ begin
               alu_op <= #1 `LP805X_ALU_NOP;
               wr <= #1 1'b1;
               psw_set <= #1 `LP805X_PS_NOT;
-              cy_sel <= #1 `LP805X_CY_0;
+              cy_sel <= #1 `LP805X_CY_1;
               src_sel3 <= #1 `LP805X_AS3_DC;
               wr_sfr <= #1 `LP805X_WRS_N;
             end

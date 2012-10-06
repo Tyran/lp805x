@@ -659,6 +659,7 @@ lp805x_newtimer #(.PWMS_LEN(PWMS_LEN)) ntimer_1
 //assign icyc_o = istb_o;
 //
 //
+wire rd_sfr;
 lp805x_control control_interface_1
 		(
 			.clk(wb_clk_cpu), 
@@ -730,6 +731,8 @@ lp805x_control control_interface_1
 			.pc(pc),
 
 // sfr's
+			.cy_sel(cy_sel),
+			.rd_sfr(rd_sfr),
 			`ifdef LP805X_MULTIFREQ
 			.sfr_put(sfr_put),
 			.sfr_get(sfr_get),
@@ -781,6 +784,7 @@ lp805x_sfr sfr_1(
 		      .wr_bit(bit_addr_o),
 		      .ram_rd_sel(ram_rd_sel),
 		      .ram_wr_sel(ram_wr_sel),
+				.rd_sfr(rd_sfr),
 		      .wr_sfr(wr_sfr),
 		      .comp_sel(comp_sel),
 		      .comp_wait(comp_wait),

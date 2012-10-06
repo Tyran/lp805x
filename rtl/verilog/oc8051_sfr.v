@@ -129,11 +129,12 @@ module lp805x_sfr (rst, clk,
   `ifdef LP805X_TC2
        t2, t2ex,
   `endif
-
+		 rd_sfr,
        dptr_hi, dptr_lo, dptr,
        wait_data);
 
 input ntf,ntr;
+input rd_sfr;
 
 input       rst,	// reset - pin
 	    clk,	// clock - pin
@@ -486,6 +487,9 @@ assign comp_wait = !(
 reg [7:0] data_outd;
 reg 		data_outc;
 assign data_out = data_outc ? data_outd : 8'hzz;
+
+reg diff;
+
 //
 //set output in case of address (byte)
 always @(posedge clk or posedge rst)
@@ -493,10 +497,11 @@ begin
   if (rst) begin
     {data_outc,data_outd} <= #1 {1'b0,8'h00};
     wait_data <= #1 1'b0;
-  end else if ((wr_sfr==`LP805X_WRS_DPTR) & (adr0==`LP805X_SFR_DPTR_LO)) begin				//write and read same address
+	 diff <= #1 1'b0;
+  end else if (rd_sfr & (wr_sfr==`LP805X_WRS_DPTR) & (adr0==`LP805X_SFR_DPTR_LO)) begin				//write and read same address
     {data_outc,data_outd} <= #1 {1'b1,des_acc};
     wait_data <= #1 1'b0;
-  end else if (
+  end else if ( rd_sfr &
       (
         ((wr_sfr==`LP805X_WRS_ACC1) & (adr0==`LP805X_SFR_ACC)) | 	//write to acc
 //        ((wr_sfr==`LP805X_WRS_DPTR) & (adr0==`LP805X_SFR_DPTR_LO)) |	//write to dpl
@@ -505,15 +510,17 @@ begin
       ) & !wait_data) begin
 	 //{data_outc,data_outd} <= #1 {1'b1, ????
     wait_data <= #1 1'b1;
-
-  end else if ((
+	 diff <= #1 1'b1;
+  end else if ( rd_sfr & (
       ((|psw_set) & (adr0==`LP805X_SFR_PSW)) |
       ((wr_sfr==`LP805X_WRS_ACC2) & (adr0==`LP805X_SFR_ACC)) | 	//write to acc
       ((wr_sfr==`LP805X_WRS_DPTR) & (adr0==`LP805X_SFR_DPTR_HI))	//write to dph
       ) & !wait_data) begin
     wait_data <= #1 1'b1;
+	 diff <= #1 1'b1;
 	// ?????
   end else begin
+  diff <= #1 1'b0;
     case (adr0)
       `LP805X_SFR_ACC: 		{data_outc,data_outd} <= #1 {1'b1,acc};
       `LP805X_SFR_PSW: 		{data_outc,data_outd} <= #1 {1'b1,psw};
