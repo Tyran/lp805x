@@ -440,7 +440,7 @@ always @(posedge clk)
   end
   */
   
-  // synthesis translate_off
+// synthesis translate_off
 
 // catch P0=II
 always @(op_cur or imm)
@@ -491,7 +491,5 @@ always @(op_cur or imm or imm2)
 
   end
 // synthesis translate_on
-
-
 
 endmodule

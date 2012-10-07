@@ -35,7 +35,7 @@ module lp805x_top (
 		wb_rst_i, 
 		wb_clk_i,
 //interface to instruction rom
-`ifndef LP805X_ROM_ONCHIP
+`ifdef LP805X_ROM_OFFCHIP
 		wbi_adr_o, 
 		wbi_dat_i, 
 		wbi_stb_o, 
@@ -56,8 +56,8 @@ module lp805x_top (
 `endif
 
 // interrupt interface
-	//	int0_i, 
-	//	int1_i,
+		int0_i, 
+		int1_i,
 
 // port interface
   `ifdef LP805X_PORTS
@@ -112,11 +112,11 @@ wire				wb_rst_s;
 wire				wb_rst_w;
 wire				wb_clk_cpu;				  
 				  
-wire           int0_i,		// interrupt 0
+input          int0_i,		// interrupt 0
 					int1_i;		// interrupt 1
 input				ea_in;		// external access
 			  
-`ifndef LP805X_ROM_ONCHIP		  
+`ifdef LP805X_ROM_OFFCHIP		  
 		input   			wbi_ack_i,	// instruction acknowlage
 							wbi_err_i;	// instruction error
 		input [31:0]	wbi_dat_i;	// rom data input
@@ -128,12 +128,14 @@ input				ea_in;		// external access
 							wbd_cyc_o;	// data cycle
 `endif
 
+`ifndef LP805X_ROM_ONCHIP
 //
 // cpu to cache/wb_interface
 wire        iack_i,
 				istb_o;
 //wire			icyc_o;
 wire [31:0]	idat_i;
+`endif
 wire [15:0] iadr_o;
 
 `ifndef LP805X_XRAM_ONCHIP
@@ -336,7 +338,9 @@ wire wb_clk_p1;
 			.rd_addr(rd_addr[7:0]),
 
 			.rst( wb_rst_s), .clk( wb_clk_cpu), //[SPECIAL FEATURE]
+			`ifdef LP805X_MULTIFREQ
 			.rst_p1( wb_rst_p1), .clk_p1o( wb_clk_p1) //[SPECIAL FEATURE]
+			`endif
 		);
 
 `else
@@ -593,7 +597,7 @@ wire sfr_rrdy_io;
   lp805x_ports ports_1(
 				.clk_cpu(wb_clk_cpu),
 				.clk(wb_clk_p1),
-            .rst(wb_rst_w),
+            .rst(wb_rst_p1),
 				.sfr_bus( sfr_bus_I),
 				.bit_out(sfr_bit),
 				.data_out(sfr_out),
@@ -684,11 +688,14 @@ lp805x_control control_interface_1
 			.iram_out(ram_out),
 
 // external instruction rom
+`ifdef LP805X_ROM_OFFCHIP
 			.iack_i(iack_i),
-			.iadr_o(iadr_o),
 			.idat_i(idat_i),
+	`ifdef LP805X_WB
 			.istb_o(istb_o),
-
+	`endif
+`endif
+			.iadr_o(iadr_o),
 // internal instruction rom
 			.idat_onchip(idat_onchip),
 
@@ -865,7 +872,7 @@ lp805x_sfr sfr_1(
   `endif
 
   `else
-`ifndef LP805X_ROM_ONCHIP
+`ifdef LP805X_ROM_OFFCHIP
     assign wbi_adr_o = iadr_o    ;
 	 //assign wbi_dat_i = idat_onchip;
     assign idat_i    = wbi_dat_i ;
@@ -875,13 +882,13 @@ lp805x_sfr sfr_1(
 `endif
   `ifdef LP805X_SIMULATION
 
-    initial
-    begin
-      #1
-      $display("\t * ");
-      $display("\t * External rom interface: Pipelined interface");
-      $display("\t * ");
-    end
+//    initial
+//    begin
+//      #1
+//      $display("\t * ");
+//      $display("\t * External rom interface: Pipelined interface");
+//      $display("\t * ");
+//    end
 
   `endif
 

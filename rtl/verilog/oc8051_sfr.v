@@ -202,7 +202,7 @@ reg        bit_outd,
 reg [7:0]  adr0_r;
 
 reg        wr_bit_r;
-reg [2:0]  ram_wr_sel_r;
+//reg [2:0]  ram_wr_sel_r;
 
 
 wire       p,
@@ -439,9 +439,11 @@ lp805x_int int_1 (.clk(clk),
 			 .bit_in(bit_in), 
 			 .t2(t2), 
 			 .t2ex(t2ex),
+			 `ifdef LP805X_UART
 			 .rclk(rclk), 
 			 .tclk(tclk), 
 			 .brate2(brate2), 
+			 `endif
 			 .tc2_int(tc2_int), 
 			 .pres_ow(pres_ow),
 			 .t2con(t2con), 
@@ -461,12 +463,12 @@ lp805x_int int_1 (.clk(clk),
 always @(posedge clk or posedge rst)
   if (rst) begin
     //adr0_r <= #1 8'h00;
-    ram_wr_sel_r <= #1 3'b000;
+    //ram_wr_sel_r <= #1 3'b000;
     wr_bit_r <= #1 1'b0;
 //    wait_data <= #1 1'b0;
   end else begin
     //adr0_r <= #1 adr0;
-    ram_wr_sel_r <= #1 ram_wr_sel;
+    //ram_wr_sel_r <= #1 ram_wr_sel;
     wr_bit_r <= #1 wr_bit;
   end
 
@@ -488,8 +490,6 @@ reg [7:0] data_outd;
 reg 		data_outc;
 assign data_out = data_outc ? data_outd : 8'hzz;
 
-reg diff;
-
 //
 //set output in case of address (byte)
 always @(posedge clk or posedge rst)
@@ -497,7 +497,6 @@ begin
   if (rst) begin
     {data_outc,data_outd} <= #1 {1'b0,8'h00};
     wait_data <= #1 1'b0;
-	 diff <= #1 1'b0;
   end else if (rd_sfr & (wr_sfr==`LP805X_WRS_DPTR) & (adr0==`LP805X_SFR_DPTR_LO)) begin				//write and read same address
     {data_outc,data_outd} <= #1 {1'b1,des_acc};
     wait_data <= #1 1'b0;
@@ -510,17 +509,14 @@ begin
       ) & !wait_data) begin
 	 //{data_outc,data_outd} <= #1 {1'b1, ????
     wait_data <= #1 1'b1;
-	 diff <= #1 1'b1;
   end else if ( rd_sfr & (
       ((|psw_set) & (adr0==`LP805X_SFR_PSW)) |
       ((wr_sfr==`LP805X_WRS_ACC2) & (adr0==`LP805X_SFR_ACC)) | 	//write to acc
       ((wr_sfr==`LP805X_WRS_DPTR) & (adr0==`LP805X_SFR_DPTR_HI))	//write to dph
       ) & !wait_data) begin
     wait_data <= #1 1'b1;
-	 diff <= #1 1'b1;
 	// ?????
   end else begin
-  diff <= #1 1'b0;
     case (adr0)
       `LP805X_SFR_ACC: 		{data_outc,data_outd} <= #1 {1'b1,acc};
       `LP805X_SFR_PSW: 		{data_outc,data_outd} <= #1 {1'b1,psw};

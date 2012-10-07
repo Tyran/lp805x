@@ -255,13 +255,10 @@ initial
 begin
 	for ( i=0; i<LP805X_ROM_LEN; i=i+1)
 		buff[i] = 32'h00000000;
-end
-// synthesis translate_on
-
-initial
-begin
+#1		
 	$readmemh("lp805x_rom.in", buff);
 end
+// synthesis translate_on
 
 
 always @(posedge clka)

@@ -109,7 +109,7 @@ assign
 	
 
 assign 
-	ntf = timer_ov,
+	ntf = int_enable ? timer_ov : 1'b0,
 	ntr = 1'b1;
 
 

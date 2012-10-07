@@ -66,7 +66,7 @@ module lp805x_schedfs(
 	 
 	//registers
 	reg [7:0] sched_h, sched_l; //factor
-	reg [7:0] index; //freq select [no-bind]
+	reg [2:0] index; //freq select [no-bind]
 
 	//read operation
 	output tri [7:0] data_out;
@@ -77,8 +77,9 @@ module lp805x_schedfs(
 		start = sched_h[7],
 		enable = sched_h[6],
 		//still space for fore functions :-)
-		//factor = { sched_h[2:0], sched_l, 4'b0 }; //mul by 16
-		factor = { sched_h[2:0], sched_l }; //mul by 16
+		//factor comes already mult by 16
+		//scale values are adjusted
+		factor = { sched_h[2:0], sched_l }; 
 
 	assign //binding frequency select
 		scale[7] = 11'd12,
@@ -117,6 +118,7 @@ module lp805x_schedfs(
 			pipe[4] <= #1 pipe[5];
 			pipe[5] <= #1 pipe[6];
 			pipe[6] <= #1 pipe[7];
+			pipe[7] <= #1 11'd0;
 			select  <= #1 select - 1'b1;
 		end
 	end

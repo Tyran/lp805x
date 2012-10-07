@@ -132,10 +132,13 @@ module lp805x_control (clk, rst,
      idat_onchip,
 
 //external
+`ifndef LP805X_ROM_ONCHIP
      iack_i, 
+	  `ifdef LP805X_WB
      istb_o, 
+	  `endif
      idat_i,
-
+`endif
 //external data ram
      dadr_o, 
      dwe_o, 
@@ -199,8 +202,9 @@ input [7:0]   in_ram,
 	      acc,
 			acc_bypass,
 	      sp_w;
+`ifdef LP805X_ROM_OFFCHIP
 input [31:0]  idat_i;
-
+`endif
 output        bit_out,
               mem_wait,
 	      reti;
@@ -209,8 +213,8 @@ output [7:0]  iram_out,
 
 reg           bit_out,
               reti;
-reg [7:0]     iram_out,
-              sp_r;
+reg [7:0]     iram_out;
+              //sp_r;
 reg           rd_addr_r;
 output        wr_o,
               wr_bit_o;
@@ -225,7 +229,9 @@ reg [23:0]    idat_ir;
 //  rom_addr_sel
 //
 /////////////////////////////
+`ifndef LP805X_ROM_ONCHIP
 input         iack_i;
+`endif
 input [7:0]   des_acc,
               des1,
 	      des2;
@@ -291,8 +297,10 @@ input  [7:0]  int_v;
 
 input  [31:0] idat_onchip;
 
-output        int_ack,
-              istb_o;
+output        int_ack;
+`ifdef LP805X_WB
+output        istb_o;
+`endif				  
 
 output  [7:0] op1_out,
               op3_out,
@@ -348,7 +356,7 @@ reg [7:0]     ddat_o;
 reg [15:0]    iadr_t,
               dadr_ot;
 reg           dmem_wait;
-wire          pc_wait;
+//wire          pc_wait;
 //wire [1:0]    bank;
 wire [7:0]    isr_call;
 
@@ -383,25 +391,28 @@ assign wr_bit_o   = wr_bit_i;
 //assign mem_wait   = dmem_wait || imem_wait || pc_wr_r;
 assign mem_wait   = dmem_wait || imem_wait || pc_wr_r2;// || sfr_wait;
 //assign mem_wait   = dmem_wait || imem_wait;
+`ifdef LP805X_WB
 assign istb_o     = (istb || (istb_t & !iack_i)) && !dstb_o && !ea_rom_sel;
-
-assign pc_wait    = rd && (ea_rom_sel || (!istb_t && iack_i));
+`endif
+//assign pc_wait    = rd && (ea_rom_sel || (!istb_t && iack_i));
 
 assign wr_dat     = des1;
 
-
-`ifdef LP805X_SIMULATION
-// synthesis translate_off
-  always @(negedge rst) begin
-    #5
-    if (ea_rom_sel)
-      $display("   progran execution from internal rom");
-    else
-      $display("   progran execution from external rom");
-  end
-// synthesis translate_on
-`endif
-
+wire ioack;
+	assign
+	`ifdef LP805X_ROM_ONCHIP
+		`ifdef LP805X_ROM_OFFCHIP
+		ioack = iack_i || ea_rom_sel;
+		`else
+		ioack = ea_rom_sel;
+		`endif
+	`else
+		`ifdef LP805X_ROM_OFFCHIP
+		ioack = iack_i;
+		`else
+		ioack = _ERROR_NO_ROM??;
+		`endif
+	`endif
 
 /////////////////////////////
 //
@@ -506,11 +517,13 @@ reg xwait;
 // faster 1 clock cycle
 assign iadr_o = (xwait) ? alu : pc_out;
 
-always @(posedge clk or posedge rst)
+always @(posedge clk)
 begin
 	if (rst) begin
 		istb_t <= #1 1'b0;
+	`ifdef LP805X_ROM_OFFCHIP
 		idat_ir <= #1 24'h0;
+	`endif
 		imem_wait <= #1 1'b0;
 		xwait <= #1 1'b0;
 	end
@@ -528,10 +541,12 @@ begin
 	else if (!imem_wait && istb_t) begin
 		istb_t <= #1 1'b0;
    end
+	`ifdef LP805X_ROM_OFFCHIP
 	else if (iack_i) begin
 		imem_wait <= #1 1'b0;
 		idat_ir <= #1 idat_i [23:0];
 	end
+	`endif
 end
 
 /////////////////////////////
@@ -601,8 +616,20 @@ begin
   if (rst) begin
     idat_cur <= #1 32'h0;
     idat_old <= #1 32'h0;
-  end else if ((iack_i | ea_rom_sel) & (inc_pc | pc_wr_r2)) begin
-    idat_cur <= #1 ea_rom_sel ? idat_onchip : idat_i;
+  end else if (ioack & (inc_pc | pc_wr_r2)) begin
+	`ifdef LP805X_ROM_ONCHIP
+		`ifdef LP805X_ROM_OFFCHIP
+			idat_cur <= #1 ea_rom_sel ? idat_onchip : idat_i;
+		`else
+			idat_cur <= #1 idat_onchip;
+		`endif
+	`else
+		`ifdef LP805X_ROM_OFFCHIP
+			idat_cur <= #1 idat_i;
+		`else
+			idat_cur <= #1 _ERROR_NO_ROM?
+		`endif
+	`endif
     idat_old <= #1 idat_cur;
   end
 end
@@ -615,7 +642,20 @@ begin
     cdata = 8'h00;
     cdone = 1'b0;
   end else if (istb_t) begin
-    cdata = ea_rom_sel ? idat_onchip[7:0] : idat_i[7:0];
+  	`ifdef LP805X_ROM_ONCHIP
+		`ifdef LP805X_ROM_OFFCHIP
+			cdata = ea_rom_sel ? idat_onchip[7:0] : idat_i[7:0];
+		`else
+			cdata = idat_onchip[7:0];
+		`endif
+	`else
+		`ifdef LP805X_ROM_OFFCHIP
+			cdata = idat_i[7:0];
+		`else
+			cdata = _ERROR_NO_ROM?
+		`endif
+	`endif
+    
     cdone = 1'b1;
   end
 end
@@ -667,29 +707,32 @@ always @( *)
 assign op3_out = (rd) ? op3_o : op3_buff;
 assign op2_out = (rd) ? op2_o : op2_buff;
 
+`ifdef LP805X_ROM_OFFCHIP
 always @(idat_i or iack_i or idat_ir or rd)
 begin
   if (iack_i) begin
-    //op1_xt = idat_i[7:0];
-  //  op2_xt = idat_i[15:8];
+    op1_xt = idat_i[7:0];
+    op2_xt = idat_i[15:8];
     op3_xt = idat_i[23:16];
   end else if (!rd) begin
-    //op1_xt = idat_ir[7:0];
-  //  op2_xt = idat_ir[15:8];
+    op1_xt = idat_ir[7:0];
+    op2_xt = idat_ir[15:8];
     op3_xt = idat_ir[23:16];
   end else begin
-    //op1_xt = 8'h00;
-   // op2_xt = 8'h00;
+    op1_xt = 8'h00;
+    op2_xt = 8'h00;
     op3_xt = 8'h00;
   end
 end
-
+`endif
 
 //
 // in case of interrupts
-always @(op1 or op2 or op3 or int_ack_t or int_vec_buff or iack_i or ea_rom_sel)
+
+
+always @(op1 or op2 or op3 or int_ack_t or int_vec_buff or ioack)
 begin
-  if (int_ack_t && (iack_i || ea_rom_sel)) begin
+  if (int_ack_t && ioack) begin
     op1_o = `LP805X_LCALL;
     op2_o = 8'h00;
     op3_o = int_vec_buff;
@@ -836,7 +879,7 @@ always @(posedge clk or posedge rst)
  end else if (intr) begin
    int_ack_t <= #1 1'b1;
    int_vec_buff <= #1 int_v;
- end else if (rd && (ea_rom_sel || iack_i) && !pc_wr_r2) int_ack_t <= #1 1'b0;
+ end else if (rd && ioack && !pc_wr_r2) int_ack_t <= #1 1'b0;
 
 always @(posedge clk or posedge rst)
   if (rst) int_ack_buff <= #1 1'b0;
@@ -1101,7 +1144,7 @@ always @(posedge clk or posedge rst)
     rd_addr_r <= #1 1'b0;
     //op1_r     <= #1 8'h0;
     //dack_ir   <= #1 1'b0;
-    sp_r      <= #1 1'b0;
+    //sp_r      <= #1 1'b0;
     pc_wr_r   <= #1 1'b0;
     pc_wr_r2  <= #1 1'b0;
   end else begin
@@ -1112,7 +1155,7 @@ always @(posedge clk or posedge rst)
     rd_addr_r <= #1 rd_addr[7];//sfr_rdstall ? rd_addr_r : rd_addr[7];
    // op1_r     <= #1 op1_out;
     //dack_ir   <= #1 dack_i & dstb_o;
-    sp_r      <= #1 sp;
+   // sp_r      <= #1 sp;
     pc_wr_r   <= #1 pc_wr && (pc_wr_sel != `LP805X_PIS_AH);
     pc_wr_r2  <= #1 pc_wr_r;
   end
@@ -1217,21 +1260,21 @@ begin
 	end
 end
 
-// synthesis translate_off
-initial
-begin
-  wait (!rst)
-  if (ea_rom_sel) begin
-    $display(" ");
-    $display("\t Program running from internal rom !");
-    $display(" ");
-  end else begin
-    $display(" ");
-    $display("\t Program running from external rom !");
-    $display(" ");
-  end
-end
-// synthesis translate_on
+//// synthesis translate_off
+//initial
+//begin
+//  wait (!rst)
+//  if (ea_rom_sel) begin
+//    $display(" ");
+//    $display("\t Test running from internal rom!");
+//    $display(" ");
+//  end else begin
+//    $display(" ");
+//    $display("\t Test running from external rom!");
+//    $display(" ");
+//  end
+//end
+//// synthesis translate_on
   
 
 endmodule

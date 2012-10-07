@@ -289,7 +289,7 @@ module lp805x_clkdiv( rst, clki, _pres_factor, _pres_factor1, clk_div, clk_divl,
 		if ( rst)
 			pres_counter <= #1 0;
 		else
-			pres_counter <= #1 pres_counter + 1;
+			pres_counter <= #1 pres_counter + 1'b1;
 	 end
 	 
 endmodule

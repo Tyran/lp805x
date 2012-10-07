@@ -64,6 +64,7 @@
 //
 `define LP805X_ROM
 `define LP805X_ROM_ONCHIP
+//`define LP805X_ROM_OFFCHIP
 
 
 //
