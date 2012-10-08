@@ -25,16 +25,18 @@
 
 module lp805x_newtimer
 	(
-		clk_cpu,
 		clk, 
 		rst,
 		sfr_bus,
-		sfr_get,
 		data_out,
 		bit_out,
+		`ifdef LP805X_MULTIFREQ
+		clk_cpu,
+		sfr_get,
 		sfr_wrdy,
 		sfr_rrdy,
 		sfr_put,
+		`endif
 		
 		ntf,
 		ntr,
@@ -61,8 +63,10 @@ input clk_cpu;
 
 input [28:0] sfr_bus;
 
+`ifdef LP805X_MULTIFREQ
 input sfr_get,sfr_put;
 output sfr_wrdy,sfr_rrdy;
+`endif
 
 wire wr,rd;
 wire wr_bit,rd_bit;
@@ -303,6 +307,25 @@ begin
   end
 end
 
+lp805x_sfrbused decode_1
+		(
+		`ifdef LP805X_MULTIFREQ
+			.sfr_bus( sfr_bus_1),
+		`else
+			.sfr_bus( sfr_bus),
+		`endif
+			.bit_in(bit_in),
+			.data_in(data_in),
+			.wr(wr),
+			.rd(rd),
+			.wr_bit(wr_bit),
+			.rd_bit(rd_bit),
+			.wr_addr(wr_addr),
+			.rd_addr(rd_addr)
+		);
+
+`ifdef LP805X_MULTIFREQ
+
 wire [28:0] sfr_bus_1;
 wire [8:0] sfr_bus_2;
 wire [8:0] sfr_bus_2s;
@@ -325,20 +348,6 @@ wire sfr_wrdy,sfr_rrdy;
 			.rrdy(sfr_prrdy)
 		);
 
-	lp805x_sfrbused decode_1
-		(
-			.sfr_bus( sfr_bus_1),
-			
-			.bit_in(bit_in),
-			.data_in(data_in),
-			.wr(wr),
-			.rd(rd),
-			.wr_bit(wr_bit),
-			.rd_bit(rd_bit),
-			.wr_addr(wr_addr),
-			.rd_addr(rd_addr)
-		);
-
 	lp805x_synctrl sync_1
 		(
 			.clk( clk),
@@ -352,15 +361,15 @@ wire sfr_wrdy,sfr_rrdy;
 			.sfr_get( sfr_get),
 			.sfr_out( sfr_out),
 			.sfr_rrdy( sfr_rrdy),
-			.this( output_data | output_bit)
+			.this( output_data | bit_outc)
 		);
 
 	lp805x_sfrbusd sfrbusO_1
 		(
 			.clk(clk),
 			.data_out( data_read),
-			.bit_out( bit_read),
-			.load( output_data | output_bit),
+			.bit_out( bit_outd),
+			.load( output_data | bit_outc),
 			.sfr_bus( sfr_bus_2)
 		);
 
@@ -381,5 +390,10 @@ wire sfr_wrdy,sfr_rrdy;
 		assign 
 			data_out = sfr_out ? sfr_bus_2s[8:1] : 8'hzz,
 			bit_out = sfr_out ? sfr_bus_2s[0] : 1'bz;
+`else
+		assign 
+			data_out = output_data ? data_read : 8'hzz,
+			bit_out = bit_outc ? bit_outd : 1'bz;
+`endif
 
 endmodule

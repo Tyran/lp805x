@@ -28,19 +28,26 @@ module lp805x_sfrbuse(
     input bit_in,
     input wr_bit,
     input rd_bit,
+	 `ifdef LP805X_MULTIFREQ
 	 input load,
-	 output reg [28:0] sfr_bus
+	 output reg [28:0] sfr_bus_r,
+	 `else
+	 output [28:0] sfr_bus,
+	 `endif
+	 input rst
     );
-	 
-	 wire [28:0] sfr_bus_;
 	
 	assign 
-		sfr_bus_ = { wr_addr, rd_addr, data_in, 
+		sfr_bus = { wr_addr, rd_addr, data_in, 
 						wr, rd, bit_in, wr_bit, rd_bit };
-						
+	
+`ifdef LP805X_MULTIFREQ	
 	always @(posedge clk)
-		if ( load)
-			sfr_bus <= #1 sfr_bus_;
+		if ( rst)
+			sfr_bus_r <= #1 29'd0;
+		else if ( load)
+			sfr_bus_r <= #1 sfr_bus;
+`endif
 endmodule
 
 module lp805x_sfrbused(

@@ -1,22 +1,5 @@
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-////  8051 cores Definitions              		          ////
-////                                                              ////
-////  This file is part of the 8051 cores project                 ////
-////  http://www.opencores.org/cores/8051/                        ////
-////                                                              ////
-////  Description                                                 ////
-////  8051 definitions.                                           ////
-////                                                              ////
-////  To Do:                                                      ////
-////   Nothing                                                    ////
-////                                                              ////
-////  Author(s):                                                  ////
-////      - Simon Teran, simont@opencores.org                     ////
-////      - Jaka Simsic, jakas@opencores.org                      ////
-////                                                              ////
-//////////////////////////////////////////////////////////////////////
-////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
 ////                                                              ////
 //// This source file may be used and distributed without         ////
@@ -49,14 +32,14 @@
 // LP805X pherypherals
 //
 //
-//`define LP805X_UART
+`define LP805X_UART
 `define LP805X_TC01
 `define LP805X_TC2
 `define LP805X_PORTS  //ports global enable
 `define LP805X_PORT0
 `define LP805X_PORT1
-//`define LP805X_PORT2
-//`define LP805X_PORT3
+`define LP805X_PORT2
+`define LP805X_PORT3
 
 
 //
@@ -88,8 +71,8 @@
 `define LP805X_XDATASIZE 2048
 `define LP805X_XDATALEN 11
 
-`define LP805X_IROMSIZE 16384
-`define LP805X_IROMLEN 14
+`define LP805X_IROMSIZE 8192
+`define LP805X_IROMLEN 13
 
 //NONE-INFERED
 `define LP805X_ROM_INFER
@@ -100,13 +83,13 @@
 `define LP805X_CLKER
 //`define LP805X_USELL
 
-`define LP805X_MULTIFREQ
+//`define LP805X_MULTIFREQ
 
 //new timer
-`define LP805X_NTC
+//`define LP805X_NTC
 
 //hardware scheduler aid
-`define LP805X_HWSCHED
+//`define LP805X_HWSCHED
 
 //watchdog timer
 //`define LP805X_WDT

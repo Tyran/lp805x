@@ -1,21 +1,5 @@
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-////  8051 port output                                            ////
-////                                                              ////
-////  This file is part of the 8051 cores project                 ////
-////  http://www.opencores.org/cores/8051/                        ////
-////                                                              ////
-////  Description                                                 ////
-////   8051 special function registers: port 0:3 - output         ////
-////                                                              ////
-////  To Do:                                                      ////
-////   nothing                                                    ////
-////                                                              ////
-////  Author(s):                                                  ////
-////      - Simon Teran, simont@opencores.org                     ////
-////                                                              ////
-//////////////////////////////////////////////////////////////////////
-////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
 ////                                                              ////
 //// This source file may be used and distributed without         ////
@@ -40,23 +24,6 @@
 //// from http://www.opencores.org/lgpl.shtml                     ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
-//
-// CVS Revision History
-//
-// $Log: not supported by cvs2svn $
-// Revision 1.9  2003/04/10 12:43:19  simont
-// defines for pherypherals added
-//
-// Revision 1.8  2003/04/07 14:58:02  simont
-// change sfr's interface.
-//
-// Revision 1.7  2003/01/13 14:14:41  simont
-// replace some modules
-//
-// Revision 1.6  2002/09/30 17:33:59  simont
-// prepared header
-//
-//
 
 
 // synopsys translate_off
@@ -69,16 +36,18 @@
 `ifdef LP805X_PORTS
 
 module lp805x_ports(
-			clk_cpu,
 			clk, 
 			rst,
 			sfr_bus,
-			sfr_get,
 			data_out,
 			bit_out,
+			`ifdef LP805X_MULTIFREQ
+			clk_cpu,
+			sfr_get,
 			sfr_wrdy,
 			sfr_rrdy,
 			sfr_put,
+			`endif
 
 	`ifdef LP805X_PORT0
 		    p0_out,
@@ -105,12 +74,13 @@ module lp805x_ports(
 input   clk,	//clock
         rst;	//reset
 
-input clk_cpu;
-
 input [28:0] sfr_bus;
 
+`ifdef LP805X_MULTIFREQ
+input clk_cpu;
 input sfr_get,sfr_put;
 output sfr_wrdy,sfr_rrdy;
+`endif
 		  
 wire    wr,	//write [LP805X_decoder.wr -r]
 		  rd,
@@ -304,6 +274,25 @@ begin
     endcase
 end
 
+lp805x_sfrbused decode_1
+		(
+		`ifdef LP805X_MULTIFREQ
+			.sfr_bus( sfr_bus_1),
+		`else
+			.sfr_bus( sfr_bus),
+		`endif
+			.bit_in(bit_in),
+			.data_in(data_in),
+			.wr(wr),
+			.rd(rd),
+			.wr_bit(wr_bit),
+			.rd_bit(rd_bit),
+			.wr_addr(wr_addr),
+			.rd_addr(rd_addr)
+		);
+
+`ifdef LP805X_MULTIFREQ
+
 wire [28:0] sfr_bus_1;
 wire [8:0] sfr_bus_2;
 wire [8:0] sfr_bus_2s;
@@ -324,20 +313,6 @@ wire sfr_wrdy,sfr_rrdy;
 			.data_out(sfr_bus_1),
 			.rget(sfr_pget),
 			.rrdy(sfr_prrdy)
-		);
-
-	lp805x_sfrbused decode_1
-		(
-			.sfr_bus( sfr_bus_1),
-			
-			.bit_in(bit_in),
-			.data_in(data_in),
-			.wr(wr),
-			.rd(rd),
-			.wr_bit(wr_bit),
-			.rd_bit(rd_bit),
-			.wr_addr(wr_addr),
-			.rd_addr(rd_addr)
 		);
 
 	lp805x_synctrl sync_1
@@ -382,6 +357,12 @@ wire sfr_wrdy,sfr_rrdy;
 		assign 
 			data_out = sfr_out ? sfr_bus_2s[8:1] : 8'hzz,
 			bit_out = sfr_out ? sfr_bus_2s[0] : 1'bz;
+`else
+		assign 
+			data_out = output_data ? data_read : 8'hzz,
+			bit_out = bit_outc ? bit_outd : 1'bz;
+`endif
+
 
 endmodule
 

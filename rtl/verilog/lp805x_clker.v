@@ -13,7 +13,9 @@ module lp805x_clker( rsti, clki,
 							wr_bit, rd_bit,
 
 							rst, clk, //[SPECIAL FEATURE]
+							`ifdef LP805X_MULTIFREQ
 							rst_p1, clk_p1o
+							`endif
 							); //clock selection
 
 //
@@ -49,8 +51,10 @@ reg [7:0] clock_select; //SFR register
 output wire clk;
 output wire rst;
 
+`ifdef LP805X_MULTIFREQ
 output wire clk_p1o;
 output wire rst_p1;
+`endif
 
 reg do_switch;
 
@@ -186,8 +190,12 @@ lp805x_xpllcg clker
 	parameter PRESCALE_LEN = 3;
 
 	assign
-		rst = rsti,
+		rst = rsti;
+		
+	`ifdef LP805X_MULTIFREQ
+	assign
 		rst_p1 = rsti;
+	`endif
 
 	wire clk_;
 	wire last_clk;
@@ -201,6 +209,7 @@ lp805x_xpllcg clker
 	assign clk_0 = do_s_1 ? clk_ : last_clk; 
 	assign clk_1 = do_s_1 ? last_clk : clk_; 
 	
+	`ifdef LP805X_MULTIFREQ
 	wire clk_p;
 	wire last_clkp;
 	wire clk_p0,clk_p1;
@@ -211,18 +220,21 @@ lp805x_xpllcg clker
 	
 	assign clk_p0 = do_s_p1 ? clk_p : last_clkp; 
 	assign clk_p1 = do_s_p1 ? last_clkp : clk_p; 
+	`endif
 	
 	lp805x_clkdiv #(.PRESCALE_LEN(PRESCALE_LEN))
 	clkdiv_1
 	( 
 	.rst(rsti),
 	.clki(clki),
-	._pres_factor(clock_select[PRESCALE_LEN-1:0]),
-	.clk_div(clk_),
-	.clk_divl(last_clk),
+	`ifdef LP805X_MULTIFREQ
 	._pres_factor1(clock_select[(PRESCALE_LEN*2)-1:PRESCALE_LEN]),
 	.clk_div1(clk_p),
-	.clk_divl1(last_clkp)
+	.clk_divl1(last_clkp),
+	`endif
+	._pres_factor(clock_select[PRESCALE_LEN-1:0]),
+	.clk_div(clk_),
+	.clk_divl(last_clk)
 	);
 	
 	BUFGMUX #(
@@ -235,6 +247,7 @@ lp805x_xpllcg clker
       .S(do_switch)    // 1-bit input: Clock buffer select
    );
 	
+	`ifdef LP805X_MULTIFREQ
 	BUFGMUX #(
       .CLK_SEL_TYPE("SYNC")  // Glitchles ("SYNC") or fast ("ASYNC") clock switch-over
    )
@@ -244,23 +257,32 @@ lp805x_xpllcg clker
       .I1(clk_p1), // 1-bit input: Clock buffer input (S=1)
       .S(do_switch)    // 1-bit input: Clock buffer select
    );
+	`endif
 	
 		`endif //PLL
 	`endif // Xilinx
 `endif // Altera
 endmodule
 
-module lp805x_clkdiv( rst, clki, _pres_factor, _pres_factor1, clk_div, clk_divl, clk_div1, clk_divl1) ;
+module lp805x_clkdiv( 
+	rst, clki, _pres_factor, 
+	`ifdef LP805X_MULTIFREQ
+	_pres_factor1, clk_div1, clk_divl1,
+	`endif
+	clk_div, clk_divl) ;
 	 parameter PRESCALE_LEN = 3;
 	 parameter COUNTER_LEN = 7;
 	 
 	 input rst;
     input clki;
-	 input [PRESCALE_LEN-1:0] _pres_factor, _pres_factor1;
-    output clk_div, clk_div1;
-	 output clk_divl, clk_divl1;
-	 
-	 reg [PRESCALE_LEN-1:0] clk_divl_i, clk_divl_i1;
+	 input [PRESCALE_LEN-1:0] _pres_factor;
+	 output clk_div,clk_divl;
+	 reg [PRESCALE_LEN-1:0] clk_divl_i;
+	 `ifdef LP805X_MULTIFREQ
+	 input [PRESCALE_LEN-1:0] _pres_factor1;
+	 output clk_div1, clk_divl1;
+	 reg [PRESCALE_LEN-1:0] clk_divl_i1;
+	 `endif
 	 
 	 reg [COUNTER_LEN-1:0] pres_counter;
 	 
@@ -268,19 +290,27 @@ module lp805x_clkdiv( rst, clki, _pres_factor, _pres_factor1, clk_div, clk_divl,
 	 
 		assign 
 			clk_div = clock_list[ _pres_factor],
+			clk_divl = clock_list[ clk_divl_i];
+		
+		`ifdef LP805X_MULTIFREQ
+		assign
 			clk_div1 = clock_list[ _pres_factor1],
-			clk_divl = clock_list[ clk_divl_i],
 			clk_divl1 = clock_list[ clk_divl_i1];
+		`endif
 			
 	 always @(posedge clki)
 	 begin
 		if ( rst) begin
 			clk_divl_i <= #1 0;
+			`ifdef LP805X_MULTIFREQ
 			clk_divl_i1 <= #1 0;
+			`endif
 		end
 		else begin
 			clk_divl_i <= _pres_factor;
+			`ifdef LP805X_MULTIFREQ
 			clk_divl_i1 <= _pres_factor1;
+			`endif
 		end
 	 end
 	 

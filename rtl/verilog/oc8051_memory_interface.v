@@ -1,21 +1,5 @@
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-////  8051 memory interface                                       ////
-////                                                              ////
-////  This file is part of the 8051 cores project                 ////
-////  http://www.opencores.org/cores/8051/                        ////
-////                                                              ////
-////  Description                                                 ////
-////   comunication betwen cpu and memory                         ////
-////                                                              ////
-////  To Do:                                                      ////
-////   nothing                                                    ////
-////                                                              ////
-////  Author(s):                                                  ////
-////      - Simon Teran, simont@opencores.org                     ////
-////                                                              ////
-//////////////////////////////////////////////////////////////////////
-////                                                              ////
 //// Copyright (C) 2000 Authors and OPENCORES.ORG                 ////
 ////                                                              ////
 //// This source file may be used and distributed without         ////
@@ -40,47 +24,6 @@
 //// from http://www.opencores.org/lgpl.shtml                     ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
-//
-// CVS Revision History
-//
-// $Log: not supported by cvs2svn $
-// Revision 1.12  2003/07/01 20:47:39  simont
-// add /* synopsys xx_mask */ to case statments.
-//
-// Revision 1.11  2003/06/20 13:35:10  simont
-// simualtion `ifdef added
-//
-// Revision 1.10  2003/06/05 11:15:02  simont
-// fix bug.
-//
-// Revision 1.9  2003/06/03 17:09:57  simont
-// pipelined acces to axternal instruction interface added.
-//
-// Revision 1.8  2003/05/12 16:27:40  simont
-// fix bug in movc intruction.
-//
-// Revision 1.7  2003/05/06 09:39:34  simont
-// cahnge assigment to pc_wait (remove istb_o)
-//
-// Revision 1.6  2003/05/05 15:46:37  simont
-// add aditional alu destination to solve critical path.
-//
-// Revision 1.5  2003/04/25 17:15:51  simont
-// change branch instruction execution (reduse needed clock periods).
-//
-// Revision 1.4  2003/04/16 10:04:09  simont
-// chance idat_ir to 24 bit wide
-//
-// Revision 1.3  2003/04/11 10:05:08  simont
-// Change pc add value from 23'h to 16'h
-//
-// Revision 1.2  2003/04/09 16:24:03  simont
-// change wr_sft to 2 bit wire.
-//
-// Revision 1.1  2003/01/13 14:13:12  simont
-// initial import
-//
-//
 
 // synopsys translate_off
 `include "oc8051_timescale.v"
@@ -168,17 +111,22 @@ module lp805x_control (clk, rst,
      rn, 
      acc, 
 	  acc_bypass,
-     reti,
+     
+	  `ifdef LP805X_MULTIFREQ
 	  sfr_put,
 	  sfr_get,
 	  sfr_wrdy,
 	  sfr_rrdy,
 	  need_sync,
-	  sfr_wait
+	  sfr_wait,
+	  `endif
+	  reti
    );
 	
 	input [1:0] cy_sel;
 	output rd_sfr;
+	
+	`ifdef LP805X_MULTIFREQ
 	output sfr_put;
 	output sfr_get;
 	input [1:0] sfr_wrdy;
@@ -186,6 +134,7 @@ module lp805x_control (clk, rst,
 	
 	output sfr_wait;
 	output need_sync;
+	`endif
 
 
 input         clk,
@@ -1168,6 +1117,8 @@ always @(posedge clk or posedge rst)
   end
 */
 
+`ifdef LP805X_MULTIFREQ
+
 reg need_syncr;
 reg need_syncw;
 
@@ -1260,21 +1211,6 @@ begin
 	end
 end
 
-//// synthesis translate_off
-//initial
-//begin
-//  wait (!rst)
-//  if (ea_rom_sel) begin
-//    $display(" ");
-//    $display("\t Test running from internal rom!");
-//    $display(" ");
-//  end else begin
-//    $display(" ");
-//    $display("\t Test running from external rom!");
-//    $display(" ");
-//  end
-//end
-//// synthesis translate_on
-  
+`endif
 
 endmodule

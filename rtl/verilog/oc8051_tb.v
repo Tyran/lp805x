@@ -156,7 +156,7 @@ wire 	[PWMS_LEN-1:0] pin;
 
 `ifndef POST_ROUTE
 
-//assign clk_div = lp805x_top_1.wb_clk_s;
+assign clk_div = lp805x_top_1.wb_clk_cpu;
 
 assign xd_addr = lp805x_top_1.xdatai_1.addr;
 assign xd_datai = lp805x_top_1.xdatai_1.data_i;

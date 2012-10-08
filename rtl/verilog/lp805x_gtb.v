@@ -85,19 +85,36 @@ initial
 			$display("Test running from external rom!");
 	end
 	
+// ALLmost all insn test	
+//always @(p0_out)
+//begin
+//	if ( p0_out == 8'd127)
+//		begin
+//			$display("Test ran successfully!");
+//			$finish;
+//		end
+//	else if ( p0_out != 8'd255)
+//		begin
+//			$display("Test failed with exit code: ",p0_out);
+//			$finish;
+//		end
+//end
+
+// XRAM test	
 always @(p0_out)
 begin
 	if ( p0_out == 8'd127)
 		begin
-			$display("Test ran successfully!");
+			$display("Xram Test ran successfully!");
 			$finish;
 		end
 	else if ( p0_out != 8'd255)
 		begin
-			$display("Test failed with exit code: ",p0_out);
+			$display("Xram Test failed with exit code: ",p0_out);
 			$finish;
 		end
 end
+
 
 
 endmodule

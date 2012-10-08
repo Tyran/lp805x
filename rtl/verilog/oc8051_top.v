@@ -294,16 +294,19 @@ begin
   end
 end
 
+`ifdef LP805X_MULTIFREQ
 wire sfr_wait;	
 wire need_sync;
+`endif
 
 // sfr bus for peripherals...
 // sync to async, not suited for cpu sync sfr's
-	wire [28:0] sfr_bus_I;
+wire [28:0] sfr_bus_I;
 `ifdef LP805X_MULTIFREQ
 	lp805x_sfrbuse sfrbusI_1
 	(
 		.clk(wb_clk_cpu),
+		.rst(wb_rst_s),
 		.wr_addr(wr_addr[7:0]),
 		.rd_addr(rd_addr[7:0]),
 		.data_in(wr_dat),
@@ -313,14 +316,30 @@ wire need_sync;
 		.wr_bit(wr_bit_r),
 		.rd_bit(1'b1),
 		.load( need_sync),
+
+		.sfr_bus_r( sfr_bus_I)
+   );
+`else
+	lp805x_sfrbuse sfrbusI_1
+	(
+		.clk(wb_clk_cpu),
+		.rst(wb_rst_s),
+		.wr_addr(wr_addr[7:0]),
+		.rd_addr(rd_addr[7:0]),
+		.data_in(wr_dat),
+		.wr(wr_o && !wr_ind),
+		.rd(!(wr_o && !wr_ind)),
+		.bit_in(desCy),
+		.wr_bit(wr_bit_r),
+		.rd_bit(1'b1),
+		
 		.sfr_bus( sfr_bus_I)
    );
 `endif
 	
-`ifdef LP805X_CLKER
-
 wire wb_rst_p1;
 wire wb_clk_p1;
+`ifdef LP805X_CLKER
 
 	lp805x_clker clkctrl
 		( 
@@ -337,11 +356,17 @@ wire wb_clk_p1;
 			.wr_addr(wr_addr[7:0]),
 			.rd_addr(rd_addr[7:0]),
 
-			.rst( wb_rst_s), .clk( wb_clk_cpu), //[SPECIAL FEATURE]
 			`ifdef LP805X_MULTIFREQ
-			.rst_p1( wb_rst_p1), .clk_p1o( wb_clk_p1) //[SPECIAL FEATURE]
+			.rst_p1( wb_rst_p1), .clk_p1o( wb_clk_p1), //[SPECIAL FEATURE]
 			`endif
+			.rst( wb_rst_s), .clk( wb_clk_cpu) //[SPECIAL FEATURE]
 		);
+		
+		`ifndef LP805X_MULTIFREQ
+		assign 
+			wb_rst_p1 = wb_rst_s,
+			wb_clk_p1 = wb_clk_cpu;
+		`endif
 
 `else
 
@@ -468,7 +493,11 @@ lp805x_decoder decoder_1
 			       .istb(istb),
 			       .mem_act(mem_act),
 			       .mem_wait(mem_wait),
+					 `ifdef LP805X_MULTIFREQ
 			       .wait_data(wait_data | sfr_wait)
+					 `else
+					 .wait_data(wait_data)
+					 `endif					 
 					);
 
 
@@ -591,20 +620,24 @@ lp805x_indi_addr indi_addr_1 (.clk(wb_clk_cpu),
 // P0, P1, P2, P3
 `ifdef LP805X_PORTS
 
+`ifdef LP805X_MULTIFREQ
 wire sfr_wrdy_io;
 wire sfr_rrdy_io;
+`endif
 	 	
   lp805x_ports ports_1(
-				.clk_cpu(wb_clk_cpu),
 				.clk(wb_clk_p1),
             .rst(wb_rst_p1),
 				.sfr_bus( sfr_bus_I),
 				.bit_out(sfr_bit),
 				.data_out(sfr_out),
+				`ifdef LP805X_MULTIFREQ
+				.clk_cpu(wb_clk_cpu),
 				.sfr_get(sfr_get),
 				.sfr_wrdy(sfr_wrdy_io),
 				.sfr_rrdy(sfr_rrdy_io),
 				.sfr_put(sfr_put),
+				`endif
 
 		`ifdef LP805X_PORT0
 			   .p0_out(p0_o),
@@ -633,8 +666,10 @@ wire sfr_rrdy_io;
 // new timer
 wire ntf0,ntr0;
 
+`ifdef LP805X_MULTIFREQ
 wire sfr_wrdy_nt;
 wire sfr_rrdy_nt;
+`endif
 
 	parameter PWMS_LEN=1;
 	input				pin_cnt;
@@ -642,17 +677,18 @@ wire sfr_rrdy_nt;
 
 lp805x_newtimer #(.PWMS_LEN(PWMS_LEN)) ntimer_1
 	(
-		.clk_cpu(wb_clk_cpu),
 		.clk(wb_clk_p1),
 		.rst(wb_rst_w),
 		.sfr_bus( sfr_bus_I),
 		.bit_out(sfr_bit),
 		.data_out(sfr_out),
+		`ifdef LP805X_MULTIFREQ
+		.clk_cpu(wb_clk_cpu),
 		.sfr_get(sfr_get),
 		.sfr_wrdy(sfr_wrdy_nt),
 		.sfr_rrdy(sfr_rrdy_nt),
 		.sfr_put(sfr_put),
-		
+		`endif
 		.ntf(ntf0),
 		.ntr(ntr0),
 		.pin_cnt(pin_cnt),
