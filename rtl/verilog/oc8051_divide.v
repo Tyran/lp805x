@@ -72,6 +72,7 @@ input [7:0] src1, src2;
 output desOv;
 output [7:0] des1, des2;
 
+
 // wires
 wire desOv;
 wire div0, div1;
@@ -125,5 +126,64 @@ end
 // assign outputs
 assign des1 = rem_out;
 assign des2 = div_out;
+
+`ifdef LP805X_2RADIX
+wire rdy,rdy2;
+wire drdy;
+wire [23:0] out_div;
+
+	assign
+		des1 = out_div[7:0],
+		des2 = out_div[15:8];
+		
+assign
+	desOv = src2 == 8'h0;
+
+
+//----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
+sp6lpcore_div iudiv_1 (
+  .aclk(clk), // input aclk
+  .aclken(enable), // input aclken
+  .aresetn(rst), // input aresetn
+  .s_axis_divisor_tvalid(enable), // input s_axis_divisor_tvalid
+  .s_axis_divisor_tready(rdy), // output s_axis_divisor_tready
+  .s_axis_divisor_tdata(src2), // input [7 : 0] s_axis_divisor_tdata
+  .s_axis_dividend_tvalid(enable), // input s_axis_dividend_tvalid
+  .s_axis_dividend_tready(rdy2), // output s_axis_dividend_tready
+  .s_axis_dividend_tdata(src1), // input [7 : 0] s_axis_dividend_tdata
+  .m_axis_dout_tvalid(drdy), // output m_axis_dout_tvalid
+  .m_axis_dout_tdata(out_div) // output [15 : 0] m_axis_dout_tdata
+);
+// INST_TAG_END ------ End INSTANTIATION Template ---------
+`endif
+
+`ifdef LP805X_HIGHRADIX
+
+wire rdy,rdy2;
+wire drdy;
+wire [23:0] out_div;
+
+	assign
+		des1 = out_div[7:0],
+		des2 = out_div[16:9];
+
+//----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
+sp6lpcore_div iudiv_1 (
+  .aclk(clk), // input aclk
+  .aclken(1'b1), // input aclken
+  .aresetn(rst), // input aresetn
+  .s_axis_divisor_tvalid(1'b1), // input s_axis_divisor_tvalid
+  .s_axis_divisor_tready(rdy), // output s_axis_divisor_tready
+  .s_axis_divisor_tdata({8'd0,src2}), // input [7 : 0] s_axis_divisor_tdata
+  .s_axis_dividend_tvalid(1'b1), // input s_axis_dividend_tvalid
+  .s_axis_dividend_tready(rdy2), // output s_axis_dividend_tready
+  .s_axis_dividend_tdata({8'd0,src1}), // input [7 : 0] s_axis_dividend_tdata
+  .m_axis_dout_tvalid(drdy), // output m_axis_dout_tvalid
+  .m_axis_dout_tuser(desOv), // output [0 : 0] m_axis_dout_tuser
+  .m_axis_dout_tdata(out_div) // output [15 : 0] m_axis_dout_tdata
+);
+// INST_TAG_END ------ End INSTANTIATION Template ---------
+
+`endif
 
 endmodule

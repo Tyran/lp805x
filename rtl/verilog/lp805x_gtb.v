@@ -31,7 +31,7 @@ module lp805x_gtb(
     );
 
 //parameter FREQ  = 12000; // frequency in kHz
-parameter FREQ  = 30000; // frequency in kHz
+parameter FREQ  = 12000; // frequency in kHz
 //parameter FREQ  = 3500; // frequency in kHz
 
 parameter DELAY = 500000/FREQ;
@@ -39,6 +39,8 @@ parameter DELAY = 500000/FREQ;
 reg rst,clk,int0,int1;
 reg [7:0] p0_in;
 wire [7:0] p0_out;
+
+reg [15:0] counter;
 
 `ifdef LP805X_ROM_ONCHIP
 wire ea_in=1;
@@ -64,7 +66,12 @@ lp805x_top #(.PWMS_LEN(1)) lp805x_top_1(
 initial
 begin
   clk = 0;
-  forever #DELAY clk <= ~clk;
+  counter = 16'd0;
+  
+  forever begin 
+	#DELAY clk <= ~clk;
+	counter <= clk ? counter + 1'b1 : counter;
+	end
 end
 	 
 initial 
@@ -73,7 +80,7 @@ initial
 		p0_in = 8'hA5;
 		int0 = 1'b0;
 		int1 = 1'b0;
-
+		
 	// wait for 2 cycles for reset to settle
 		repeat(2)@(posedge clk);
 		rst = 1'b0;
@@ -86,34 +93,34 @@ initial
 	end
 	
 // ALLmost all insn test	
-//always @(p0_out)
-//begin
-//	if ( p0_out == 8'd127)
-//		begin
-//			$display("Test ran successfully!");
-//			$finish;
-//		end
-//	else if ( p0_out != 8'd255)
-//		begin
-//			$display("Test failed with exit code: ",p0_out);
-//			$finish;
-//		end
-//end
-
-// XRAM test	
 always @(p0_out)
 begin
 	if ( p0_out == 8'd127)
 		begin
-			$display("Xram Test ran successfully!");
+			$display("Test ran successfully in: ",counter," clock cycles!");
 			$finish;
 		end
 	else if ( p0_out != 8'd255)
 		begin
-			$display("Xram Test failed with exit code: ",p0_out);
+			$display("Test failed with exit code: ",p0_out);
 			$finish;
 		end
 end
+
+//// XRAM test	
+//always @(p0_out)
+//begin
+//	if ( p0_out == 8'd127)
+//		begin
+//			$display("Xram Test ran successfully!");
+//			$finish;
+//		end
+//	else if ( p0_out != 8'd255)
+//		begin
+//			$display("Xram Test failed with exit code: ",p0_out);
+//			$finish;
+//		end
+//end
 
 
 
