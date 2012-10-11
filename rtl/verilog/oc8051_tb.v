@@ -89,13 +89,13 @@
 `include "oc8051_defines.v"
 
 
-//`define POST_ROUTE
+`define POST_ROUTE
 
 module lp805x_tb();
 
 
 //parameter FREQ  = 12000; // frequency in kHz
-parameter FREQ  = 30000; // frequency in kHz
+parameter FREQ  = 12000; // frequency in kHz
 //parameter FREQ  = 3500; // frequency in kHz
 
 parameter DELAY = 500000/FREQ;
@@ -379,6 +379,21 @@ initial
 begin
   clk = 0;
   forever #DELAY clk <= ~clk;
+end
+  
+// ALLmost all insn test	
+always @(p0_out)
+begin
+	if ( p0_out == 8'd127)
+		begin
+			$display("Test ran successfully i");
+			$finish;
+		end
+	else if ( p0_out != 8'd255)
+		begin
+			$display("Test failed with exit code: ",p0_out);
+			$finish;
+		end
 end
   
   /*

@@ -153,8 +153,14 @@ reg da_tmp, da_tmp1;
 //
 wire [15:0] inc, dec;
 
+wire [7:0 ] as1,as2;
+
+assign
+	as1 = enable_div ? src1 : 8'd0,
+	as2 = enable_div ? src2 : 8'd0;
+
 lp805x_multiply mul_1(.clk(clk), .rst(rst), .enable(enable_mul), .src1(src1), .src2(src2), .des1(mulsrc1), .des2(mulsrc2), .desOv(mulOv));
-lp805x_divide div_1(.clk(clk), .rst(rst), .enable(enable_div), .src1(src1), .src2(src2), .des1(divsrc1), .des2(divsrc2), .desOv(divOv));
+lp805x_divide div_1(.clk(clk), .rst(rst), .enable(enable_div), .src1(as1), .src2(as2), .des1(divsrc1), .des2(divsrc2), .desOv(divOv));
 
 /* Add */
 assign add1 = {1'b0,src1[3:0]};

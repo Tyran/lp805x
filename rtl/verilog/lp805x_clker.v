@@ -12,10 +12,10 @@ module lp805x_clker( rsti, clki,
 							bit_in, bit_out,
 							wr_bit, rd_bit,
 
-							rst, clk, //[SPECIAL FEATURE]
 							`ifdef LP805X_MULTIFREQ
-							rst_p1, clk_p1o
+							rst_p1, clk_p1o,
 							`endif
+							rst, clk //[SPECIAL FEATURE]
 							); //clock selection
 
 //

@@ -2698,9 +2698,11 @@ begin
             `LP805X_JZ      : state <= #1 2'b10;
             `LP805X_DIV     : state <= #1 2'b11;
             `LP805X_MUL     : state <= #1 2'b11;
+				`ifdef LP805X_MULTIFREQ
 				`LP805X_MOV_CD  : state <= #1 2'b01;
 				`LP805X_MOV_DA  : state <= #1 2'b01;
 				`LP805X_MOV_DD  : state <= #1 2'b01;
+				`endif
 //            default         : state <= #1 2'b00;
           endcase
       default: state <= #1 2'b00;

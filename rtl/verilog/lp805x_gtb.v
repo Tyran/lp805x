@@ -97,7 +97,7 @@ always @(p0_out)
 begin
 	if ( p0_out == 8'd127)
 		begin
-			$display("Test ran successfully in: ",counter," clock cycles!");
+			$display("Test ran successfully in: ",counter-2," clock cycles!");
 			$finish;
 		end
 	else if ( p0_out != 8'd255)
