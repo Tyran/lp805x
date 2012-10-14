@@ -89,7 +89,7 @@
 `include "oc8051_defines.v"
 
 
-`define POST_ROUTE
+//`define POST_ROUTE
 
 module lp805x_tb();
 
@@ -134,6 +134,8 @@ wire  [15:0] 	xd_addr;
 wire	[7:0]		xd_datai, xd_datao;
 wire				xd_wr, xd_stb, xd_ack;
 
+
+wire wdt_rst, wdtov;
 
 //wire	[12:0]	addr_sel0, addr_sel1, addr_sel2, addr_sel3;
 wire	[15:0] 	pc_out;
@@ -207,6 +209,9 @@ assign wr_addr = lp805x_top_1.dataram_1.idata_1.wr_addr;
 assign wr_data = lp805x_top_1.dataram_1.idata_1.wr_data;
 assign rd_en = lp805x_top_1.dataram_1.idata_1.rd_en;
 assign wr = lp805x_top_1.dataram_1.idata_1.wr;
+
+assign wdt_event = lp805x_top_1.wdt_1.wdt_event;
+assign wdtov = lp805x_top_1.wdt_1.wdtov;
 
 `endif
 
@@ -381,20 +386,20 @@ begin
   forever #DELAY clk <= ~clk;
 end
   
-// ALLmost all insn test	
-always @(p0_out)
-begin
-	if ( p0_out == 8'd127)
-		begin
-			$display("Test ran successfully i");
-			$finish;
-		end
-	else if ( p0_out != 8'd255)
-		begin
-			$display("Test failed with exit code: ",p0_out);
-			$finish;
-		end
-end
+//// ALLmost all insn test	
+//always @(p0_out)
+//begin
+//	if ( p0_out == 8'd127)
+//		begin
+//			$display("Test ran successfully i");
+//			$finish;
+//		end
+//	else if ( p0_out != 8'd255)
+//		begin
+//			$display("Test failed with exit code: ",p0_out);
+//			$finish;
+//		end
+//end
   
   /*
 always @(posedge clk)
@@ -457,6 +462,25 @@ always @(posedge clk)
   
 // synthesis translate_off
 
+//always @(p0_out)
+//	if ( p0_out == 8'h77)
+//		begin
+//			$display("P0=77H @ ",$time,"ns");
+//		end
+//
+//always @(p0_out)
+//	if ( p0_out == 8'h78)
+//		begin
+//			$display("P0=78H @ ",$time,"ns");
+//		end
+//
+//always @(p0_out)
+//	if ( p0_out == 8'h88)
+//		begin
+//			$display("P0=88H @ ",$time,"ns");
+//			$finish;
+//		end
+
 // catch P0=II
 always @(op_cur or imm)
   if ((op_cur==8'h75) && (imm==8'h80)) begin
@@ -471,16 +495,16 @@ always @(op_cur or imm or imm2)
 
   end
   
-//catch a LCALL __start_call_ctors
+//catch a LCALL __cstart_call_ctors
 always @(op_cur or imm or imm2)
-  if ((op1==8'h12) && (imm==8'h25) && (imm2==8'hA8)) begin
-    $display("time %t => catch LCALL __start_call_ctors", $time);
+  if ((op1==8'h12) && (imm==8'h26) && (imm2==8'h04)) begin
+    $display("time %t => catch LCALL __cstart_call_ctors", $time);
 
   end
 
 //catch a LCALL main
 always @(op_cur or imm or imm2)
-  if ((op_cur==8'h12) && (imm==8'h1E) && (imm2==8'h1A)) begin
+  if ((op_cur==8'h12) && (imm==8'h1E) && (imm2==8'h54)) begin
     $display("time %t => catch LCALL main", $time);
 
   end
@@ -505,6 +529,31 @@ always @(op_cur or imm or imm2)
     $display("time %t => catch LJMP ?FUNC_LEAVE_XDATA", $time);
 
   end
+  
+  
+//identify running task!
+always @(p1_out)
+	if ( p1_out == 8'd0)
+		$display("Catch %tns => Catch TaskIdle running",$time);
+	else if ( p1_out == 8'd1)
+		$display("Catch %tns => TaskA running",$time);
+	else if ( p1_out == 8'd2)
+		$display("Catch %tns => TaskB running",$time);
+	else if ( p1_out == 8'd3)
+		$display("Catch %tns => TaskC running",$time);
+		
+//
+always @(wdtov)
+	if ( wdtov)
+		$display("Watchdog Timeout!");
+		
+always @(wdt_event)
+	if ( wdt_event) begin
+		$display("Watchdog Driven Reset!");
+	repeat(5)@(posedge clk) ;
+		$finish;
+	end
+  
 // synthesis translate_on
 
 endmodule
