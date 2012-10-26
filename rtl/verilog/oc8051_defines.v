@@ -32,14 +32,14 @@
 // LP805X pherypherals
 //
 //
-`define LP805X_UART
+//`define LP805X_UART
 `define LP805X_TC01
-`define LP805X_TC2
+//`define LP805X_TC2
 `define LP805X_PORTS  //ports global enable
 `define LP805X_PORT0
-`define LP805X_PORT1
-`define LP805X_PORT2
-`define LP805X_PORT3
+//`define LP805X_PORT1
+//`define LP805X_PORT2
+//`define LP805X_PORT3
 
 
 //
@@ -76,8 +76,8 @@
 
 //NONE-INFERED
 `define LP805X_ROM_INFER
-`define LP805X_XILINX
-//`define LP805X_ALTERA
+//`define LP805X_XILINX
+`define LP805X_ALTERA
 
 //clock management
 `define LP805X_CLKER
@@ -92,7 +92,7 @@
 `define LP805X_HWSCHED
 
 //watchdog timer
-`define LP805X_WDT
+//`define LP805X_WDT
 
 //AES crypt/Decrypt
 //`define LP805X_AES

@@ -95,7 +95,7 @@ module lp805x_schedfs(
 		_enable = start & !running & enable ? 1'b1 : running & enable ? 1'b1 : 1'b0;
 		
 		
-	always @(posedge clk or posedge start)
+	always @(posedge clk or posedge start or posedge rst)
 	begin
 		if ( rst | start)
 		begin

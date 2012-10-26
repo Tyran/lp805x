@@ -59,11 +59,10 @@ parameter PWMS_TYPE = 0;
 	 
 input clk,rst; //inter
 
-input clk_cpu;
-
 input [28:0] sfr_bus;
 
 `ifdef LP805X_MULTIFREQ
+input clk_cpu;
 input sfr_get,sfr_put;
 output sfr_wrdy,sfr_rrdy;
 `endif
@@ -393,7 +392,7 @@ wire sfr_wrdy,sfr_rrdy;
 `else
 		assign 
 			data_out = output_data ? data_read : 8'hzz,
-			bit_out = bit_outc ? bit_outd : 1'bz;
+			bit_out = output_bit ? bit_read : 1'bz;
 `endif
 
 endmodule
