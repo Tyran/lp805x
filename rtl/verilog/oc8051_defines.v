@@ -80,7 +80,7 @@
 `define LP805X_ALTERA
 
 //clock management
-`define LP805X_CLKER
+//`define LP805X_CLKER
 //`define LP805X_USELL
 
 //`define LP805X_MULTIFREQ

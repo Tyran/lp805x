@@ -100,14 +100,15 @@ assign data_out = output_data ? data_read : 8'hzz;
 
 `ifdef LP805X_ALTERA
 
+	wire [7:0] select;
+
+	`ifdef LP805X_USEPLL
+	
 	wire	  pllena=1'b1; //for now
 	wire 	  c0;
 	wire	  c1;
 	wire	  c2;
 	wire	  locked;
-	wire [7:0] select;
-
-	`ifdef LP805X_USEPLL
 	
 lp805x_pll clker
 	(
@@ -135,17 +136,84 @@ lp805x_clkctrl clkctrl
 		.inclk3x( c2),
 		.outclk( clk)
 	);
-	`endif //PLL
+	`else
 
-assign
+	parameter PRESCALE_LEN = 3;
+
+	assign
 		rst = rsti;
-
-parameter PRESCALE_LEN = 3;
 		
-	lp805x_clkdiv #(.PRESCALE_LEN(PRESCALE_LEN))
-	clkdiv_1( .rst(rsti), .clki(clki), 
-	._pres_factor(clock_select[PRESCALE_LEN-1:0]), .clk_div(clk_));
+		`ifdef LP805X_MULTIFREQ
+	assign
+		rst_p1 = rsti;
+		`endif
+
+	wire clk_;
+	wire last_clk;
 	
+	wire clk_0,clk_1;
+	reg do_s_1;
+	
+	always @(posedge clk)
+		do_s_1 <= #1 do_switch;
+	
+	assign clk_0 = do_s_1 ? clk_ : last_clk; 
+	assign clk_1 = do_s_1 ? last_clk : clk_; 
+	
+		`ifdef LP805X_MULTIFREQ
+	wire clk_p;
+	wire last_clkp;
+	wire clk_p0,clk_p1;
+	reg do_s_p1;
+	
+	always @(posedge clk)
+		do_s_p1 <= #1 do_switch;
+	
+	assign clk_p0 = do_s_p1 ? clk_p : last_clkp; 
+	assign clk_p1 = do_s_p1 ? last_clkp : clk_p; 
+		`endif
+	
+	lp805x_clkdiv #(.PRESCALE_LEN(PRESCALE_LEN))
+	clkdiv_1
+	( 
+	.rst(rsti),
+	.clki(clki),
+	`ifdef LP805X_MULTIFREQ
+	._pres_factor1(clock_select[(PRESCALE_LEN*2)-1:PRESCALE_LEN]),
+	.clk_div1(clk_p),
+	.clk_divl1(last_clkp),
+	`endif
+	._pres_factor(clock_select[PRESCALE_LEN-1:0]),
+	.clk_div(clk_),
+	.clk_divl(last_clk)
+	);
+	
+	lp805x_clkctrl clkctrl_0
+	(
+		.clkselect( 2'b11),
+		.ena( ~do_switch),
+		//.inclk0x( clki),
+		.inclk1x( clk0),
+		//.inclk2x( c1),
+		//.inclk3x( c2),
+		.outclk( clk)
+	);
+	
+		`ifdef LP805X_MULTIFREQ
+		
+	lp805x_clkctrl clkctrl_p
+	(
+		.clkselect( do_switch ? 2'b01 : 2'b00),
+		.ena( 1'b1),
+		.inclk0x( clk_p0),
+		.inclk1x( clk_p1),
+		//.inclk2x( clk_p1),
+		//.inclk3x( c2),
+		.outclk( clk_p1o)
+	);
+		`endif
+	
+	`endif
 	
 `else 
 	`ifdef LP805X_XILINX
